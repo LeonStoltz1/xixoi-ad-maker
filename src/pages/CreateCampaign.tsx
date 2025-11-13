@@ -164,18 +164,16 @@ export default function CreateCampaign() {
               </div>
             </div>
 
-            {/* Content Input */}
-            {uploadType === 'text' && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium uppercase tracking-wide">Your Product/Service Description</label>
-                <Textarea
-                  value={textContent}
-                  onChange={(e) => setTextContent(e.target.value)}
-                  placeholder="Describe your product or service..."
-                  className="border-foreground min-h-[120px]"
-                />
-              </div>
-            )}
+            {/* Content Input - Always show description */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium uppercase tracking-wide">Product/Service Description *</label>
+              <Textarea
+                value={textContent}
+                onChange={(e) => setTextContent(e.target.value)}
+                placeholder="Describe your product or service so AI can create your ad..."
+                className="border-foreground min-h-[120px]"
+              />
+            </div>
 
             {(uploadType === 'image' || uploadType === 'video') && (
               <div className="space-y-2">
@@ -206,7 +204,7 @@ export default function CreateCampaign() {
               size="lg" 
               className="w-full" 
               onClick={handleCreateCampaign}
-              disabled={loading || (uploadType === 'text' && !textContent) || ((uploadType === 'image' || uploadType === 'video') && !uploadedFile)}
+              disabled={loading || !textContent || ((uploadType === 'image' || uploadType === 'video') && !uploadedFile)}
             >
               {loading ? "Creating..." : "Create Campaign"}
             </Button>
