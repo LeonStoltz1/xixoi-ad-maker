@@ -353,7 +353,7 @@ export default function CreateCampaign() {
               title: "Publishing with watermark",
               description: "Your ad is being published with the xiXoi™ watermark!",
             });
-            navigate(`/ad-published/${createdCampaignId}`);
+            navigate(`/ad-published/${createdCampaignId}?paid=false`);
           }}
         />
       )}

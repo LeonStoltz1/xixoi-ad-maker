@@ -1,9 +1,11 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 const AdPublished = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const hasPaid = searchParams.get('paid') === 'true';
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-6 py-12">
@@ -28,10 +30,12 @@ const AdPublished = () => {
               <span className="font-bold">SHOP NOW</span>
             </div>
 
-            {/* xiXoi™ branding removed for paid users */}
-            <div className="text-xs text-right text-muted-foreground">
-              {/* No watermark for paid users */}
-            </div>
+            {/* Watermark for free users only */}
+            {!hasPaid && (
+              <div className="text-right text-[9px] opacity-60">
+                Powered By xiXoi™
+              </div>
+            )}
           </div>
         </div>
 
