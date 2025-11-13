@@ -25,7 +25,7 @@ serve(async (req) => {
 
     const products = [];
 
-    // Product 1: xiXoi™ Publish Pro - Per Ad Set ($5 one-time)
+    // Product 1: xiXoi™ Publish Pro - Per Ad Set ($29 one-time)
     console.log('Creating Product 1: Per Ad Set...');
     const product1 = await stripe.products.create({
       name: 'xiXoi™ Publish Pro - Per Ad Set',
@@ -33,13 +33,13 @@ serve(async (req) => {
     });
     const price1 = await stripe.prices.create({
       product: product1.id,
-      unit_amount: 500, // $5.00
+      unit_amount: 2900, // $29.00
       currency: 'usd',
     });
     products.push({
       name: product1.name,
       price_id: price1.id,
-      amount: '$5.00',
+      amount: '$29.00',
       type: 'one-time',
       secret_name: 'STRIPE_PRICE_BRANDING_REMOVAL'
     });
