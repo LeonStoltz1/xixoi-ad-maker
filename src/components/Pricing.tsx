@@ -39,6 +39,7 @@ const plans = [
     price: "$199",
     subtitle: "/month + 5% of ad spend",
     features: [
+      "Everything in Publish Pro",
       "Autonomous AI optimizer",
       "Auto-pause bad ads",
       "Auto-increase winning ads",
@@ -53,12 +54,12 @@ const plans = [
     price: "$999",
     subtitle: "/month",
     features: [
+      "Everything in Scale Elite",
       "White-label xiXoi™ platform",
       "Team seats",
       "Client billing",
       "API access",
       "Unlimited AI variants",
-      "No watermark",
       "Agency-grade performance",
     ],
     cta: "Contact Sales",
