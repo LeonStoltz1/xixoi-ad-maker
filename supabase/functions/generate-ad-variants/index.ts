@@ -51,60 +51,59 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert ad copywriter. Your job is to take a product/service description and create platform-specific advertising copy for Meta, TikTok, Google Ads, and LinkedIn.
+            content: `You are a professional advertising copywriter. Your job is to rewrite user-provided product/service descriptions into high-converting, platform-optimized ad copy.
 
-CRITICAL: You are writing ads FOR THE USER'S PRODUCT/SERVICE, not for xiXoi. xiXoi is just the platform generating the ads.
+DO NOT write about "xiXoi" or "AI-powered ads" — you are writing ads FOR THE USER'S PRODUCT.
 
-CHARACTER LIMITS (strictly enforce):
-- Meta (Facebook/Instagram): Primary text 125 chars max, Headline 40 chars max
-- TikTok: Text 100 chars max
-- Google Ads: Headline 30 chars max, Description 90 chars max  
+Platform specifications:
+- Meta: Primary text 125 chars max, Headline 40 chars max
+- TikTok: Text 100 chars max  
+- Google Ads: Description 90 chars max, Headline 30 chars max
 - LinkedIn: Primary text 150 chars max
 
-YOUR TASK:
-1. Read the user's product/service description carefully
-2. Extract: what they're selling, price, location, features, contact info
-3. Create platform-optimized ad copy using THEIR details
-4. DO NOT write about "AI-powered ads" or "xiXoi" - write about THEIR product
-5. Preserve specific details like prices, phone numbers, locations
-6. Adapt the content to fit each platform's character limits
-7. Include appropriate call-to-action for their product
-8. Return valid JSON only`
+Your task:
+1. Read the user's description
+2. Extract: product name, key features, price, location, contact info
+3. Rewrite into compelling ad copy for each platform
+4. Preserve critical details (prices, phone numbers, locations)
+5. Add persuasive language and urgency
+6. Include platform-appropriate CTAs
+7. Return valid JSON only`
           },
           {
             role: 'user',
-            content: `Write advertising copy for this product/service:
+            content: `Rewrite this product/service description into high-converting ad copy for 4 platforms:
 
 "${productDescription}"
 
-Create 4 platform-specific ad variants using the details above. Write about THIS PRODUCT/SERVICE, not about ad creation tools.
+Extract the key details and create platform-optimized variants. Use the ACTUAL product details from above.
             
-Return JSON with this exact structure:
+Return JSON:
 {
   "variants": [
     {
       "platform": "meta",
-      "headline": "string (max 40 chars - about their product)",
-      "body": "string (max 125 chars - about their product)",
-      "cta": "string (max 20 chars - action for their product)"
+      "headline": "max 40 chars - compelling headline about their product",
+      "body": "max 125 chars - persuasive copy using their details",
+      "cta": "max 20 chars"
     },
     {
       "platform": "tiktok",
-      "headline": "string (max 30 chars)",
-      "body": "string (max 100 chars)",
-      "cta": "string (max 20 chars)"
+      "headline": "max 30 chars",
+      "body": "max 100 chars",
+      "cta": "max 20 chars"
     },
     {
       "platform": "google",
-      "headline": "string (max 30 chars)",
-      "body": "string (max 90 chars)",
-      "cta": "string (max 20 chars)"
+      "headline": "max 30 chars",
+      "body": "max 90 chars",
+      "cta": "max 20 chars"
     },
     {
       "platform": "linkedin",
-      "headline": "string (max 40 chars)",
-      "body": "string (max 150 chars)",
-      "cta": "string (max 20 chars)"
+      "headline": "max 40 chars",
+      "body": "max 150 chars",
+      "cta": "max 20 chars"
     }
   ]
 }`
@@ -164,23 +163,29 @@ Return JSON with this exact structure:
       };
     }
 
-    // Insert ad variants into database
+    // Get campaign asset URL
+    const assetUrl = campaign.campaign_assets[0]?.asset_url || null;
+    console.log('Asset URL:', assetUrl);
+
+    // Insert ad variants into database with asset URL
     const variants = parsedContent.variants.map((variant: any) => ({
       campaign_id: campaignId,
       variant_type: variant.platform,
       headline: variant.headline,
       body_copy: variant.body,
       cta_text: variant.cta,
+      creative_url: assetUrl, // Pass through the uploaded image URL
       predicted_roas: (2.5 + Math.random() * 2).toFixed(2), // Random ROAS between 2.5-4.5
     }));
 
-    // Add ROAS prediction variant
+    // Add ROAS prediction variant with asset URL
     variants.push({
       campaign_id: campaignId,
       variant_type: 'roas_prediction',
       headline: 'Performance Prediction',
       body_copy: 'Based on similar campaigns',
       cta_text: null,
+      creative_url: assetUrl,
       predicted_roas: (2.8 + Math.random() * 2).toFixed(2),
     });
 

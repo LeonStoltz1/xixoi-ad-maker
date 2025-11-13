@@ -420,12 +420,12 @@ export default function CreateCampaign() {
                       <span className="text-xs text-muted-foreground">ROAS: {variant.predicted_roas}x</span>
                     </div>
                     
-                    {/* Show uploaded image if available */}
-                    {uploadedAssetUrl && uploadType === 'image' && (
+                    {/* Show uploaded image from creative_url */}
+                    {variant.creative_url && (
                       <div className="w-full aspect-square bg-muted overflow-hidden">
                         <img 
-                          src={uploadedAssetUrl} 
-                          alt="Campaign asset" 
+                          src={variant.creative_url} 
+                          alt="Campaign creative" 
                           className="w-full h-full object-cover"
                         />
                       </div>
