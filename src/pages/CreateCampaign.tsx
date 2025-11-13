@@ -363,8 +363,16 @@ export default function CreateCampaign() {
               onClick={handleCreateCampaign}
               disabled={loading || !textContent || ((uploadType === 'image' || uploadType === 'video') && !uploadedFile)}
             >
-              {loading ? "Generating..." : "Let me see..."}
+              {loading ? "Generating..." : !textContent ? "Fill description to continue" : ((uploadType === 'image' || uploadType === 'video') && !uploadedFile) ? `Upload ${uploadType} to continue` : "Let me see..."}
             </Button>
+            
+            {/* Helper text */}
+            {(!textContent || ((uploadType === 'image' || uploadType === 'video') && !uploadedFile)) && (
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                {!textContent && "⚠️ Product description required"}
+                {textContent && ((uploadType === 'image' || uploadType === 'video') && !uploadedFile) && `⚠️ ${uploadType.charAt(0).toUpperCase() + uploadType.slice(1)} upload required`}
+              </p>
+            )}
           </div>
         </div>
       </main>
