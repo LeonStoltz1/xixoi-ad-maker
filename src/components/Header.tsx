@@ -2,16 +2,7 @@ import { Button } from "@/components/ui/button";
 
 export const Header = () => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-24 overflow-hidden">
-      {/* Background Image */}
-      <img 
-        src="/header-banner.jpg" 
-        alt="xiXoi futuristic cityscape"
-        className="absolute inset-0 w-full h-full object-cover z-0"
-      />
-      
-      {/* Navigation Content */}
-      <div className="relative z-10 h-full border-b border-border/30">
+    <header className="fixed top-0 left-0 right-0 z-50 h-24 bg-black border-b border-border/30">
         <div className="container mx-auto max-w-6xl px-6 h-full flex items-center">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-12">
@@ -49,7 +40,6 @@ export const Header = () => {
             </div>
           </div>
         </div>
-      </div>
     </header>
   );
 };
