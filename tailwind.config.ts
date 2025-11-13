@@ -66,10 +66,11 @@ export default {
         content: "720px",
       },
       spacing: {
-        section: "48px",
+        section: "64px",
+        grid: "32px",
         element: "24px",
         arrow: "16px",
-        micro: "12px",
+        tight: "16px",
       },
       keyframes: {
         "accordion-down": {

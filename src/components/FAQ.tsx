@@ -36,7 +36,7 @@ export const FAQ = () => {
   return (
     <section className="py-section px-6 bg-background">
       <div className="w-full max-w-content mx-auto">
-        <div className="text-center mb-element space-y-3">
+        <div className="text-center mb-grid space-y-tight">
           <h2 className="text-3xl md:text-4xl font-bold font-heading">
             Frequently Asked Questions
           </h2>
@@ -53,7 +53,7 @@ export const FAQ = () => {
               className="border border-foreground px-6"
             >
               <AccordionTrigger className="text-left hover:no-underline py-6">
-                <span className="font-semibold text-sm">{faq.question}</span>
+                <span className="font-bold text-sm">{faq.question}</span>
               </AccordionTrigger>
               <AccordionContent className="pb-6 text-sm">
                 {faq.answer}

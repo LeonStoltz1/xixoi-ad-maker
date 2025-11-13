@@ -8,17 +8,17 @@ export const Hero = () => {
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-background px-6">
-      <div className="w-full max-w-content mx-auto text-center space-y-element">
-        <div className="space-y-element">
+      <div className="w-full max-w-content mx-auto text-center">
+        <div className="space-y-tight">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight font-heading">
             Your Ad.<br />Already Done.
           </h1>
-          <p className="text-lg md:text-xl">
+          <p className="text-lg md:text-xl pt-tight">
             Upload once. xiXoi™ handles everything.
           </p>
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-element">
           <Button size="lg" className="text-base px-8 py-3 w-full sm:w-auto" onClick={() => window.location.href = '/auth'}>
             Start Free
           </Button>
@@ -27,13 +27,13 @@ export const Hero = () => {
           </Button>
         </div>
 
-        <div className="flex justify-center pt-arrow">
+        <div className="flex justify-center pt-arrow mt-arrow">
           <button 
             onClick={scrollToUpload}
             className="animate-bounce"
             aria-label="Scroll to upload section"
           >
-            <ArrowDown className="w-12 h-12 md:w-16 md:h-16" />
+            <ArrowDown className="w-12 h-12 md:w-16 md:h-16 stroke-[1]" />
           </button>
         </div>
       </div>

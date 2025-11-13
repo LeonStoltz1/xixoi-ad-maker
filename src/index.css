@@ -38,11 +38,12 @@ All colors MUST be HSL.
 
     --radius: 0rem;
 
-    /* xiXoi™ spacing system */
-    --spacing-section: 48px;
+    /* xiXoi™ precise spacing system */
+    --spacing-section: 64px;
+    --spacing-grid: 32px;
     --spacing-element: 24px;
     --spacing-arrow: 16px;
-    --spacing-micro: 12px;
+    --spacing-tight: 16px;
     
     --max-width-content: 720px;
     --transition-smooth: all 0.3s ease;

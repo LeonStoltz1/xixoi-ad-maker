@@ -2,13 +2,13 @@ import { Image, Video, FileText, ArrowDown } from "lucide-react";
 
 export const UploadSection = () => {
   return (
-    <section id="upload-section" className="flex items-center justify-center bg-background px-6 py-section">
-      <div className="w-full max-w-content mx-auto text-center space-y-element">
-        <div className="flex justify-center pt-arrow pb-arrow">
-          <ArrowDown className="w-12 h-12 md:w-16 md:h-16 animate-bounce" />
+    <section id="upload-section" className="py-section px-6 bg-background">
+      <div className="w-full max-w-content mx-auto text-center">
+        <div className="flex justify-center mb-arrow">
+          <ArrowDown className="w-12 h-12 md:w-16 md:h-16 stroke-[1] animate-bounce" />
         </div>
         
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-3 gap-8 mt-arrow mb-tight">
           <div className="flex flex-col items-center gap-3">
             <Image className="w-12 h-12 md:w-16 md:h-16 stroke-[1]" />
             <span className="text-sm">Image</span>
@@ -23,7 +23,7 @@ export const UploadSection = () => {
           </div>
         </div>
         
-        <p className="text-lg md:text-xl font-medium">Upload anything.</p>
+        <p className="text-lg md:text-xl font-medium mt-tight">Upload anything.</p>
       </div>
     </section>
   );

@@ -85,7 +85,7 @@ export const Pricing = () => {
   return (
     <section className="py-section px-6 bg-background">
       <div className="w-full max-w-5xl mx-auto">
-        <div className="text-center mb-element space-y-3">
+        <div className="text-center mb-grid space-y-tight">
           <h2 className="text-3xl md:text-4xl font-bold font-heading">
             Simple Pricing
           </h2>
@@ -102,10 +102,10 @@ export const Pricing = () => {
                 plan.popular ? 'border-[2px] border-foreground' : 'border border-foreground'
               } p-6`}
             >
-              <div className="mb-6 space-y-3">
+              <div className="mb-6 space-y-2">
                 <h3 className="text-xs font-bold uppercase tracking-wide">{plan.name}</h3>
                 <div className="space-y-1">
-                  <div className="text-3xl font-bold">{plan.price}</div>
+                  <div className="text-2xl font-bold">{plan.price}</div>
                   {plan.subtitle && (
                     <p className="text-xs">{plan.subtitle}</p>
                   )}
@@ -117,8 +117,8 @@ export const Pricing = () => {
 
               <Button
                 variant={plan.popular ? "default" : "outline"}
-                className={`w-full mb-6 text-sm ${!plan.popular ? 'border-foreground' : ''}`}
-                size="lg"
+                className={`w-full mb-6 text-xs ${!plan.popular ? 'border-foreground' : ''}`}
+                size="sm"
                 onClick={() => handlePlanClick(plan.name)}
                 disabled={loading}
               >
