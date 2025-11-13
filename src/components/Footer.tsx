@@ -11,7 +11,7 @@ export const Footer = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
           <div className="col-span-2 md:col-span-1">
-            <h3 className="text-3xl font-bold mb-4">xiXoi</h3>
+            <h3 className="text-3xl font-bold mb-4">xiXoi™</h3>
             <p className="text-primary-foreground/70 text-sm">
               Instant Ads for Everyone.
             </p>
@@ -39,7 +39,7 @@ export const Footer = () => {
         <div className="pt-8 border-t border-primary-foreground/10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-primary-foreground/70">
-              © 2025 xiXoi. All rights reserved.
+              © 2025 xiXoi™. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">

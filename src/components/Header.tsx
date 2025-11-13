@@ -8,7 +8,7 @@ export const Header = () => {
           <div className="flex items-center gap-12">
             <a href="/" className="text-2xl font-bold font-heading flex items-center gap-2">
               <div className="w-8 h-8 bg-accent rounded-lg neon-border" />
-              xiXoi
+              xiXoi™
             </a>
             <nav className="hidden md:flex gap-8">
               <a href="#how-it-works" className="text-sm font-medium hover:text-accent transition-colors">
