@@ -37,6 +37,39 @@ export default function CreateCampaign() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file size
+      const maxSize = uploadType === 'image' ? 5 * 1024 * 1024 : 200 * 1024 * 1024; // 5MB for images, 200MB for videos
+      if (file.size > maxSize) {
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: `Maximum file size is ${uploadType === 'image' ? '5MB' : '200MB'}. Please choose a smaller file.`,
+        });
+        return;
+      }
+
+      // Validate file type
+      const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      const validVideoTypes = ['video/mp4', 'video/quicktime'];
+      
+      if (uploadType === 'image' && !validImageTypes.includes(file.type)) {
+        toast({
+          variant: "destructive",
+          title: "Invalid file type",
+          description: "Please upload a JPG, JPEG, or PNG image.",
+        });
+        return;
+      }
+
+      if (uploadType === 'video' && !validVideoTypes.includes(file.type)) {
+        toast({
+          variant: "destructive",
+          title: "Invalid file type",
+          description: "Please upload an MP4 or MOV video.",
+        });
+        return;
+      }
+
       setUploadedFile(file);
       
       // Create preview URL for images
@@ -198,13 +231,18 @@ export default function CreateCampaign() {
                 </label>
                 {uploadType === 'image' && (
                   <p className="text-xs text-muted-foreground">
-                    Accepted formats: JPG, JPEG, PNG (max 5MB)
+                    Formats: JPG, JPEG, PNG • Max size: 5MB • Recommended: 1080x1080px or larger
                   </p>
                 )}
                 {uploadType === 'video' && (
-                  <p className="text-xs text-muted-foreground">
-                    Accepted formats: MP4, MOV (max 100MB)
-                  </p>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">
+                      Formats: MP4, MOV • Max size: 200MB
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Recommended: 9:16 (vertical), 1:1 (square), or 16:9 (landscape) • Min 720p resolution
+                    </p>
+                  </div>
                 )}
                 <div 
                   onClick={handleUploadClick}
