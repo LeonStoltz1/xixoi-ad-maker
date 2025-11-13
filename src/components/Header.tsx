@@ -13,7 +13,7 @@ export const Header = () => {
                   loop 
                   muted 
                   playsInline
-                  className="w-10 h-10 object-contain"
+                  className="w-20 h-20 object-contain"
                 />
                 xiXoi™
               </a>
