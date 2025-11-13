@@ -5,7 +5,7 @@ export const AIBuildsSection = () => {
     <section className="flex items-center justify-center bg-background px-6 py-16">
       <div className="container mx-auto max-w-6xl text-center space-y-12">
         <div className="w-32 h-32 md:w-40 md:h-40 mx-auto mb-12 flex items-center justify-center">
-          <ArrowDown className="w-16 h-16 md:w-20 md:h-20 animate-bounce" />
+          <ArrowDown className="w-12 h-12 md:w-16 md:h-16 animate-bounce" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
