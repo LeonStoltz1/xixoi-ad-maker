@@ -36,10 +36,10 @@ export const LiveAdSection = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
-          <Button size="lg" className="text-lg px-8 py-6 w-full sm:w-auto">
+          <Button size="lg" className="text-lg px-8 py-6 w-full sm:w-auto" onClick={() => window.location.href = '/auth'}>
             Start Free
           </Button>
-          <Button variant="outline" size="lg" className="text-lg px-8 py-6 w-full sm:w-auto">
+          <Button variant="outline" size="lg" className="text-lg px-8 py-6 w-full sm:w-auto" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             How It Works
           </Button>
         </div>
