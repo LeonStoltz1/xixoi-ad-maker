@@ -74,7 +74,8 @@ export const Pricing = () => {
     if (planName === "FREE") {
       navigate('/auth');
     } else if (planName === "PUBLISH PRO") {
-      createCheckoutSession('pro_subscription');
+      // Redirect to auth page - user must be logged in to purchase
+      navigate('/auth');
     } else if (planName === "SCALE ELITE" || planName === "AGENCY WHITE-LABEL") {
       // Contact sales - could open a modal or redirect
       window.location.href = 'mailto:sales@xixoi.com';
