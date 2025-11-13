@@ -7,7 +7,7 @@ export const Hero = () => {
   };
 
   return (
-    <section className="pt-[100px] pb-section flex items-center justify-center bg-background px-6">
+    <section className="pt-[150px] pb-section flex items-center justify-center bg-background px-6">
       <div className="w-full max-w-content mx-auto text-center">
         <div className="space-y-tight">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight font-heading">
