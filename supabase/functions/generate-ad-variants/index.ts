@@ -51,7 +51,9 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert ad copywriter for xiXoi™. Generate platform-optimized ad copy that meets each social media platform's character limits and best practices.
+            content: `You are an expert ad copywriter. Your job is to take a product/service description and create platform-specific advertising copy for Meta, TikTok, Google Ads, and LinkedIn.
+
+CRITICAL: You are writing ads FOR THE USER'S PRODUCT/SERVICE, not for xiXoi. xiXoi is just the platform generating the ads.
 
 CHARACTER LIMITS (strictly enforce):
 - Meta (Facebook/Instagram): Primary text 125 chars max, Headline 40 chars max
@@ -59,32 +61,32 @@ CHARACTER LIMITS (strictly enforce):
 - Google Ads: Headline 30 chars max, Description 90 chars max  
 - LinkedIn: Primary text 150 chars max
 
-CRITICAL REQUIREMENTS:
-- Use the EXACT product/service details provided by the user
-- DO NOT make up generic copy like "Transform Your Business" or "AI-powered ads"
-- Extract key details from the user's description (what they sell, price, location, features, contact info)
-- Adapt their actual content to fit each platform's limits
-- Preserve specific details like prices, phone numbers, and unique selling points
-- Be concise and compelling while staying true to the user's input
-- Include clear call-to-action
-- Return valid JSON only`
+YOUR TASK:
+1. Read the user's product/service description carefully
+2. Extract: what they're selling, price, location, features, contact info
+3. Create platform-optimized ad copy using THEIR details
+4. DO NOT write about "AI-powered ads" or "xiXoi" - write about THEIR product
+5. Preserve specific details like prices, phone numbers, locations
+6. Adapt the content to fit each platform's character limits
+7. Include appropriate call-to-action for their product
+8. Return valid JSON only`
           },
           {
             role: 'user',
-            content: `Generate 4 platform-specific ad variants based on this EXACT product/service description:
+            content: `Write advertising copy for this product/service:
 
 "${productDescription}"
 
-IMPORTANT: Use the details above. Do not generate generic placeholder copy. Extract and adapt the actual product info, pricing, and details provided.
+Create 4 platform-specific ad variants using the details above. Write about THIS PRODUCT/SERVICE, not about ad creation tools.
             
 Return JSON with this exact structure:
 {
   "variants": [
     {
       "platform": "meta",
-      "headline": "string (max 40 chars, using actual product name/key feature)",
-      "body": "string (max 125 chars, using actual details from description)",
-      "cta": "string (max 20 chars)"
+      "headline": "string (max 40 chars - about their product)",
+      "body": "string (max 125 chars - about their product)",
+      "cta": "string (max 20 chars - action for their product)"
     },
     {
       "platform": "tiktok",
