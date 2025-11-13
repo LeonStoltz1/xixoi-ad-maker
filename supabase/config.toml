@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.setup-stripe-products]
 verify_jwt = false
+
+[functions.bill-ad-spend-percentage]
+verify_jwt = false
+
+[functions.record-ad-spend]
+verify_jwt = true

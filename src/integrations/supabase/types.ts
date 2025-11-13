@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_spend_tracking: {
+        Row: {
+          amount: number
+          billed: boolean
+          billing_period_end: string
+          billing_period_start: string
+          campaign_id: string | null
+          created_at: string
+          currency: string
+          id: string
+          platform: string
+          spend_date: string
+          stripe_invoice_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          billed?: boolean
+          billing_period_end: string
+          billing_period_start: string
+          campaign_id?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          platform: string
+          spend_date?: string
+          stripe_invoice_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          billed?: boolean
+          billing_period_end?: string
+          billing_period_start?: string
+          campaign_id?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          platform?: string
+          spend_date?: string
+          stripe_invoice_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_spend_tracking_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ad_variants: {
         Row: {
           body_copy: string | null
@@ -236,6 +292,7 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          monthly_ad_spend_limit: number | null
           plan: string | null
           stripe_customer_id: string | null
           updated_at: string | null
@@ -246,6 +303,7 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          monthly_ad_spend_limit?: number | null
           plan?: string | null
           stripe_customer_id?: string | null
           updated_at?: string | null
@@ -256,6 +314,7 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          monthly_ad_spend_limit?: number | null
           plan?: string | null
           stripe_customer_id?: string | null
           updated_at?: string | null
