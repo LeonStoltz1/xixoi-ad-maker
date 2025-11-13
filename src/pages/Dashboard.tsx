@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut, Crown, Settings } from "lucide-react";
+import { Plus, LogOut, Crown, Settings, Home, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -77,16 +77,42 @@ export default function Dashboard() {
       {/* Header */}
       <header className="border-b border-foreground/20 bg-black">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <video 
-              src="/xiXoiLogo.mp4" 
-              autoPlay 
-              loop 
-              muted 
-              playsInline
-              className="w-12 h-12 object-contain"
-            />
-            <h1 className="text-2xl font-bold text-white">xiXoi™</h1>
+          <div className="flex items-center gap-8">
+            <div className="flex items-center gap-2">
+              <video 
+                src="/xiXoiLogo.mp4" 
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+                className="w-12 h-12 object-contain"
+              />
+              <h1 className="text-2xl font-bold text-white">xiXoi™</h1>
+            </div>
+            
+            {/* Navigation */}
+            <nav className="hidden md:flex items-center gap-6">
+              <button 
+                onClick={() => navigate("/")}
+                className="text-white/70 hover:text-white transition-colors flex items-center gap-2"
+              >
+                <Home className="w-4 h-4" />
+                Home
+              </button>
+              <button 
+                onClick={() => navigate("/dashboard")}
+                className="text-white font-medium flex items-center gap-2"
+              >
+                Campaigns
+              </button>
+              <button 
+                onClick={() => navigate("/#pricing")}
+                className="text-white/70 hover:text-white transition-colors flex items-center gap-2"
+              >
+                <CreditCard className="w-4 h-4" />
+                Pricing
+              </button>
+            </nav>
           </div>
           <div className="flex items-center gap-4">
             {/* Plan Badge */}
