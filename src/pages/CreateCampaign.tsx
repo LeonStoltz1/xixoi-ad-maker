@@ -15,6 +15,7 @@ export default function CreateCampaign() {
   const [textContent, setTextContent] = useState("");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null);
@@ -37,46 +38,78 @@ export default function CreateCampaign() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file size
-      const maxSize = uploadType === 'image' ? 5 * 1024 * 1024 : 200 * 1024 * 1024; // 5MB for images, 200MB for videos
-      if (file.size > maxSize) {
-        toast({
-          variant: "destructive",
-          title: "File too large",
-          description: `Maximum file size is ${uploadType === 'image' ? '5MB' : '200MB'}. Please choose a smaller file.`,
-        });
-        return;
-      }
+      validateAndSetFile(file);
+    }
+  };
 
-      // Validate file type
-      const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-      const validVideoTypes = ['video/mp4', 'video/quicktime'];
-      
-      if (uploadType === 'image' && !validImageTypes.includes(file.type)) {
-        toast({
-          variant: "destructive",
-          title: "Invalid file type",
-          description: "Please upload a JPG, JPEG, or PNG image.",
-        });
-        return;
-      }
+  const validateAndSetFile = (file: File) => {
+    // Validate file size
+    const maxSize = uploadType === 'image' ? 5 * 1024 * 1024 : 200 * 1024 * 1024; // 5MB for images, 200MB for videos
+    if (file.size > maxSize) {
+      toast({
+        variant: "destructive",
+        title: "File too large",
+        description: `Maximum file size is ${uploadType === 'image' ? '5MB' : '200MB'}. Please choose a smaller file.`,
+      });
+      return;
+    }
 
-      if (uploadType === 'video' && !validVideoTypes.includes(file.type)) {
-        toast({
-          variant: "destructive",
-          title: "Invalid file type",
-          description: "Please upload an MP4 or MOV video.",
-        });
-        return;
-      }
+    // Validate file type
+    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    const validVideoTypes = ['video/mp4', 'video/quicktime'];
+    
+    if (uploadType === 'image' && !validImageTypes.includes(file.type)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid file type",
+        description: "Please upload a JPG, JPEG, or PNG image.",
+      });
+      return;
+    }
 
-      setUploadedFile(file);
-      
-      // Create preview URL for images
-      if (uploadType === 'image') {
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
-      }
+    if (uploadType === 'video' && !validVideoTypes.includes(file.type)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid file type",
+        description: "Please upload an MP4 or MOV video.",
+      });
+      return;
+    }
+
+    setUploadedFile(file);
+    
+    // Create preview URL for images
+    if (uploadType === 'image') {
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      validateAndSetFile(files[0]);
     }
   };
 
@@ -246,7 +279,15 @@ export default function CreateCampaign() {
                 )}
                 <div 
                   onClick={handleUploadClick}
-                  className="border-2 border-dashed border-foreground/20 rounded-xl p-12 text-center cursor-pointer hover:border-foreground/40 transition-colors"
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragEnter={handleDragEnter}
+                  onDragLeave={handleDragLeave}
+                  className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors ${
+                    isDragging 
+                      ? 'border-foreground bg-foreground/5' 
+                      : 'border-foreground/20 hover:border-foreground/40'
+                  }`}
                 >
                   <input
                     ref={fileInputRef}
@@ -263,18 +304,20 @@ export default function CreateCampaign() {
                         className="max-h-48 mx-auto object-contain"
                       />
                       <p className="text-foreground text-sm font-medium">{uploadedFile?.name}</p>
-                      <p className="text-muted-foreground text-xs">Click to change image</p>
+                      <p className="text-muted-foreground text-xs">Click or drag to change image</p>
                     </div>
                   ) : uploadedFile ? (
                     <div className="space-y-2">
                       <Upload className="w-12 h-12 mx-auto text-foreground" />
                       <p className="text-foreground font-medium">{uploadedFile.name}</p>
-                      <p className="text-muted-foreground text-xs">Click to change file</p>
+                      <p className="text-muted-foreground text-xs">Click or drag to change file</p>
                     </div>
                   ) : (
                     <div className="space-y-2">
                       <Upload className="w-12 h-12 mx-auto text-muted-foreground" />
-                      <p className="text-muted-foreground">Click to upload {uploadType}</p>
+                      <p className="text-muted-foreground">
+                        {isDragging ? `Drop ${uploadType} here` : `Click or drag ${uploadType} to upload`}
+                      </p>
                     </div>
                   )}
                 </div>
