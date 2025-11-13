@@ -131,10 +131,10 @@ export default function CreateCampaign() {
             {/* Upload Type Selection */}
             <div className="space-y-3">
               <label className="text-sm font-medium uppercase tracking-wide">Upload Type</label>
-              <div className="flex items-center justify-center gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <button
                   onClick={() => setUploadType('image')}
-                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all flex-1 ${
+                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all ${
                     uploadType === 'image' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
                   }`}
                 >
@@ -142,11 +142,9 @@ export default function CreateCampaign() {
                   <span className="text-sm font-medium">Image</span>
                 </button>
                 
-                <Plus className="w-6 h-6 text-muted-foreground flex-shrink-0" />
-                
                 <button
                   onClick={() => setUploadType('video')}
-                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all flex-1 ${
+                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all ${
                     uploadType === 'video' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
                   }`}
                 >
@@ -154,11 +152,9 @@ export default function CreateCampaign() {
                   <span className="text-sm font-medium">Video</span>
                 </button>
                 
-                <Plus className="w-6 h-6 text-muted-foreground flex-shrink-0" />
-                
                 <button
                   onClick={() => setUploadType('text')}
-                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all flex-1 ${
+                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all ${
                     uploadType === 'text' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
                   }`}
                 >
