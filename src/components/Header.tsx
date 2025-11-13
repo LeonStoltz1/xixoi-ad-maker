@@ -17,7 +17,7 @@ export const Header = () => {
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70 z-[1]" />
       
       {/* Navigation Content */}
-      <div className="relative z-10 h-full glass-panel border-b border-border/50">
+      <div className="relative z-10 h-full border-b border-border/30">
         <div className="container mx-auto max-w-6xl px-6 h-full flex items-center">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-12">
