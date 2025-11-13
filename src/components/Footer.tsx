@@ -1,8 +1,27 @@
 const footerLinks = {
-  Product: ["Features", "Pricing", "How It Works", "FAQ"],
-  Company: ["About", "Blog", "Careers", "Contact"],
-  Legal: ["Privacy Policy", "Terms of Service", "Cookie Policy"],
-  Connect: ["Twitter", "LinkedIn", "Discord", "Support"],
+  Product: [
+    { label: "Features", href: "/#features" },
+    { label: "Pricing", href: "/#pricing" },
+    { label: "How It Works", href: "/#how-it-works" },
+    { label: "FAQ", href: "/#faq" }
+  ],
+  Company: [
+    { label: "About", href: "/#about" },
+    { label: "Blog", href: "/#blog" },
+    { label: "Careers", href: "/#careers" },
+    { label: "Contact", href: "mailto:support@xixoi.com" }
+  ],
+  Legal: [
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms of Service", href: "/terms" },
+    { label: "Delete Account", href: "/delete-account" }
+  ],
+  Connect: [
+    { label: "Twitter", href: "#" },
+    { label: "LinkedIn", href: "#" },
+    { label: "Discord", href: "#" },
+    { label: "Support", href: "mailto:support@xixoi.com" }
+  ],
 };
 
 export const Footer = () => {
@@ -32,12 +51,12 @@ export const Footer = () => {
               <h4 className="font-semibold mb-4 text-sm">{category}</h4>
               <ul className="space-y-2">
                 {links.map((link) => (
-                  <li key={link}>
+                  <li key={link.label}>
                     <a
-                      href="#"
+                      href={link.href}
                       className="text-xs opacity-70 hover:opacity-100 transition-opacity"
                     >
-                      {link}
+                      {link.label}
                     </a>
                   </li>
                 ))}
@@ -52,13 +71,13 @@ export const Footer = () => {
               © 2025 xiXoi™. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <a href="#" className="text-xs opacity-70 hover:opacity-100 transition-opacity">
+              <a href="/privacy" className="text-xs opacity-70 hover:opacity-100 transition-opacity">
                 Privacy
               </a>
-              <a href="#" className="text-xs opacity-70 hover:opacity-100 transition-opacity">
+              <a href="/terms" className="text-xs opacity-70 hover:opacity-100 transition-opacity">
                 Terms
               </a>
-              <a href="#" className="text-xs opacity-70 hover:opacity-100 transition-opacity">
+              <a href="mailto:support@xixoi.com" className="text-xs opacity-70 hover:opacity-100 transition-opacity">
                 Contact
               </a>
             </div>
