@@ -4,11 +4,7 @@ export const AIBuildsSection = () => {
   return (
     <section className="py-section px-6 bg-background">
       <div className="w-full max-w-content mx-auto text-center">
-        <div className="flex justify-center mb-arrow">
-          <ArrowDown className="w-12 h-12 md:w-16 md:h-16 stroke-[1] animate-bounce" />
-        </div>
-
-        <div className="grid grid-cols-2 gap-grid mt-arrow mb-grid">
+        <div className="grid grid-cols-2 gap-grid mb-grid">
           {/* Static Image Ad - More realistic mockup */}
           <div className="border border-foreground aspect-square flex flex-col overflow-hidden">
             <div className="flex-1 bg-foreground/5 relative">

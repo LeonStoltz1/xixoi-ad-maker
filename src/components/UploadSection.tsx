@@ -4,11 +4,7 @@ export const UploadSection = () => {
   return (
     <section id="upload-section" className="py-section px-6 bg-background">
       <div className="w-full max-w-content mx-auto text-center">
-        <div className="flex justify-center mb-arrow">
-          <ArrowDown className="w-12 h-12 md:w-16 md:h-16 stroke-[1] animate-bounce" />
-        </div>
-        
-        <div className="grid grid-cols-3 gap-8 mt-arrow mb-tight">
+        <div className="grid grid-cols-3 gap-8 mb-tight">
           <div className="flex flex-col items-center gap-3">
             <Image className="w-12 h-12 md:w-16 md:h-16 stroke-[1]" />
             <span className="text-sm">Image</span>
@@ -24,6 +20,10 @@ export const UploadSection = () => {
         </div>
         
         <p className="text-lg md:text-xl font-medium mt-tight">Upload anything.</p>
+
+        <div className="flex justify-center mt-arrow pt-arrow">
+          <ArrowDown className="w-12 h-12 md:w-16 md:h-16 stroke-[1] animate-bounce" />
+        </div>
       </div>
     </section>
   );

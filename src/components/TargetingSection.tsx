@@ -5,11 +5,7 @@ export const TargetingSection = () => {
   return (
     <section className="py-section px-6 bg-background">
       <div className="w-full max-w-content mx-auto text-center">
-        <div className="flex justify-center mb-arrow">
-          <ArrowDown className="w-12 h-12 md:w-16 md:h-16 stroke-[1] animate-bounce" />
-        </div>
-
-        <div className="border border-foreground p-8 text-left mt-arrow mb-grid">
+        <div className="border border-foreground p-8 text-left mb-grid">
           <div className="space-y-element">
             {/* Location */}
             <div className="space-y-3">

@@ -6,11 +6,7 @@ export const ChannelsSection = () => {
   return (
     <section className="py-section px-6 bg-background">
       <div className="w-full max-w-content mx-auto text-center">
-        <div className="flex justify-center mb-arrow">
-          <ArrowDown className="w-12 h-12 md:w-16 md:h-16 stroke-[1] animate-bounce" />
-        </div>
-
-        <div className="grid grid-cols-2 gap-tight mt-arrow mb-grid">
+        <div className="grid grid-cols-2 gap-tight mb-grid">
           {channels.map((channel) => (
             <div
               key={channel}
