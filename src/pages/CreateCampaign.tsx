@@ -23,6 +23,18 @@ export default function CreateCampaign() {
   const [generatedVariants, setGeneratedVariants] = useState<any[]>([]);
   const [uploadedAssetUrl, setUploadedAssetUrl] = useState<string | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
+  const [showPlatformSelection, setShowPlatformSelection] = useState(false);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<{
+    meta: { selected: boolean; budget: number };
+    tiktok: { selected: boolean; budget: number };
+    google: { selected: boolean; budget: number };
+    linkedin: { selected: boolean; budget: number };
+  }>({
+    meta: { selected: true, budget: 20 },
+    tiktok: { selected: false, budget: 20 },
+    google: { selected: false, budget: 20 },
+    linkedin: { selected: false, budget: 20 },
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -500,11 +512,123 @@ export default function CreateCampaign() {
                       return;
                     }
                     setShowPreview(false);
+                    setShowPlatformSelection(true);
+                  }}
+                  className="flex-1"
+                >
+                  Choose Platforms
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Platform Selection Modal */}
+      {showPlatformSelection && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
+          <div className="bg-background border-2 border-foreground max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-8 space-y-8">
+              <div className="space-y-2">
+                <h2 className="text-3xl font-bold">Choose Your Platforms</h2>
+                <p className="text-muted-foreground">Select platforms and set daily budget for each</p>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  { key: 'meta', name: 'Meta (Facebook & Instagram)', icon: '📘' },
+                  { key: 'tiktok', name: 'TikTok', icon: '🎵' },
+                  { key: 'google', name: 'Google Ads', icon: '🔍' },
+                  { key: 'linkedin', name: 'LinkedIn', icon: '💼' }
+                ].map(platform => (
+                  <div 
+                    key={platform.key}
+                    className={`border-2 p-6 transition-all ${
+                      selectedPlatforms[platform.key as keyof typeof selectedPlatforms].selected
+                        ? 'border-foreground bg-foreground/5'
+                        : 'border-foreground/20'
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedPlatforms[platform.key as keyof typeof selectedPlatforms].selected}
+                        onChange={(e) => {
+                          setSelectedPlatforms(prev => ({
+                            ...prev,
+                            [platform.key]: {
+                              ...prev[platform.key as keyof typeof selectedPlatforms],
+                              selected: e.target.checked
+                            }
+                          }));
+                        }}
+                        className="w-5 h-5 mt-1"
+                      />
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">{platform.icon}</span>
+                          <span className="font-bold">{platform.name}</span>
+                        </div>
+                        
+                        {selectedPlatforms[platform.key as keyof typeof selectedPlatforms].selected && (
+                          <div className="space-y-2">
+                            <label className="text-xs uppercase tracking-wide text-muted-foreground">
+                              Daily Budget (USD)
+                            </label>
+                            <div className="flex items-center gap-4">
+                              <input
+                                type="range"
+                                min="5"
+                                max="500"
+                                value={selectedPlatforms[platform.key as keyof typeof selectedPlatforms].budget}
+                                onChange={(e) => {
+                                  setSelectedPlatforms(prev => ({
+                                    ...prev,
+                                    [platform.key]: {
+                                      ...prev[platform.key as keyof typeof selectedPlatforms],
+                                      budget: parseInt(e.target.value)
+                                    }
+                                  }));
+                                }}
+                                className="flex-1"
+                              />
+                              <span className="font-bold min-w-[60px]">
+                                ${selectedPlatforms[platform.key as keyof typeof selectedPlatforms].budget}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowPlatformSelection(false)}
+                  className="flex-1"
+                >
+                  Go Back
+                </Button>
+                <Button 
+                  onClick={() => {
+                    const selectedCount = Object.values(selectedPlatforms).filter(p => p.selected).length;
+                    if (selectedCount === 0) {
+                      toast({
+                        variant: "destructive",
+                        title: "Platform Required",
+                        description: "Please select at least one platform",
+                      });
+                      return;
+                    }
+                    setShowPlatformSelection(false);
                     setShowPaymentModal(true);
                   }}
                   className="flex-1"
                 >
-                  Pay to Publish
+                  Continue to Payment
                 </Button>
               </div>
             </div>
