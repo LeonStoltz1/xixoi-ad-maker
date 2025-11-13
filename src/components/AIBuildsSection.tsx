@@ -9,33 +9,85 @@ export const AIBuildsSection = () => {
         </div>
 
         <div className="grid grid-cols-2 gap-grid mt-arrow mb-grid">
-          <div className="border border-foreground p-6 aspect-square flex flex-col justify-center items-center">
-            <div className="w-full h-16 border-t-4 border-foreground mb-3"></div>
-            <div className="space-y-1 w-full">
-              <div className="h-2 bg-foreground"></div>
+          {/* Static Image Ad - More realistic mockup */}
+          <div className="border border-foreground aspect-square flex flex-col overflow-hidden">
+            <div className="flex-1 bg-foreground/5 relative">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-20 h-20 border-4 border-foreground/20"></div>
+              </div>
+            </div>
+            <div className="p-4 space-y-2 bg-background">
+              <div className="h-3 bg-foreground w-full"></div>
+              <div className="h-3 bg-foreground w-3/4"></div>
+              <div className="mt-3 pt-3 border-t border-foreground">
+                <div className="h-8 border border-foreground flex items-center justify-center">
+                  <span className="text-xs font-bold">SHOP NOW</span>
+                </div>
+              </div>
+            </div>
+            <div className="px-4 py-2 text-center border-t border-foreground">
+              <span className="text-xs font-medium">Static Image Ad</span>
+            </div>
+          </div>
+          
+          {/* Video Frame - Play button mockup */}
+          <div className="border border-foreground aspect-square flex flex-col overflow-hidden">
+            <div className="flex-1 bg-foreground/5 relative">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-16 h-16 border-2 border-foreground rounded-full flex items-center justify-center">
+                  <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-foreground border-b-8 border-b-transparent ml-1"></div>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 space-y-2 bg-background">
+              <div className="h-3 bg-foreground w-full"></div>
+              <div className="h-3 bg-foreground w-2/3"></div>
+            </div>
+            <div className="px-4 py-2 text-center border-t border-foreground">
+              <span className="text-xs font-medium">Video Frame</span>
+            </div>
+          </div>
+          
+          {/* UGC-Style - Profile circle + content */}
+          <div className="border border-foreground aspect-square flex flex-col overflow-hidden">
+            <div className="p-3 bg-background border-b border-foreground">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 border-2 border-foreground rounded-full"></div>
+                <div className="flex-1 space-y-1">
+                  <div className="h-2 bg-foreground w-20"></div>
+                  <div className="h-2 bg-foreground/50 w-16"></div>
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 bg-foreground/5"></div>
+            <div className="p-3 bg-background space-y-2 border-t border-foreground">
+              <div className="h-2 bg-foreground w-full"></div>
               <div className="h-2 bg-foreground w-4/5"></div>
             </div>
-            <div className="mt-3 text-xs font-medium">Static Image Ad</div>
-          </div>
-          
-          <div className="border border-foreground p-6 aspect-square flex flex-col justify-center items-center">
-            <div className="w-12 h-12 border-l-2 border-foreground rounded-full animate-spin mb-3"></div>
-            <div className="text-xs font-medium">Video Frame</div>
-          </div>
-          
-          <div className="border border-foreground p-6 aspect-square flex flex-col justify-center items-center">
-            <div className="w-full h-16 border-t-4 border-foreground mb-3"></div>
-            <div className="space-y-1 w-full">
-              <div className="h-2 bg-foreground w-3/4"></div>
-              <div className="h-2 bg-foreground w-full"></div>
+            <div className="px-4 py-2 text-center border-t border-foreground">
+              <span className="text-xs font-medium">UGC-Style</span>
             </div>
-            <div className="mt-3 text-xs font-medium">UGC-Style</div>
           </div>
           
-          <div className="border border-foreground p-6 aspect-square flex flex-col justify-center items-center">
-            <TrendingUp className="w-10 h-10 mb-2 stroke-[1.5]" />
-            <p className="text-3xl font-bold">3.2×</p>
-            <p className="text-xs font-medium mt-1">ROAS</p>
+          {/* ROAS Prediction - Data visualization */}
+          <div className="border border-foreground aspect-square flex flex-col justify-center items-center p-6">
+            <TrendingUp className="w-12 h-12 mb-3 stroke-[2]" />
+            <p className="text-5xl font-bold mb-1">3.2×</p>
+            <p className="text-sm font-bold mb-4">ROAS</p>
+            <div className="w-full space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="h-1 bg-foreground w-full"></div>
+                <span className="text-xs whitespace-nowrap">High</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-1 bg-foreground w-3/4"></div>
+                <span className="text-xs whitespace-nowrap">Med</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-1 bg-foreground w-1/2"></div>
+                <span className="text-xs whitespace-nowrap">Low</span>
+              </div>
+            </div>
           </div>
         </div>
 
