@@ -13,9 +13,6 @@ export const Header = () => {
         className="absolute inset-0 w-full h-full object-cover z-0"
       />
       
-      {/* Dark Overlay for Text Readability */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70 z-[1]" />
-      
       {/* Navigation Content */}
       <div className="relative z-10 h-full border-b border-border/30">
         <div className="container mx-auto max-w-6xl px-6 h-full flex items-center">
