@@ -23,7 +23,7 @@ export const HowItWorks = () => {
     <section className="py-24 px-6 bg-secondary/30">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 font-heading">
             How It Works
           </h2>
           <p className="text-xl text-muted-foreground">
@@ -37,11 +37,11 @@ export const HowItWorks = () => {
               key={index}
               className="relative group"
             >
-              <div className="bg-card rounded-2xl p-8 border border-border hover:border-accent transition-all duration-300 hover:shadow-lg h-full">
-                <div className="bg-accent/10 w-16 h-16 rounded-xl flex items-center justify-center mb-6 group-hover:bg-accent/20 transition-colors">
+              <div className="glass-panel rounded-2xl p-8 border hover:neon-border transition-all duration-300 h-full holographic rim-light">
+                <div className="bg-accent/10 w-16 h-16 rounded-xl flex items-center justify-center mb-6 group-hover:bg-accent/20 transition-colors neon-border">
                   <step.icon className="w-8 h-8 text-accent" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3">{step.title}</h3>
+                <h3 className="text-2xl font-bold mb-3 font-heading">{step.title}</h3>
                 <p className="text-muted-foreground leading-relaxed">
                   {step.description}
                 </p>
