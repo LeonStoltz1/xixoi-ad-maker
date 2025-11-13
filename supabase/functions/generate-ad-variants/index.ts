@@ -29,9 +29,9 @@ serve(async (req) => {
 
     if (campaignError) throw campaignError;
 
-    // Get the text content from assets
-    const textAsset = campaign.campaign_assets.find((asset: any) => asset.asset_type === 'text');
-    const productDescription = textAsset?.asset_text || 'Product description';
+    // Get the text content from assets (all asset types now have description)
+    const asset = campaign.campaign_assets[0];
+    const productDescription = asset?.asset_text || 'Product description';
 
     // Use Lovable AI to generate ad variants
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');

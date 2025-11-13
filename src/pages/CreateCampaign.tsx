@@ -21,6 +21,7 @@ export default function CreateCampaign() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null);
   const [generatedVariants, setGeneratedVariants] = useState<any[]>([]);
+  const [uploadedAssetUrl, setUploadedAssetUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -142,13 +143,36 @@ export default function CreateCampaign() {
 
       if (campaignError) throw campaignError;
 
-      // Create asset
+      // Upload file if present
+      let assetUrl = null;
+      if (uploadedFile) {
+        const fileExt = uploadedFile.name.split('.').pop();
+        const fileName = `${user.id}/${campaign.id}/${Date.now()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('campaign-assets')
+          .upload(fileName, uploadedFile);
+
+        if (uploadError) {
+          console.error('File upload error:', uploadError);
+          throw uploadError;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('campaign-assets')
+          .getPublicUrl(fileName);
+        
+        assetUrl = publicUrl;
+      }
+
+      // Create asset with description and file URL
       const { error: assetError } = await supabase
         .from('campaign_assets')
         .insert({
           campaign_id: campaign.id,
           asset_type: uploadType,
-          asset_text: uploadType === 'text' ? textContent : null,
+          asset_text: textContent, // Always save description
+          asset_url: assetUrl,
         });
 
       if (assetError) throw assetError;
@@ -181,9 +205,10 @@ export default function CreateCampaign() {
 
       setCreatedCampaignId(campaign.id);
       setGeneratedVariants(variants || []);
+      setUploadedAssetUrl(assetUrl);
       setShowPreview(true);
       
-      console.log('Preview should now be showing');
+      console.log('Preview should now be showing with asset URL:', assetUrl);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -394,6 +419,17 @@ export default function CreateCampaign() {
                       <span className="text-xs font-bold uppercase tracking-wider">{variant.variant_type}</span>
                       <span className="text-xs text-muted-foreground">ROAS: {variant.predicted_roas}x</span>
                     </div>
+                    
+                    {/* Show uploaded image if available */}
+                    {uploadedAssetUrl && uploadType === 'image' && (
+                      <div className="w-full aspect-square bg-muted overflow-hidden">
+                        <img 
+                          src={uploadedAssetUrl} 
+                          alt="Campaign asset" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                     
                     <div className="bg-foreground text-background px-4 py-3">
                       <div className="text-sm font-bold">{variant.headline}</div>
