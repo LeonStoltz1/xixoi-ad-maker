@@ -21,7 +21,7 @@ export const Header = () => {
         <div className="container mx-auto max-w-6xl px-6 h-full flex items-center">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-12">
-              <a href="/" className="text-2xl font-bold font-heading flex items-center gap-2">
+              <a href="/" className="text-2xl font-bold font-heading flex items-center gap-2 text-white">
                 <video 
                   src="/xiXoiLogo.mp4" 
                   autoPlay 
@@ -33,13 +33,13 @@ export const Header = () => {
                 xiXoi™
               </a>
               <nav className="hidden md:flex gap-8">
-                <a href="#how-it-works" className="text-sm font-medium hover:text-accent transition-colors">
+                <a href="#how-it-works" className="text-sm font-medium text-white hover:text-accent transition-colors">
                   How It Works
                 </a>
-                <a href="#pricing" className="text-sm font-medium hover:text-accent transition-colors">
+                <a href="#pricing" className="text-sm font-medium text-white hover:text-accent transition-colors">
                   Pricing
                 </a>
-                <a href="#faq" className="text-sm font-medium hover:text-accent transition-colors">
+                <a href="#faq" className="text-sm font-medium text-white hover:text-accent transition-colors">
                   FAQ
                 </a>
               </nav>
