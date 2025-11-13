@@ -30,7 +30,7 @@ const App = () => (
           <Route path="/create-campaign" element={<CreateCampaign />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-canceled" element={<PaymentCanceled />} />
-          <Route path="/ad-published" element={<AdPublished />} />
+          <Route path="/ad-published/:id" element={<AdPublished />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/delete-account" element={<DeleteAccount />} />
