@@ -56,9 +56,20 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        DEFAULT: "0",
+        lg: "0",
+        md: "0",
+        sm: "0",
+        none: "0",
+      },
+      maxWidth: {
+        content: "720px",
+      },
+      spacing: {
+        section: "48px",
+        element: "24px",
+        arrow: "16px",
+        micro: "12px",
       },
       keyframes: {
         "accordion-down": {

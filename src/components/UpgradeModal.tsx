@@ -28,7 +28,7 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId }: UpgradeModalProps)
           onClick={onClose}
           className="absolute top-4 right-4 text-foreground hover:opacity-70 transition-opacity"
         >
-          <X className="w-6 h-6" />
+          <X className="w-6 h-6 stroke-[1]" />
         </button>
 
         {/* Title */}
@@ -36,7 +36,7 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId }: UpgradeModalProps)
           <h2 className="text-2xl md:text-3xl font-bold leading-tight">
             Remove the watermark. Publish instantly.
           </h2>
-          <p className="text-sm md:text-base text-foreground/80">
+          <p className="text-sm md:text-base">
             Upgrade to xiXoi™ Pro to launch this ad without the "Powered By xiXoi™" tag, and unlock full-speed publishing.
           </p>
         </div>
@@ -49,7 +49,7 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId }: UpgradeModalProps)
             className={`w-full border text-left transition-all ${
               selectedPlan === 'single'
                 ? 'border-[2px] border-foreground'
-                : 'border border-foreground/40 hover:border-foreground/70'
+                : 'border border-foreground'
             }`}
           >
             <div className="p-6">
@@ -59,7 +59,7 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId }: UpgradeModalProps)
                   <div className="text-2xl font-bold">$29 per ad set</div>
                 </div>
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-1 ${
-                  selectedPlan === 'single' ? 'border-foreground' : 'border-foreground/40'
+                  selectedPlan === 'single' ? 'border-foreground' : 'border-foreground'
                 }`}>
                   {selectedPlan === 'single' && (
                     <div className="w-3 h-3 rounded-full bg-foreground" />
@@ -81,7 +81,7 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId }: UpgradeModalProps)
             className={`w-full border text-left transition-all ${
               selectedPlan === 'unlimited'
                 ? 'border-[2px] border-foreground'
-                : 'border border-foreground/40 hover:border-foreground/70'
+                : 'border border-foreground'
             }`}
           >
             <div className="p-6">
@@ -91,7 +91,7 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId }: UpgradeModalProps)
                   <div className="text-2xl font-bold">$99/month</div>
                 </div>
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-1 ${
-                  selectedPlan === 'unlimited' ? 'border-foreground' : 'border-foreground/40'
+                  selectedPlan === 'unlimited' ? 'border-foreground' : 'border-foreground'
                 }`}>
                   {selectedPlan === 'unlimited' && (
                     <div className="w-3 h-3 rounded-full bg-foreground" />
@@ -109,7 +109,7 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId }: UpgradeModalProps)
         </div>
 
         {/* Disclaimer Text */}
-        <p className="text-xs text-center text-foreground/70 mb-6">
+        <p className="text-xs text-center mb-6 opacity-70">
           You can cancel anytime. Your ad spend is still billed by Meta/Google/TikTok.
         </p>
 
@@ -131,14 +131,14 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId }: UpgradeModalProps)
           
           <button
             onClick={onClose}
-            className="w-full text-sm text-foreground hover:opacity-70 transition-opacity py-2"
+            className="w-full text-sm hover:opacity-70 transition-opacity py-2"
           >
             Keep my ad as a draft
           </button>
         </div>
 
         {/* Trust Text */}
-        <p className="text-[11px] text-center text-foreground/60 mt-6">
+        <p className="text-[11px] text-center opacity-60 mt-6">
           Secure checkout powered by Stripe. xiXoi™ never touches your ad spend.
         </p>
       </div>

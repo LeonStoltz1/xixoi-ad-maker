@@ -2,44 +2,44 @@ import { Button } from "@/components/ui/button";
 
 export const LiveAdSection = () => {
   return (
-    <section className="flex items-center justify-center bg-background px-6 py-16">
-      <div className="container mx-auto max-w-4xl text-center space-y-12">
-        <div className="border-2 border-foreground rounded-2xl p-8 md:p-12 max-w-2xl mx-auto animate-scale-in">
+    <section className="flex items-center justify-center bg-background px-6 py-section">
+      <div className="w-full max-w-content mx-auto text-center space-y-element">
+        <div className="border border-foreground p-8 max-w-md mx-auto">
           <div className="space-y-6">
-            <div className="bg-foreground text-background p-6 rounded-lg">
-              <h3 className="text-2xl md:text-3xl font-bold">Your Product Here</h3>
+            <div className="bg-foreground text-background p-4">
+              <h3 className="text-xl font-bold">YOUR PRODUCT</h3>
             </div>
             
-            <div className="space-y-3 text-left">
-              <div className="h-3 bg-foreground/80 rounded"></div>
-              <div className="h-3 bg-foreground/60 rounded"></div>
-              <div className="h-3 bg-foreground/60 rounded w-4/5"></div>
+            <div className="space-y-2 text-left">
+              <div className="h-2 bg-foreground"></div>
+              <div className="h-2 bg-foreground w-5/6"></div>
+              <div className="h-2 bg-foreground w-4/6"></div>
             </div>
 
-            <div className="border border-foreground rounded-lg py-3 px-6 inline-block font-medium">
+            <div className="border border-foreground py-3 px-6 inline-block font-semibold text-sm">
               SHOP NOW
             </div>
 
-            <div className="text-right text-sm opacity-50 pt-4">
+            <div className="text-right text-[11px] opacity-70 pt-4">
               Powered By xiXoi™
             </div>
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <p className="text-2xl md:text-3xl font-bold">
             Your ad is live.
           </p>
-          <p className="text-lg md:text-xl text-muted-foreground">
+          <p className="text-base">
             Start free. It takes under 60 seconds.
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
-          <Button size="lg" className="text-lg px-8 py-6 w-full sm:w-auto" onClick={() => window.location.href = '/auth'}>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <Button size="lg" className="text-base px-8 py-3 w-full sm:w-auto" onClick={() => window.location.href = '/auth'}>
             Start Free
           </Button>
-          <Button variant="outline" size="lg" className="text-lg px-8 py-6 w-full sm:w-auto" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <Button variant="outline" size="lg" className="text-base px-8 py-3 w-full sm:w-auto border-foreground" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             How It Works
           </Button>
         </div>

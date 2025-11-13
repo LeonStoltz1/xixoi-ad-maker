@@ -2,44 +2,48 @@ import { TrendingUp, ArrowDown } from "lucide-react";
 
 export const AIBuildsSection = () => {
   return (
-    <section className="flex items-center justify-center bg-background px-6 py-16">
-      <div className="container mx-auto max-w-6xl text-center space-y-12">
-        <div className="w-32 h-32 md:w-40 md:h-40 mx-auto mb-12 flex items-center justify-center">
+    <section className="flex items-center justify-center bg-background px-6 py-section">
+      <div className="w-full max-w-content mx-auto text-center space-y-element">
+        <div className="flex justify-center pt-arrow pb-arrow">
           <ArrowDown className="w-12 h-12 md:w-16 md:h-16 animate-bounce" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="border border-foreground rounded-xl p-6 animate-fade-in">
-            <div className="aspect-square bg-foreground/5 rounded-lg mb-4"></div>
-            <p className="text-sm font-medium">Static Image Ad</p>
-          </div>
-          
-          <div className="border border-foreground rounded-xl p-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            <div className="aspect-square bg-foreground/5 rounded-lg mb-4 relative">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-12 h-12 border-l-2 border-foreground rounded-full animate-spin"></div>
-              </div>
+        <div className="grid grid-cols-2 gap-element">
+          <div className="border border-foreground p-6 aspect-square flex flex-col justify-center items-center">
+            <div className="w-full h-24 border-t-4 border-foreground mb-4"></div>
+            <div className="space-y-2 w-full">
+              <div className="h-2 bg-foreground"></div>
+              <div className="h-2 bg-foreground w-4/5"></div>
             </div>
-            <p className="text-sm font-medium">Video Frame</p>
+            <div className="mt-4 text-xs font-medium">Static Image Ad</div>
           </div>
           
-          <div className="border border-foreground rounded-xl p-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <div className="aspect-square bg-foreground/5 rounded-lg mb-4"></div>
-            <p className="text-sm font-medium">UGC-Style Frame</p>
+          <div className="border border-foreground p-6 aspect-square flex flex-col justify-center items-center">
+            <div className="w-16 h-16 border-l-2 border-foreground rounded-full animate-spin mb-4"></div>
+            <div className="text-xs font-medium">Video Frame</div>
           </div>
           
-          <div className="border border-foreground rounded-xl p-6 animate-fade-in flex flex-col justify-center" style={{ animationDelay: '0.3s' }}>
-            <TrendingUp className="w-12 h-12 mx-auto mb-4" />
-            <p className="text-2xl font-bold mb-2">3.2×</p>
-            <p className="text-sm font-medium">Predicted ROAS</p>
+          <div className="border border-foreground p-6 aspect-square flex flex-col justify-center items-center">
+            <div className="w-full h-24 border-t-4 border-foreground mb-4"></div>
+            <div className="space-y-2 w-full">
+              <div className="h-2 bg-foreground w-3/4"></div>
+              <div className="h-2 bg-foreground w-full"></div>
+            </div>
+            <div className="mt-4 text-xs font-medium">UGC-Style Frame</div>
+          </div>
+          
+          <div className="border border-foreground p-6 aspect-square flex flex-col justify-center items-center">
+            <TrendingUp className="w-12 h-12 mb-2 stroke-[1.5]" />
+            <p className="text-3xl font-bold">3.2×</p>
+            <p className="text-xs font-medium mt-1">ROAS</p>
           </div>
         </div>
 
-        <p className="text-xl md:text-2xl font-medium max-w-3xl mx-auto">
+        <p className="text-lg md:text-xl font-medium">
           xiXoi™ builds intelligent ad variants automatically.
         </p>
 
-        <div className="flex justify-center pt-8">
+        <div className="flex justify-center pt-arrow">
           <ArrowDown className="w-12 h-12 md:w-16 md:h-16 animate-bounce" />
         </div>
       </div>

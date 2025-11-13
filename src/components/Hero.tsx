@@ -7,27 +7,27 @@ export const Hero = () => {
   };
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center bg-background px-6 pt-20 pb-8">
-      <div className="container mx-auto max-w-4xl text-center space-y-8">
-        <div className="space-y-6">
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight font-heading">
+    <section className="min-h-screen flex items-center justify-center bg-background px-6">
+      <div className="w-full max-w-content mx-auto text-center space-y-element">
+        <div className="space-y-element">
+          <h1 className="text-4xl md:text-6xl font-bold leading-tight font-heading">
             Your Ad.<br />Already Done.
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl">
             Upload once. xiXoi™ handles everything.
           </p>
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
-          <Button size="lg" className="text-lg px-8 py-6 w-full sm:w-auto" onClick={() => window.location.href = '/auth'}>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <Button size="lg" className="text-base px-8 py-3 w-full sm:w-auto" onClick={() => window.location.href = '/auth'}>
             Start Free
           </Button>
-          <Button variant="outline" size="lg" className="text-lg px-8 py-6 w-full sm:w-auto" onClick={scrollToUpload}>
+          <Button variant="outline" size="lg" className="text-base px-8 py-3 w-full sm:w-auto border-foreground" onClick={scrollToUpload}>
             How It Works
           </Button>
         </div>
 
-        <div className="flex justify-center pt-8">
+        <div className="flex justify-center pt-arrow">
           <button 
             onClick={scrollToUpload}
             className="animate-bounce"

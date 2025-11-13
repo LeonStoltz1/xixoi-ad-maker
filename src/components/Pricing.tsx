@@ -74,7 +74,6 @@ export const Pricing = () => {
     if (planName === "FREE") {
       navigate('/auth');
     } else if (planName === "PUBLISH PRO") {
-      // Redirect to auth page with plan parameter
       navigate('/auth?plan=pro');
     } else if (planName === "SCALE ELITE") {
       navigate('/auth?plan=elite');
@@ -84,41 +83,41 @@ export const Pricing = () => {
   };
 
   return (
-    <section className="py-24 px-6 bg-background">
-      <div className="container mx-auto max-w-7xl">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 font-heading">
+    <section className="py-section px-6 bg-background">
+      <div className="w-full max-w-5xl mx-auto">
+        <div className="text-center mb-element space-y-3">
+          <h2 className="text-3xl md:text-4xl font-bold font-heading">
             Simple Pricing
           </h2>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-base">
             Pure simplicity. No clutter. No noise.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-element">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`border-2 ${
-                plan.popular ? 'border-foreground' : 'border-foreground/30'
-              } rounded-2xl p-8 transition-all hover:border-foreground`}
+              className={`border ${
+                plan.popular ? 'border-[2px] border-foreground' : 'border border-foreground'
+              } p-6`}
             >
-              <div className="mb-6">
-                <h3 className="text-lg font-bold uppercase tracking-wide mb-4">{plan.name}</h3>
+              <div className="mb-6 space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wide">{plan.name}</h3>
                 <div className="space-y-1">
-                  <div className="text-4xl font-bold">{plan.price}</div>
+                  <div className="text-3xl font-bold">{plan.price}</div>
                   {plan.subtitle && (
-                    <p className="text-sm text-muted-foreground">{plan.subtitle}</p>
+                    <p className="text-xs">{plan.subtitle}</p>
                   )}
                   {plan.altPrice && (
-                    <p className="text-sm font-medium">or {plan.altPrice}</p>
+                    <p className="text-xs font-medium">or {plan.altPrice}</p>
                   )}
                 </div>
               </div>
 
               <Button
                 variant={plan.popular ? "default" : "outline"}
-                className="w-full mb-6"
+                className={`w-full mb-6 text-sm ${!plan.popular ? 'border-foreground' : ''}`}
                 size="lg"
                 onClick={() => handlePlanClick(plan.name)}
                 disabled={loading}
@@ -126,14 +125,12 @@ export const Pricing = () => {
                 {loading ? "Processing..." : `${plan.cta} →`}
               </Button>
 
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {plan.features.map((feature, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm leading-relaxed whitespace-pre-line">
-                      {feature.includes('/LinkedIn') 
-                        ? feature.replace('/LinkedIn', '/\nLinkedIn')
-                        : feature}
+                  <div key={index} className="flex items-start gap-2">
+                    <Check className="w-4 h-4 mt-0.5 flex-shrink-0 stroke-[1.5]" />
+                    <span className="text-xs leading-relaxed">
+                      {feature}
                     </span>
                   </div>
                 ))}

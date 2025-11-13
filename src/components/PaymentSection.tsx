@@ -1,84 +1,41 @@
 import { Button } from "@/components/ui/button";
-import { Check, ArrowDown } from "lucide-react";
-import { useState } from "react";
-import { useStripeCheckout } from "@/hooks/useStripeCheckout";
-import { EmbeddedCheckout } from "./EmbeddedCheckout";
+import { ArrowDown } from "lucide-react";
 
-interface PaymentSectionProps {
-  campaignId?: string;
-}
-
-export const PaymentSection = ({ campaignId }: PaymentSectionProps) => {
-  const [isPaid, setIsPaid] = useState(false);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const { createCheckoutSession, loading } = useStripeCheckout();
-
-  const handlePayment = async () => {
-    const priceType = campaignId ? 'branding_removal' : 'pro_subscription';
-    const result = await createCheckoutSession(priceType, campaignId, true);
-    if (result?.clientSecret) {
-      setClientSecret(result.clientSecret);
-    }
-  };
-
-  const handlePaymentSuccess = () => {
-    setIsPaid(true);
-    setClientSecret(null);
-  };
-
-  if (clientSecret) {
-    return (
-      <section className="flex items-center justify-center bg-background px-6 py-16">
-        <div className="container mx-auto max-w-md">
-          <EmbeddedCheckout
-            clientSecret={clientSecret}
-            amount="$5"
-            description="Remove watermark from your campaign"
-            onSuccess={handlePaymentSuccess}
-          />
-        </div>
-      </section>
-    );
-  }
-
+export const PaymentSection = () => {
   return (
-    <section className="flex items-center justify-center bg-background px-6 py-16">
-      <div className="container mx-auto max-w-md text-center space-y-12">
-        <div className="border border-foreground rounded-2xl p-8 space-y-6">
-          <div className="space-y-4">
-            <h3 className="text-2xl font-bold">Remove Watermark (Optional)</h3>
-            <p className="text-muted-foreground">
-              Publish your ads without the &quot;Powered By xiXoi™&quot; watermark
-            </p>
-            <p className="text-sm text-muted-foreground">
+    <section className="flex items-center justify-center bg-background px-6 py-section">
+      <div className="w-full max-w-content mx-auto text-center space-y-element">
+        <div className="flex justify-center pt-arrow pb-arrow">
+          <ArrowDown className="w-12 h-12 md:w-16 md:h-16 animate-bounce" />
+        </div>
+
+        <div className="border border-foreground p-8 space-y-element">
+          <div className="space-y-3">
+            <h3 className="text-xl md:text-2xl font-bold">Remove Watermark (Optional)</h3>
+            <p className="text-sm">
               Free users keep the watermark. Pay once to remove it for this campaign.
             </p>
-            <div className="text-4xl font-bold">$5</div>
-            <p className="text-sm text-muted-foreground">One-time payment per campaign</p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-semibold">PUBLISH PRO — $29 per ad set</p>
+            <p className="text-xs">or $99/mo unlimited</p>
           </div>
 
           <Button 
             size="lg" 
-            className="w-full text-lg py-6"
-            onClick={handlePayment}
-            disabled={loading || isPaid}
+            className="w-full text-base py-3"
+            onClick={() => window.location.href = '/auth?plan=pro'}
           >
-            {loading ? "Processing..." : isPaid ? "Payment Confirmed" : "Continue to Payment"}
+            Continue to Payment →
           </Button>
-
-          {isPaid && (
-            <div className="flex items-center justify-center gap-2 text-foreground animate-fade-in">
-              <Check className="w-6 h-6" />
-              <span className="font-medium">Payment Confirmed</span>
-            </div>
-          )}
         </div>
 
-        <p className="text-xl md:text-2xl font-medium">
+        <p className="text-lg md:text-xl font-medium">
           Publish without the watermark. Instant activation.
         </p>
 
-        <div className="flex justify-center pt-8">
+        <div className="flex justify-center pt-arrow">
           <ArrowDown className="w-12 h-12 md:w-16 md:h-16 animate-bounce" />
         </div>
       </div>

@@ -20,11 +20,11 @@ All colors MUST be HSL.
     --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 98%;
+    --secondary: 0 0% 100%;
     --secondary-foreground: 0 0% 0%;
 
-    --muted: 0 0% 95%;
-    --muted-foreground: 0 0% 20%;
+    --muted: 0 0% 100%;
+    --muted-foreground: 0 0% 0%;
 
     --accent: 0 0% 0%;
     --accent-foreground: 0 0% 100%;
@@ -32,13 +32,19 @@ All colors MUST be HSL.
     --destructive: 0 0% 0%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 85%;
-    --input: 0 0% 90%;
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
     --ring: 0 0% 0%;
 
-    --radius: 0.75rem;
+    --radius: 0rem;
 
-    /* Minimal effects for animations */
+    /* xiXoi™ spacing system */
+    --spacing-section: 48px;
+    --spacing-element: 24px;
+    --spacing-arrow: 16px;
+    --spacing-micro: 12px;
+    
+    --max-width-content: 720px;
     --transition-smooth: all 0.3s ease;
   }
 
@@ -46,20 +52,20 @@ All colors MUST be HSL.
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
 
-    --card: 0 0% 5%;
+    --card: 0 0% 0%;
     --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 5%;
+    --popover: 0 0% 0%;
     --popover-foreground: 0 0% 100%;
 
     --primary: 0 0% 100%;
     --primary-foreground: 0 0% 0%;
 
-    --secondary: 0 0% 5%;
+    --secondary: 0 0% 0%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 8%;
-    --muted-foreground: 0 0% 80%;
+    --muted: 0 0% 0%;
+    --muted-foreground: 0 0% 100%;
 
     --accent: 0 0% 100%;
     --accent-foreground: 0 0% 0%;
@@ -67,8 +73,8 @@ All colors MUST be HSL.
     --destructive: 0 0% 100%;
     --destructive-foreground: 0 0% 0%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 15%;
+    --border: 0 0% 100%;
+    --input: 0 0% 100%;
     --ring: 0 0% 100%;
   }
 }

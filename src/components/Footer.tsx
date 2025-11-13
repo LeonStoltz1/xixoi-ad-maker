@@ -7,8 +7,8 @@ const footerLinks = {
 
 export const Footer = () => {
   return (
-    <footer className="bg-primary text-primary-foreground py-16 px-6">
-      <div className="container mx-auto max-w-6xl">
+    <footer className="bg-foreground text-background py-16 px-6 border-t border-foreground">
+      <div className="w-full max-w-6xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
@@ -20,22 +20,22 @@ export const Footer = () => {
                 playsInline
                 className="w-12 h-12 object-contain"
               />
-              <h3 className="text-3xl font-bold">xiXoi™</h3>
+              <h3 className="text-2xl font-bold">xiXoi™</h3>
             </div>
-            <p className="text-primary-foreground/70 text-sm">
+            <p className="text-sm opacity-70">
               Instant Ads for Everyone.
             </p>
           </div>
           
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h4 className="font-semibold mb-4">{category}</h4>
+              <h4 className="font-semibold mb-4 text-sm">{category}</h4>
               <ul className="space-y-2">
                 {links.map((link) => (
                   <li key={link}>
                     <a
                       href="#"
-                      className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+                      className="text-xs opacity-70 hover:opacity-100 transition-opacity"
                     >
                       {link}
                     </a>
@@ -46,19 +46,19 @@ export const Footer = () => {
           ))}
         </div>
 
-        <div className="pt-8 border-t border-primary-foreground/10">
+        <div className="pt-8 border-t border-background/20">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-primary-foreground/70">
+            <p className="text-xs opacity-70">
               © 2025 xiXoi™. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+              <a href="#" className="text-xs opacity-70 hover:opacity-100 transition-opacity">
                 Privacy
               </a>
-              <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+              <a href="#" className="text-xs opacity-70 hover:opacity-100 transition-opacity">
                 Terms
               </a>
-              <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+              <a href="#" className="text-xs opacity-70 hover:opacity-100 transition-opacity">
                 Contact
               </a>
             </div>
