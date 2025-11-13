@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Upload, Image, Video, FileText } from "lucide-react";
+import { ArrowLeft, Upload, Image, Video, FileText, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function CreateCampaign() {
@@ -13,6 +13,7 @@ export default function CreateCampaign() {
   const [campaignName, setCampaignName] = useState("");
   const [uploadType, setUploadType] = useState<'image' | 'video' | 'text'>('text');
   const [textContent, setTextContent] = useState("");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -130,28 +131,34 @@ export default function CreateCampaign() {
             {/* Upload Type Selection */}
             <div className="space-y-3">
               <label className="text-sm font-medium uppercase tracking-wide">Upload Type</label>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="flex items-center justify-center gap-3">
                 <button
                   onClick={() => setUploadType('image')}
-                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all ${
+                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all flex-1 ${
                     uploadType === 'image' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
                   }`}
                 >
                   <Image className="w-8 h-8" />
                   <span className="text-sm font-medium">Image</span>
                 </button>
+                
+                <Plus className="w-6 h-6 text-muted-foreground flex-shrink-0" />
+                
                 <button
                   onClick={() => setUploadType('video')}
-                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all ${
+                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all flex-1 ${
                     uploadType === 'video' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
                   }`}
                 >
                   <Video className="w-8 h-8" />
                   <span className="text-sm font-medium">Video</span>
                 </button>
+                
+                <Plus className="w-6 h-6 text-muted-foreground flex-shrink-0" />
+                
                 <button
                   onClick={() => setUploadType('text')}
-                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all ${
+                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all flex-1 ${
                     uploadType === 'text' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
                   }`}
                 >
@@ -175,9 +182,27 @@ export default function CreateCampaign() {
             )}
 
             {(uploadType === 'image' || uploadType === 'video') && (
-              <div className="border-2 border-dashed border-foreground/20 rounded-xl p-12 text-center">
-                <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">File upload coming soon</p>
+              <div className="space-y-2">
+                <label className="text-sm font-medium uppercase tracking-wide">
+                  Upload {uploadType === 'image' ? 'Image' : 'Video'}
+                </label>
+                <div className="border-2 border-dashed border-foreground/20 rounded-xl p-12 text-center">
+                  <input
+                    type="file"
+                    accept={uploadType === 'image' ? 'image/*' : 'video/*'}
+                    onChange={(e) => setUploadedFile(e.target.files?.[0] || null)}
+                    className="hidden"
+                    id="file-upload"
+                  />
+                  <label htmlFor="file-upload" className="cursor-pointer">
+                    <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                    {uploadedFile ? (
+                      <p className="text-foreground font-medium">{uploadedFile.name}</p>
+                    ) : (
+                      <p className="text-muted-foreground">Click to upload {uploadType}</p>
+                    )}
+                  </label>
+                </div>
               </div>
             )}
 
@@ -185,7 +210,7 @@ export default function CreateCampaign() {
               size="lg" 
               className="w-full" 
               onClick={handleCreateCampaign}
-              disabled={loading || (uploadType === 'text' && !textContent)}
+              disabled={loading || (uploadType === 'text' && !textContent) || ((uploadType === 'image' || uploadType === 'video') && !uploadedFile)}
             >
               {loading ? "Creating..." : "Create Campaign"}
             </Button>
