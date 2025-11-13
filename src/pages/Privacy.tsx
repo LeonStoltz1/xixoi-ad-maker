@@ -108,6 +108,7 @@ const Privacy = () => {
             <p className="mt-4">
               <strong>Email:</strong> privacy@xixoi.com<br />
               <strong>Company:</strong> STOLTZ ONE LLC<br />
+              <strong>Location:</strong> Georgia, USA<br />
               <strong>Product:</strong> xiXoi™ (a product of STOLTZ ONE LLC)
             </p>
           </div>

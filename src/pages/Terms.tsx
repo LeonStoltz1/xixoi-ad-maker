@@ -146,7 +146,7 @@ const Terms = () => {
 
           <div>
             <h2 className="text-2xl font-semibold mb-4">14. Governing Law</h2>
-            <p>These Terms are governed by the laws of [Your Jurisdiction]. Disputes resolved via binding arbitration in [Your Jurisdiction].</p>
+            <p>These Terms are governed by the laws of the State of Georgia, United States. Disputes resolved via binding arbitration in Georgia, USA.</p>
           </div>
 
           <div>
@@ -160,6 +160,7 @@ const Terms = () => {
             <p className="mt-4">
               <strong>Email:</strong> legal@xixoi.com<br />
               <strong>Company:</strong> STOLTZ ONE LLC<br />
+              <strong>Location:</strong> Georgia, USA<br />
               <strong>Product:</strong> xiXoi™ (a product of STOLTZ ONE LLC)
             </p>
           </div>

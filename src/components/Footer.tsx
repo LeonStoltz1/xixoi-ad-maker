@@ -72,7 +72,7 @@ export const Footer = () => {
                 © 2025 xiXoi™. All rights reserved.
               </p>
               <p className="text-xs opacity-60 mt-1">
-                A product of STOLTZ ONE LLC
+                A product of STOLTZ ONE LLC (Georgia, USA)
               </p>
             </div>
             <div className="flex gap-6">
