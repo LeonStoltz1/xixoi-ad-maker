@@ -3,14 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut } from "lucide-react";
+import { Plus, LogOut, Crown, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userPlan, setUserPlan] = useState<string>('free');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { openCustomerPortal } = useStripeCheckout();
 
   useEffect(() => {
     // Check authentication
@@ -23,6 +26,18 @@ export default function Dashboard() {
       }
 
       setUser(session.user);
+
+      // Fetch user profile to get plan
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profile) {
+        setUserPlan(profile.plan || 'free');
+      }
+
       setLoading(false);
     };
 
@@ -72,10 +87,42 @@ export default function Dashboard() {
             />
             <h1 className="text-2xl font-bold text-white">xiXoi™</h1>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-white hover:text-white hover:bg-white/10">
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-4">
+            {/* Plan Badge */}
+            <div className={`px-4 py-2 rounded-full border ${
+              userPlan === 'pro' 
+                ? 'bg-white/10 border-white/30 text-white' 
+                : 'bg-white/5 border-white/20 text-white/70'
+            } flex items-center gap-2`}>
+              {userPlan === 'pro' && <Crown className="w-4 h-4" />}
+              <span className="text-sm font-medium uppercase">
+                {userPlan === 'pro' ? 'Pro' : 'Free'}
+              </span>
+            </div>
+            
+            {/* Manage Subscription Button for Pro users */}
+            {userPlan === 'pro' && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={openCustomerPortal}
+                className="text-white hover:text-white hover:bg-white/10"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Manage
+              </Button>
+            )}
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleSignOut} 
+              className="text-white hover:text-white hover:bg-white/10"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 

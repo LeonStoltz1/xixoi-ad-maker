@@ -136,6 +136,7 @@ export type Database = {
           id: string
           name: string
           status: string | null
+          stripe_payment_id: string | null
           target_audience: string | null
           target_location: string | null
           updated_at: string | null
@@ -148,6 +149,7 @@ export type Database = {
           id?: string
           name: string
           status?: string | null
+          stripe_payment_id?: string | null
           target_audience?: string | null
           target_location?: string | null
           updated_at?: string | null
@@ -160,6 +162,7 @@ export type Database = {
           id?: string
           name?: string
           status?: string | null
+          stripe_payment_id?: string | null
           target_audience?: string | null
           target_location?: string | null
           updated_at?: string | null
@@ -175,6 +178,57 @@ export type Database = {
           },
         ]
       }
+      payment_transactions: {
+        Row: {
+          amount: number
+          campaign_id: string | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          payment_type: string
+          status: string
+          stripe_payment_intent_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          campaign_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          payment_type: string
+          status: string
+          stripe_payment_intent_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          campaign_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          payment_type?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -183,6 +237,7 @@ export type Database = {
           full_name: string | null
           id: string
           plan: string | null
+          stripe_customer_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -192,6 +247,7 @@ export type Database = {
           full_name?: string | null
           id: string
           plan?: string | null
+          stripe_customer_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -201,9 +257,92 @@ export type Database = {
           full_name?: string | null
           id?: string
           plan?: string | null
+          stripe_customer_id?: string | null
           updated_at?: string | null
         }
         Relationships: []
+      }
+      stripe_customers: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          stripe_customer_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          stripe_customer_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          stripe_customer_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_customers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan_type: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_type?: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_type?: string
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

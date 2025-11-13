@@ -1,48 +1,46 @@
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { useState } from "react";
+import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 
-export const PaymentSection = () => {
+interface PaymentSectionProps {
+  campaignId?: string;
+}
+
+export const PaymentSection = ({ campaignId }: PaymentSectionProps) => {
   const [isPaid, setIsPaid] = useState(false);
+  const { createCheckoutSession, loading } = useStripeCheckout();
+
+  const handlePayment = async () => {
+    if (!campaignId) {
+      // If no campaign ID, assume they want Pro subscription
+      await createCheckoutSession('pro_subscription');
+    } else {
+      // If campaign ID provided, it's for branding removal
+      await createCheckoutSession('branding_removal', campaignId);
+    }
+  };
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-background px-6 py-24">
       <div className="container mx-auto max-w-md text-center space-y-16">
         <div className="border border-foreground rounded-2xl p-8 space-y-6">
-          <div className="space-y-3">
-            <label className="text-sm font-medium uppercase tracking-wide block text-left">Card Number</label>
-            <input 
-              type="text" 
-              placeholder="1234 5678 9012 3456"
-              className="w-full px-4 py-3 border border-foreground rounded-lg bg-background"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <label className="text-sm font-medium uppercase tracking-wide block text-left">Expiry</label>
-              <input 
-                type="text" 
-                placeholder="MM/YY"
-                className="w-full px-4 py-3 border border-foreground rounded-lg bg-background"
-              />
-            </div>
-            <div className="space-y-3">
-              <label className="text-sm font-medium uppercase tracking-wide block text-left">CVC</label>
-              <input 
-                type="text" 
-                placeholder="123"
-                className="w-full px-4 py-3 border border-foreground rounded-lg bg-background"
-              />
-            </div>
+          <div className="space-y-4">
+            <h3 className="text-2xl font-bold">Remove Watermark</h3>
+            <p className="text-muted-foreground">
+              Publish your ads without the "Powered By xiXoi™" watermark
+            </p>
+            <div className="text-4xl font-bold">$29</div>
+            <p className="text-sm text-muted-foreground">One-time payment per campaign</p>
           </div>
 
           <Button 
             size="lg" 
             className="w-full text-lg py-6"
-            onClick={() => setIsPaid(true)}
+            onClick={handlePayment}
+            disabled={loading || isPaid}
           >
-            Confirm & Pay $29
+            {loading ? "Processing..." : isPaid ? "Payment Confirmed" : "Confirm & Pay $29"}
           </Button>
 
           {isPaid && (

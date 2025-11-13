@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
+import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import { useNavigate } from "react-router-dom";
 
 const plans = [
   {
@@ -65,6 +67,20 @@ const plans = [
 ];
 
 export const Pricing = () => {
+  const { createCheckoutSession, loading } = useStripeCheckout();
+  const navigate = useNavigate();
+
+  const handlePlanClick = (planName: string) => {
+    if (planName === "FREE") {
+      navigate('/auth');
+    } else if (planName === "PUBLISH PRO") {
+      createCheckoutSession('pro_subscription');
+    } else if (planName === "SCALE ELITE" || planName === "AGENCY WHITE-LABEL") {
+      // Contact sales - could open a modal or redirect
+      window.location.href = 'mailto:sales@xixoi.com';
+    }
+  };
+
   return (
     <section className="py-24 px-6 bg-background">
       <div className="container mx-auto max-w-7xl">
@@ -102,8 +118,10 @@ export const Pricing = () => {
                 variant={plan.popular ? "default" : "outline"}
                 className="w-full mb-6"
                 size="lg"
+                onClick={() => handlePlanClick(plan.name)}
+                disabled={loading}
               >
-                {plan.cta} →
+                {loading ? "Processing..." : `${plan.cta} →`}
               </Button>
 
               <div className="space-y-3">
