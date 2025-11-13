@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { useState } from "react";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import { EmbeddedCheckout } from "./EmbeddedCheckout";
 
 interface PaymentSectionProps {
   campaignId?: string;
@@ -9,17 +10,36 @@ interface PaymentSectionProps {
 
 export const PaymentSection = ({ campaignId }: PaymentSectionProps) => {
   const [isPaid, setIsPaid] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
   const { createCheckoutSession, loading } = useStripeCheckout();
 
   const handlePayment = async () => {
-    if (!campaignId) {
-      // If no campaign ID, assume they want Pro subscription
-      await createCheckoutSession('pro_subscription');
-    } else {
-      // If campaign ID provided, it's for branding removal
-      await createCheckoutSession('branding_removal', campaignId);
+    const priceType = campaignId ? 'branding_removal' : 'pro_subscription';
+    const result = await createCheckoutSession(priceType, campaignId, true);
+    if (result?.clientSecret) {
+      setClientSecret(result.clientSecret);
     }
   };
+
+  const handlePaymentSuccess = () => {
+    setIsPaid(true);
+    setClientSecret(null);
+  };
+
+  if (clientSecret) {
+    return (
+      <section className="min-h-screen flex items-center justify-center bg-background px-6 py-24">
+        <div className="container mx-auto max-w-md">
+          <EmbeddedCheckout
+            clientSecret={clientSecret}
+            amount="$5"
+            description="Remove watermark from your campaign"
+            onSuccess={handlePaymentSuccess}
+          />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-background px-6 py-24">
@@ -40,7 +60,7 @@ export const PaymentSection = ({ campaignId }: PaymentSectionProps) => {
             onClick={handlePayment}
             disabled={loading || isPaid}
           >
-            {loading ? "Processing..." : isPaid ? "Payment Confirmed" : "Confirm & Pay $5"}
+            {loading ? "Processing..." : isPaid ? "Payment Confirmed" : "Continue to Payment"}
           </Button>
 
           {isPaid && (

@@ -13,8 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    const { priceType, campaignId } = await req.json();
-    console.log('Creating checkout session:', { priceType, campaignId });
+    const { priceType, campaignId, useEmbedded } = await req.json();
+    console.log('Creating checkout session:', { priceType, campaignId, useEmbedded });
 
     // Initialize Stripe
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
@@ -29,19 +29,17 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization')!;
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: {
-        headers: { Authorization: authHeader },
-      },
-    });
+    const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
     if (userError || !user) {
       throw new Error('User not authenticated');
     }
 
     // Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('email, stripe_customer_id')
       .eq('id', user.id)
@@ -52,29 +50,29 @@ serve(async (req) => {
     }
 
     // Get or create Stripe customer
-    let customerId = profile.stripe_customer_id;
-    
-    if (!customerId) {
-      const customer = await stripe.customers.create({
+    let customer;
+    if (profile.stripe_customer_id) {
+      customer = await stripe.customers.retrieve(profile.stripe_customer_id);
+    } else {
+      customer = await stripe.customers.create({
         email: profile.email,
         metadata: {
           supabase_user_id: user.id,
         },
       });
-      customerId = customer.id;
 
       // Update profile with Stripe customer ID
-      await supabase
+      await supabaseAdmin
         .from('profiles')
-        .update({ stripe_customer_id: customerId })
+        .update({ stripe_customer_id: customer.id })
         .eq('id', user.id);
 
       // Store in stripe_customers table
-      await supabase
+      await supabaseAdmin
         .from('stripe_customers')
         .insert({
           user_id: user.id,
-          stripe_customer_id: customerId,
+          stripe_customer_id: customer.id,
           email: profile.email,
         });
     }
@@ -109,9 +107,38 @@ serve(async (req) => {
       throw new Error(`Price ID not configured for ${priceType}`);
     }
 
-    // Create checkout session
+    // Create payment intent for embedded checkout or session for hosted checkout
+    if (useEmbedded) {
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: mode === 'payment' ? 500 : 9900, // $5 or $99 based on type
+        currency: 'usd',
+        customer: customer.id,
+        metadata: {
+          priceType,
+          campaignId: campaignId || '',
+          userId: user.id,
+        },
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+
+      console.log('Payment intent created:', paymentIntent.id);
+
+      return new Response(
+        JSON.stringify({ 
+          clientSecret: paymentIntent.client_secret,
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
+    }
+
+    // Create checkout session for redirect flow
     const session = await stripe.checkout.sessions.create({
-      customer: customerId,
+      customer: customer.id,
       mode,
       line_items: [
         {
