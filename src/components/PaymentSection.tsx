@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 
 export const PaymentSection = () => {
@@ -19,13 +18,9 @@ export const PaymentSection = () => {
               <p className="text-xs">or $99/mo unlimited</p>
             </div>
 
-            <Button 
-              size="lg" 
-              className="w-full text-sm py-3"
-              onClick={() => window.location.href = '/auth?plan=pro'}
-            >
+            <div className="border border-foreground py-3 px-6 text-sm font-bold">
               Continue to Payment →
-            </Button>
+            </div>
           </div>
         </div>
 
