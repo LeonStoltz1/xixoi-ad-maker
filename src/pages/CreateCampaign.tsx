@@ -22,6 +22,7 @@ export default function CreateCampaign() {
   const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null);
   const [generatedVariants, setGeneratedVariants] = useState<any[]>([]);
   const [uploadedAssetUrl, setUploadedAssetUrl] = useState<string | null>(null);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -206,6 +207,10 @@ export default function CreateCampaign() {
       setCreatedCampaignId(campaign.id);
       setGeneratedVariants(variants || []);
       setUploadedAssetUrl(assetUrl);
+      // Auto-select first variant for free users (they have no choice)
+      if (variants && variants.length === 1) {
+        setSelectedVariantId(variants[0].id);
+      }
       setShowPreview(true);
       
       console.log('Preview should now be showing with asset URL:', assetUrl);
@@ -409,15 +414,41 @@ export default function CreateCampaign() {
             <div className="p-8 space-y-8">
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold">Here's what xiXoi™ created</h2>
-                <p className="text-muted-foreground">AI generated {generatedVariants.length} platform-optimized variants for your campaign</p>
+                <p className="text-muted-foreground">
+                  {generatedVariants.length === 1 
+                    ? "AI generated 1 platform-optimized variant (free tier)" 
+                    : `AI generated ${generatedVariants.length} platform-optimized variants`}
+                </p>
+                {generatedVariants.length > 1 && (
+                  <p className="text-xs text-muted-foreground">Select one variant to publish</p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {generatedVariants.slice(0, 4).map((variant, index) => (
-                  <div key={variant.id} className="border border-foreground bg-background p-6 space-y-4">
+                {generatedVariants.map((variant, index) => (
+                  <div 
+                    key={variant.id} 
+                    className={`border-2 bg-background p-6 space-y-4 cursor-pointer transition-all ${
+                      generatedVariants.length > 1 
+                        ? (selectedVariantId === variant.id 
+                            ? 'border-foreground shadow-lg' 
+                            : 'border-foreground/20 hover:border-foreground/50')
+                        : 'border-foreground'
+                    }`}
+                    onClick={() => {
+                      if (generatedVariants.length > 1) {
+                        setSelectedVariantId(variant.id);
+                      }
+                    }}
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold uppercase tracking-wider">{variant.variant_type}</span>
-                      <span className="text-xs text-muted-foreground">ROAS: {variant.predicted_roas}x</span>
+                      <div className="flex items-center gap-2">
+                        {generatedVariants.length > 1 && selectedVariantId === variant.id && (
+                          <span className="text-xs font-bold bg-foreground text-background px-2 py-1">SELECTED</span>
+                        )}
+                        <span className="text-xs text-muted-foreground">ROAS: {variant.predicted_roas}x</span>
+                      </div>
                     </div>
                     
                     {/* Show uploaded image from creative_url */}
@@ -460,6 +491,14 @@ export default function CreateCampaign() {
                 </Button>
                 <Button 
                   onClick={() => {
+                    if (generatedVariants.length > 1 && !selectedVariantId) {
+                      toast({
+                        variant: "destructive",
+                        title: "Selection Required",
+                        description: "Please select one variant to continue",
+                      });
+                      return;
+                    }
                     setShowPreview(false);
                     setShowPaymentModal(true);
                   }}

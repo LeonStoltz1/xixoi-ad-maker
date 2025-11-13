@@ -20,7 +20,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get campaign and assets
+    // Get campaign and user profile to check plan
     const { data: campaign, error: campaignError } = await supabase
       .from('campaigns')
       .select('*, campaign_assets(*)')
@@ -28,6 +28,18 @@ serve(async (req) => {
       .single();
 
     if (campaignError) throw campaignError;
+
+    // Get user's plan from profiles table
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', campaign.user_id)
+      .single();
+
+    const userPlan = profile?.plan || 'free';
+    const isFreeUser = userPlan === 'free';
+    
+    console.log('User plan:', userPlan, 'Is free user:', isFreeUser);
 
     // Get the text content from assets (all asset types now have description)
     const asset = campaign.campaign_assets[0];
@@ -142,27 +154,23 @@ Return JSON:
     const assetUrl = campaign.campaign_assets[0]?.asset_url || null;
     console.log('Asset URL:', assetUrl);
 
+    // For free users, only create 1 variant (Meta). For paid users, create all 4.
+    const variantsToCreate = isFreeUser 
+      ? parsedContent.variants.filter((v: any) => v.platform === 'meta').slice(0, 1)
+      : parsedContent.variants;
+
+    console.log(`Creating ${variantsToCreate.length} variant(s) for ${userPlan} user`);
+
     // Insert ad variants into database with asset URL
-    const variants = parsedContent.variants.map((variant: any) => ({
+    const variants = variantsToCreate.map((variant: any) => ({
       campaign_id: campaignId,
       variant_type: variant.platform,
       headline: variant.headline,
       body_copy: variant.body,
       cta_text: variant.cta,
-      creative_url: assetUrl, // Pass through the uploaded image URL
-      predicted_roas: (2.5 + Math.random() * 2).toFixed(2), // Random ROAS between 2.5-4.5
-    }));
-
-    // Add ROAS prediction variant with asset URL
-    variants.push({
-      campaign_id: campaignId,
-      variant_type: 'roas_prediction',
-      headline: 'Performance Prediction',
-      body_copy: 'Based on similar campaigns',
-      cta_text: null,
       creative_url: assetUrl,
-      predicted_roas: (2.8 + Math.random() * 2).toFixed(2),
-    });
+      predicted_roas: (2.5 + Math.random() * 2).toFixed(2),
+    }));
 
     const { error: insertError } = await supabase
       .from('ad_variants')
