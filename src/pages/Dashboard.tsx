@@ -141,57 +141,6 @@ export default function Dashboard() {
             </Button>
           </div>
 
-          {/* Stripe Test Section */}
-          <Card className="border-2 border-primary/20 bg-primary/5">
-            <CardHeader>
-              <CardTitle>🧪 Test Stripe Checkout</CardTitle>
-              <CardDescription>
-                Test the payment flows for different plans
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Button 
-                variant="outline" 
-                className="flex flex-col h-auto py-4 gap-2"
-                onClick={() => createCheckoutSession('branding_removal', 'test-campaign-id')}
-                disabled={stripeLoading}
-              >
-                <span className="font-bold">Branding Removal</span>
-                <span className="text-sm text-muted-foreground">$5 one-time</span>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="flex flex-col h-auto py-4 gap-2"
-                onClick={() => createCheckoutSession('pro_subscription')}
-                disabled={stripeLoading}
-              >
-                <span className="font-bold">Pro Unlimited</span>
-                <span className="text-sm text-muted-foreground">$99/month</span>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="flex flex-col h-auto py-4 gap-2"
-                onClick={() => createCheckoutSession('elite_subscription')}
-                disabled={stripeLoading}
-              >
-                <span className="font-bold">Scale Elite</span>
-                <span className="text-sm text-muted-foreground">$199/month</span>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="flex flex-col h-auto py-4 gap-2"
-                onClick={() => createCheckoutSession('agency_subscription')}
-                disabled={stripeLoading}
-              >
-                <span className="font-bold">Agency</span>
-                <span className="text-sm text-muted-foreground">$999/month</span>
-              </Button>
-            </CardContent>
-          </Card>
-
           {/* Empty State */}
           <div className="border-2 border-dashed border-foreground/20 rounded-2xl p-12 text-center space-y-4">
             <div className="space-y-2">
