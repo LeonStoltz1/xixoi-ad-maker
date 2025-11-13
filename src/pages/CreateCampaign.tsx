@@ -72,7 +72,7 @@ export default function CreateCampaign() {
 
     // Validate file type
     const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-    const validVideoTypes = ['video/mp4', 'video/quicktime'];
+    const validVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-quicktime'];
     
     if (uploadType === 'image' && !validImageTypes.includes(file.type)) {
       toast({
@@ -83,13 +83,20 @@ export default function CreateCampaign() {
       return;
     }
 
-    if (uploadType === 'video' && !validVideoTypes.includes(file.type)) {
-      toast({
-        variant: "destructive",
-        title: "Invalid file type",
-        description: "Please upload an MP4 or MOV video.",
-      });
-      return;
+    // For videos, also check file extension as MIME type can vary by system
+    if (uploadType === 'video') {
+      const fileExtension = file.name.split('.').pop()?.toLowerCase();
+      const isValidMimeType = validVideoTypes.includes(file.type);
+      const isValidExtension = fileExtension === 'mp4' || fileExtension === 'mov';
+      
+      if (!isValidMimeType && !isValidExtension) {
+        toast({
+          variant: "destructive",
+          title: "Invalid file type",
+          description: "Please upload an MP4 or MOV video.",
+        });
+        return;
+      }
     }
 
     setUploadedFile(file);
@@ -367,7 +374,7 @@ export default function CreateCampaign() {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept={uploadType === 'image' ? 'image/jpeg,image/jpg,image/png' : 'video/mp4,video/quicktime'}
+                    accept={uploadType === 'image' ? 'image/jpeg,image/jpg,image/png,.jpg,.jpeg,.png' : 'video/mp4,video/quicktime,.mp4,.mov'}
                     onChange={handleFileChange}
                     className="hidden"
                   />
