@@ -119,10 +119,13 @@ Return JSON:
     }
 
     const aiData = await aiResponse.json();
-    const content = aiData.choices[0]?.message?.content || '{}';
+    let content = aiData.choices[0]?.message?.content || '{}';
     
     console.log('AI Response status:', aiResponse.status);
     console.log('AI Response content:', content);
+    
+    // Strip markdown code blocks if present
+    content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     
     // Parse AI response
     let parsedContent;
@@ -130,37 +133,9 @@ Return JSON:
       parsedContent = JSON.parse(content);
       console.log('Successfully parsed AI response:', JSON.stringify(parsedContent, null, 2));
     } catch (parseError) {
-      console.error('Failed to parse AI response, using fallback. Parse error:', parseError);
+      console.error('Failed to parse AI response. Parse error:', parseError);
       console.error('Content that failed to parse:', content);
-      // If AI didn't return valid JSON, create fallback platform-specific variants
-      parsedContent = {
-        variants: [
-          {
-            platform: "meta",
-            headline: "Transform Your Business",
-            body: "AI-powered ads in 60 seconds. Join thousands of satisfied customers. Start your free trial today!",
-            cta: "Get Started Free"
-          },
-          {
-            platform: "tiktok",
-            headline: "Instant Ad Creation",
-            body: "Create pro ads in seconds with xiXoi™. No design skills needed. Try it free!",
-            cta: "Start Now"
-          },
-          {
-            platform: "google",
-            headline: "AI Ad Creation Platform",
-            body: "Generate professional ads instantly. No experience required. Free trial available.",
-            cta: "Try Free"
-          },
-          {
-            platform: "linkedin",
-            headline: "Professional Ad Creation Made Easy",
-            body: "Streamline your advertising with xiXoi™'s AI-powered platform. Create compelling ads in under 60 seconds. Trusted by businesses worldwide.",
-            cta: "Start Free Trial"
-          }
-        ]
-      };
+      throw new Error('AI failed to generate valid ad variants');
     }
 
     // Get campaign asset URL
