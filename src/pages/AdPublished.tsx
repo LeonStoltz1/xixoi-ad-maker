@@ -75,7 +75,7 @@ const AdPublished = () => {
 
             {/* Watermark for free users only */}
             {!hasPaid && (
-              <div className="text-right text-[27px] opacity-60">
+              <div className="text-right text-[14px] opacity-60">
                 Powered By xiXoi™
               </div>
             )}
