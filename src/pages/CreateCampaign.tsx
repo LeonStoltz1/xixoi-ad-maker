@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Upload, Image, Video, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { PaymentModal } from "@/components/PaymentModal";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 export default function CreateCampaign() {
   const [user, setUser] = useState<any>(null);
@@ -209,9 +209,9 @@ export default function CreateCampaign() {
         </div>
       </main>
 
-      {/* Payment Modal */}
+      {/* Upgrade Modal */}
       {createdCampaignId && (
-        <PaymentModal
+        <UpgradeModal
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
           campaignId={createdCampaignId}
