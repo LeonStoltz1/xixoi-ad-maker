@@ -21,7 +21,7 @@ export const ChannelsSection = () => {
           Choose where your ad goes.
         </p>
 
-        <div className="flex justify-center mt-arrow pt-arrow mb-[100px]">
+        <div className="flex justify-center mt-arrow pt-arrow mb-[50px]">
           <ArrowDown className="w-12 h-12 md:w-16 md:h-16 stroke-[1] animate-bounce" />
         </div>
       </div>
