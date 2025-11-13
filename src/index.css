@@ -20,21 +20,21 @@ All colors MUST be HSL.
     --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 96%;
+    --secondary: 0 0% 98%;
     --secondary-foreground: 0 0% 0%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 20%;
 
-    --accent: 0 0% 20%;
+    --accent: 0 0% 0%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 0% 40%;
+    --destructive: 0 0% 0%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
+    --border: 0 0% 85%;
     --input: 0 0% 90%;
-    --ring: 0 0% 20%;
+    --ring: 0 0% 0%;
 
     --radius: 0.75rem;
 
@@ -66,21 +66,21 @@ All colors MUST be HSL.
     --primary: 0 0% 100%;
     --primary-foreground: 0 0% 0%;
 
-    --secondary: 0 0% 10%;
+    --secondary: 0 0% 5%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 0 0% 8%;
+    --muted-foreground: 0 0% 80%;
 
-    --accent: 0 0% 80%;
+    --accent: 0 0% 100%;
     --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 0% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 0% 100%;
+    --destructive-foreground: 0 0% 0%;
 
-    --border: 0 0% 15%;
+    --border: 0 0% 20%;
     --input: 0 0% 15%;
-    --ring: 0 0% 80%;
+    --ring: 0 0% 100%;
     
     /* Dark mode glass & subtle effects */
     --glass-bg: hsla(0, 0%, 100%, 0.03);
