@@ -486,7 +486,7 @@ export default function CreateCampaign() {
                       <span className="font-bold text-sm">{variant.cta_text || 'LEARN MORE'}</span>
                     </div>
 
-                    <div className="text-right text-[9px] opacity-60">
+                    <div className="text-right text-[27px] opacity-60">
                       Powered By xiXoi™
                     </div>
                   </div>

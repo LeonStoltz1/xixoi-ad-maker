@@ -20,7 +20,7 @@ export const LiveAdSection = () => {
               SHOP NOW
             </div>
 
-            <div className="text-right text-[11px] opacity-70">
+            <div className="text-right text-[22px] opacity-70">
               Powered By xiXoi™
             </div>
           </div>
