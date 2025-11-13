@@ -45,7 +45,6 @@ const plans = [
       "Predictive bidding",
       "Custom avatars/UGC styles",
       "Affiliate dashboard (earn 20%)",
-      "VIP support",
     ],
     cta: "Become Elite",
   },
