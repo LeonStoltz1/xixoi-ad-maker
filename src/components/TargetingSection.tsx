@@ -6,7 +6,7 @@ export const TargetingSection = () => {
       <div className="container mx-auto max-w-2xl text-center space-y-12">
         <div className="border border-foreground rounded-2xl p-8 md:p-12 space-y-8 text-left">
           <div className="space-y-3 animate-fade-in">
-            <label className="text-sm font-medium uppercase tracking-wide">Location</label>
+            <label className="text-sm font-medium uppercase tracking-wide">Country</label>
             <input 
               type="text" 
               value="Japan" 
@@ -15,11 +15,36 @@ export const TargetingSection = () => {
             />
           </div>
 
-          <div className="space-y-3 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            <label className="text-sm font-medium uppercase tracking-wide">Audience</label>
+          <div className="space-y-3 animate-fade-in" style={{ animationDelay: '0.05s' }}>
+            <label className="text-sm font-medium uppercase tracking-wide">City/Region</label>
             <input 
               type="text" 
-              value="Age 25–45" 
+              value="Tokyo" 
+              readOnly
+              className="w-full px-4 py-3 border border-foreground rounded-lg bg-background"
+            />
+          </div>
+
+          <div className="space-y-3 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <label className="text-sm font-medium uppercase tracking-wide">Gender</label>
+            <div className="grid grid-cols-3 gap-3">
+              <button className="px-4 py-3 border-2 border-foreground rounded-lg bg-foreground text-background font-medium">
+                All
+              </button>
+              <button className="px-4 py-3 border border-foreground rounded-lg hover:border-foreground/50 transition-colors">
+                Male
+              </button>
+              <button className="px-4 py-3 border border-foreground rounded-lg hover:border-foreground/50 transition-colors">
+                Female
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3 animate-fade-in" style={{ animationDelay: '0.15s' }}>
+            <label className="text-sm font-medium uppercase tracking-wide">Age Range</label>
+            <input 
+              type="text" 
+              value="25–45" 
               readOnly
               className="w-full px-4 py-3 border border-foreground rounded-lg bg-background"
             />
