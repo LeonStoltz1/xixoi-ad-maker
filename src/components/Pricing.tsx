@@ -29,7 +29,7 @@ const plans = [
       "Multi-channel publishing",
       "Priority generation speed",
     ],
-    cta: "Publish Without Watermark",
+    cta: "Go Pro",
     popular: true,
   },
   {
