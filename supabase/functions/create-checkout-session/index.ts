@@ -93,6 +93,14 @@ serve(async (req) => {
       priceId = Deno.env.get('STRIPE_PRICE_PRO_SUBSCRIPTION')!;
       mode = 'subscription';
       successUrl = `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
+    } else if (priceType === 'elite_subscription') {
+      priceId = Deno.env.get('STRIPE_PRICE_ELITE')!;
+      mode = 'subscription';
+      successUrl = `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
+    } else if (priceType === 'agency_subscription') {
+      priceId = Deno.env.get('STRIPE_PRICE_AGENCY')!;
+      mode = 'subscription';
+      successUrl = `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
     } else {
       throw new Error('Invalid priceType');
     }

@@ -6,7 +6,7 @@ export const useStripeCheckout = () => {
   const [loading, setLoading] = useState(false);
 
   const createCheckoutSession = async (
-    priceType: 'branding_removal' | 'pro_subscription',
+    priceType: 'branding_removal' | 'pro_subscription' | 'elite_subscription' | 'agency_subscription',
     campaignId?: string
   ) => {
     try {

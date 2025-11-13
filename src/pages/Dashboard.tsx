@@ -91,18 +91,18 @@ export default function Dashboard() {
           <div className="flex items-center gap-4">
             {/* Plan Badge */}
             <div className={`px-4 py-2 rounded-full border ${
-              userPlan === 'pro' 
+              userPlan !== 'free'
                 ? 'bg-white/10 border-white/30 text-white' 
                 : 'bg-white/5 border-white/20 text-white/70'
             } flex items-center gap-2`}>
-              {userPlan === 'pro' && <Crown className="w-4 h-4" />}
+              {userPlan !== 'free' && <Crown className="w-4 h-4" />}
               <span className="text-sm font-medium uppercase">
-                {userPlan === 'pro' ? 'Pro' : 'Free'}
+                {userPlan === 'pro' ? 'Pro' : userPlan === 'elite' ? 'Elite' : userPlan === 'agency' ? 'Agency' : 'Free'}
               </span>
             </div>
             
-            {/* Manage Subscription Button for Pro users */}
-            {userPlan === 'pro' && (
+            {/* Manage Subscription Button for paid users */}
+            {userPlan !== 'free' && (
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -173,21 +173,21 @@ export default function Dashboard() {
               <Button 
                 variant="outline" 
                 className="flex flex-col h-auto py-4 gap-2"
-                disabled
+                onClick={() => createCheckoutSession('elite_subscription')}
+                disabled={stripeLoading}
               >
                 <span className="font-bold">Scale Elite</span>
                 <span className="text-sm text-muted-foreground">$199/month</span>
-                <span className="text-xs opacity-50">(Coming soon)</span>
               </Button>
               
               <Button 
                 variant="outline" 
                 className="flex flex-col h-auto py-4 gap-2"
-                disabled
+                onClick={() => createCheckoutSession('agency_subscription')}
+                disabled={stripeLoading}
               >
                 <span className="font-bold">Agency</span>
                 <span className="text-sm text-muted-foreground">$999/month</span>
-                <span className="text-xs opacity-50">(Coming soon)</span>
               </Button>
             </CardContent>
           </Card>

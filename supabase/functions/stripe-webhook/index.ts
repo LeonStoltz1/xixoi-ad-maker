@@ -55,6 +55,19 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Get price IDs for plan detection
+    const PRICE_ID_PRO = Deno.env.get('STRIPE_PRICE_PRO_SUBSCRIPTION');
+    const PRICE_ID_ELITE = Deno.env.get('STRIPE_PRICE_ELITE');
+    const PRICE_ID_AGENCY = Deno.env.get('STRIPE_PRICE_AGENCY');
+
+    // Helper function to determine plan type from price ID
+    const getPlanTypeFromPriceId = (priceId: string): string => {
+      if (priceId === PRICE_ID_PRO) return 'pro';
+      if (priceId === PRICE_ID_ELITE) return 'elite';
+      if (priceId === PRICE_ID_AGENCY) return 'agency';
+      return 'pro'; // default fallback
+    };
+
     // Handle different event types
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -104,6 +117,12 @@ serve(async (req) => {
             session.subscription as string
           );
 
+          // Determine plan type from price ID
+          const priceId = subscription.items.data[0]?.price.id;
+          const planType = priceId ? getPlanTypeFromPriceId(priceId) : 'pro';
+
+          console.log('Creating subscription:', { planType, priceId });
+
           await supabase
             .from('subscriptions')
             .insert({
@@ -111,17 +130,19 @@ serve(async (req) => {
               stripe_subscription_id: subscription.id,
               stripe_customer_id: session.customer as string,
               status: subscription.status,
-              plan_type: 'pro',
+              plan_type: planType,
               current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
               current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
               cancel_at_period_end: subscription.cancel_at_period_end,
             });
 
-          // Update user's plan
+          // Update user's plan in profiles
           await supabase
             .from('profiles')
-            .update({ plan: 'pro' })
+            .update({ plan: planType })
             .eq('id', userId);
+
+          console.log('Updated user plan to:', planType);
         }
         break;
       }
@@ -130,14 +151,25 @@ serve(async (req) => {
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
         
+        console.log('Subscription event:', event.type, subscription.id);
+
         // Find user by customer ID
         const { data: profile } = await supabase
           .from('profiles')
           .select('id')
           .eq('stripe_customer_id', subscription.customer as string)
-          .single();
+          .maybeSingle();
 
-        if (!profile) break;
+        if (!profile) {
+          console.log('No profile found for customer:', subscription.customer);
+          break;
+        }
+
+        // Determine plan type from price ID
+        const priceId = subscription.items.data[0]?.price.id;
+        const planType = priceId ? getPlanTypeFromPriceId(priceId) : 'pro';
+
+        console.log('Upserting subscription:', { planType, status: subscription.status });
 
         // Upsert subscription
         await supabase
@@ -147,7 +179,7 @@ serve(async (req) => {
             stripe_subscription_id: subscription.id,
             stripe_customer_id: subscription.customer as string,
             status: subscription.status,
-            plan_type: 'pro',
+            plan_type: planType,
             current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
             current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
             cancel_at_period_end: subscription.cancel_at_period_end,
@@ -156,11 +188,21 @@ serve(async (req) => {
           });
 
         // Update profile plan based on subscription status
-        if (subscription.status === 'active') {
+        if (subscription.status === 'active' || subscription.status === 'trialing') {
           await supabase
             .from('profiles')
-            .update({ plan: 'pro' })
+            .update({ plan: planType })
             .eq('id', profile.id);
+          
+          console.log('Updated profile plan to:', planType);
+        } else if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
+          // Downgrade to free if subscription is canceled or unpaid
+          await supabase
+            .from('profiles')
+            .update({ plan: 'free' })
+            .eq('id', profile.id);
+          
+          console.log('Downgraded profile to free plan');
         }
         break;
       }
@@ -197,12 +239,38 @@ serve(async (req) => {
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
         
+        console.log('Invoice payment succeeded:', invoice.id);
+
         if (invoice.subscription) {
+          // Get subscription to determine plan type
+          const subscription = await stripe.subscriptions.retrieve(
+            invoice.subscription as string
+          );
+
+          const priceId = subscription.items.data[0]?.price.id;
+          const planType = priceId ? getPlanTypeFromPriceId(priceId) : 'pro';
+
           // Update subscription as active
           await supabase
             .from('subscriptions')
             .update({ status: 'active' })
             .eq('stripe_subscription_id', invoice.subscription as string);
+
+          // Find user and update their plan
+          const { data: subscriptionRecord } = await supabase
+            .from('subscriptions')
+            .select('user_id')
+            .eq('stripe_subscription_id', invoice.subscription as string)
+            .maybeSingle();
+
+          if (subscriptionRecord) {
+            await supabase
+              .from('profiles')
+              .update({ plan: planType })
+              .eq('id', subscriptionRecord.user_id);
+            
+            console.log('Updated user plan after payment:', planType);
+          }
         }
         break;
       }
@@ -210,12 +278,17 @@ serve(async (req) => {
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
         
+        console.log('Invoice payment failed:', invoice.id);
+
         if (invoice.subscription) {
           // Update subscription as past_due
           await supabase
             .from('subscriptions')
             .update({ status: 'past_due' })
             .eq('stripe_subscription_id', invoice.subscription as string);
+
+          // Note: We don't immediately downgrade the user's plan
+          // Stripe will handle retries and eventually cancel if needed
         }
         break;
       }

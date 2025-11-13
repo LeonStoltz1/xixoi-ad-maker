@@ -36,9 +36,10 @@ export default function Auth() {
     // Redirect to appropriate checkout based on plan
     if (plan === 'pro') {
       createCheckoutSession('pro_subscription');
-    } else if (plan === 'elite' || plan === 'agency') {
-      // For elite and agency, redirect to sales email
-      window.location.href = 'mailto:sales@xixoi.com';
+    } else if (plan === 'elite') {
+      createCheckoutSession('elite_subscription');
+    } else if (plan === 'agency') {
+      createCheckoutSession('agency_subscription');
     } else {
       navigate("/dashboard");
     }
