@@ -157,7 +157,7 @@ export default function Dashboard() {
                 disabled={stripeLoading}
               >
                 <span className="font-bold">Branding Removal</span>
-                <span className="text-sm text-muted-foreground">$29 one-time</span>
+                <span className="text-sm text-muted-foreground">$5 one-time</span>
               </Button>
               
               <Button 

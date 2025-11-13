@@ -19,7 +19,7 @@ const plans = [
   },
   {
     name: "PUBLISH PRO",
-    price: "$29",
+    price: "$5",
     subtitle: "per ad set",
     altPrice: "$99/mo unlimited",
     features: [

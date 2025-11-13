@@ -30,7 +30,7 @@ export const PaymentSection = ({ campaignId }: PaymentSectionProps) => {
             <p className="text-muted-foreground">
               Publish your ads without the "Powered By xiXoi™" watermark
             </p>
-            <div className="text-4xl font-bold">$29</div>
+            <div className="text-4xl font-bold">$5</div>
             <p className="text-sm text-muted-foreground">One-time payment per campaign</p>
           </div>
 
@@ -40,7 +40,7 @@ export const PaymentSection = ({ campaignId }: PaymentSectionProps) => {
             onClick={handlePayment}
             disabled={loading || isPaid}
           >
-            {loading ? "Processing..." : isPaid ? "Payment Confirmed" : "Confirm & Pay $29"}
+            {loading ? "Processing..." : isPaid ? "Payment Confirmed" : "Confirm & Pay $5"}
           </Button>
 
           {isPaid && (
