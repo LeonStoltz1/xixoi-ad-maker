@@ -110,7 +110,7 @@ export const Pricing = () => {
                 {plan.features.map((feature, index) => (
                   <div key={index} className="flex items-start gap-3">
                     <Check className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">{feature}</span>
+                    <span className="text-sm leading-relaxed break-words">{feature}</span>
                   </div>
                 ))}
               </div>
