@@ -46,7 +46,7 @@ export const Header = () => {
             </div>
             
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="text-white hover:text-white hover:bg-white/10">
                 Sign In
               </Button>
               <Button variant="hero" size="sm">
