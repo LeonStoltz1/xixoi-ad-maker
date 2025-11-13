@@ -7,7 +7,14 @@ export const Header = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-12">
             <a href="/" className="text-2xl font-bold font-heading flex items-center gap-2">
-              <div className="w-8 h-8 bg-accent rounded-lg neon-border" />
+              <video 
+                src="/xiXoiLogo.mp4" 
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+                className="w-10 h-10 object-contain"
+              />
               xiXoi™
             </a>
             <nav className="hidden md:flex gap-8">

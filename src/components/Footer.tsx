@@ -11,7 +11,17 @@ export const Footer = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
           <div className="col-span-2 md:col-span-1">
-            <h3 className="text-3xl font-bold mb-4">xiXoi™</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <video 
+                src="/xiXoiLogo.mp4" 
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+                className="w-12 h-12 object-contain"
+              />
+              <h3 className="text-3xl font-bold">xiXoi™</h3>
+            </div>
             <p className="text-primary-foreground/70 text-sm">
               Instant Ads for Everyone.
             </p>
