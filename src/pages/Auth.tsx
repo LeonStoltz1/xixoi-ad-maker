@@ -105,9 +105,34 @@ export default function Auth() {
     }
   };
 
+  const getPlanDetails = (plan: string | null) => {
+    switch(plan) {
+      case 'pro':
+        return { name: 'Publish Pro', price: '$99/month unlimited' };
+      case 'elite':
+        return { name: 'Scale Elite', price: '$199/month + 5% ad spend' };
+      case 'agency':
+        return { name: 'Agency White-Label', price: '$999/month' };
+      default:
+        return null;
+    }
+  };
+
+  const planDetails = getPlanDetails(planParam);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-6">
+    <div className="min-h-screen flex items-center justify-center bg-background px-6 py-12">
       <div className="w-full max-w-md space-y-8">
+        {planDetails && (
+          <div className="border-2 border-primary bg-primary/5 rounded-xl p-4 text-center space-y-1">
+            <p className="text-sm uppercase tracking-wide font-medium text-muted-foreground">
+              Selected Plan
+            </p>
+            <h3 className="text-xl font-bold">{planDetails.name}</h3>
+            <p className="text-lg font-medium text-primary">{planDetails.price}</p>
+          </div>
+        )}
+
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold">xiXoi™</h1>
           <p className="text-muted-foreground">
