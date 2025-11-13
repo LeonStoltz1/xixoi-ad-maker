@@ -32,7 +32,7 @@ export const Hero = () => {
           className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce"
           aria-label="Scroll to upload section"
         >
-          <ArrowDown className="w-8 h-8" />
+          <ArrowDown className="w-12 h-12 md:w-16 md:h-16" />
         </button>
       </div>
     </section>
