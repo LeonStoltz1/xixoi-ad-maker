@@ -26,31 +26,31 @@ All colors MUST be HSL.
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 214 100% 53%;
+    --accent: 0 0% 20%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 0% 40%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 214 100% 53%;
+    --ring: 0 0% 20%;
 
     --radius: 0.75rem;
 
     /* Custom xiXoi colors */
-    --xixoi-blue: 214 100% 53%;
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 0%) 0%, hsl(214 100% 10%) 100%);
-    --shadow-glow: 0 0 60px hsla(214, 100%, 53%, 0.15);
+    --xixoi-blue: 0 0% 30%;
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 0%) 0%, hsl(0 0% 15%) 100%);
+    --shadow-glow: 0 0 60px hsla(0, 0%, 0%, 0.15);
     --shadow-card: 0 4px 24px hsla(0, 0%, 0%, 0.06);
     
-    /* Glassmorphism & Neon Effects */
+    /* Glassmorphism & Subtle Effects */
     --glass-bg: hsla(0, 0%, 100%, 0.05);
     --glass-border: hsla(0, 0%, 100%, 0.1);
-    --neon-glow: 0 0 20px hsla(214, 100%, 53%, 0.5), 0 0 40px hsla(214, 100%, 53%, 0.3);
-    --neon-border: 1px solid hsla(214, 100%, 53%, 0.3);
-    --holographic-gradient: linear-gradient(135deg, hsla(214, 100%, 53%, 0.1) 0%, hsla(280, 100%, 53%, 0.1) 50%, hsla(214, 100%, 53%, 0.1) 100%);
-    --rim-light: inset 0 1px 1px hsla(214, 100%, 53%, 0.2);
+    --neon-glow: 0 0 20px hsla(0, 0%, 50%, 0.2), 0 0 40px hsla(0, 0%, 50%, 0.1);
+    --neon-border: 1px solid hsla(0, 0%, 50%, 0.3);
+    --holographic-gradient: linear-gradient(135deg, hsla(0, 0%, 95%, 0.1) 0%, hsla(0, 0%, 90%, 0.1) 50%, hsla(0, 0%, 95%, 0.1) 100%);
+    --rim-light: inset 0 1px 1px hsla(0, 0%, 50%, 0.2);
   }
 
   .dark {
@@ -72,17 +72,17 @@ All colors MUST be HSL.
     --muted: 0 0% 10%;
     --muted-foreground: 0 0% 65%;
 
-    --accent: 214 100% 53%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 0 0% 80%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 0% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 0 0% 15%;
     --input: 0 0% 15%;
-    --ring: 214 100% 53%;
+    --ring: 0 0% 80%;
     
-    /* Dark mode glass & neon */
+    /* Dark mode glass & subtle effects */
     --glass-bg: hsla(0, 0%, 100%, 0.03);
     --glass-border: hsla(0, 0%, 100%, 0.08);
   }
