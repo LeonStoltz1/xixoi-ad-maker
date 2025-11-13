@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [userPlan, setUserPlan] = useState<string>('free');
+  const [campaigns, setCampaigns] = useState<any[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { createCheckoutSession, openCustomerPortal, loading: stripeLoading } = useStripeCheckout();
@@ -37,6 +38,17 @@ export default function Dashboard() {
 
       if (profile) {
         setUserPlan(profile.plan || 'free');
+      }
+
+      // Fetch user campaigns
+      const { data: campaignsData } = await supabase
+        .from('campaigns')
+        .select('*, ad_variants(count)')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
+
+      if (campaignsData) {
+        setCampaigns(campaignsData);
       }
 
       setLoading(false);
@@ -167,18 +179,70 @@ export default function Dashboard() {
             </Button>
           </div>
 
-          {/* Empty State */}
-          <div className="border-2 border-dashed border-foreground/20 rounded-2xl p-12 text-center space-y-4">
-            <div className="space-y-2">
-              <h3 className="text-xl font-bold">No campaigns yet</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                Create your first campaign and let xiXoi™ generate stunning ads instantly
-              </p>
+          {/* Campaigns List or Empty State */}
+          {campaigns.length === 0 ? (
+            <div className="border-2 border-dashed border-foreground/20 rounded-2xl p-12 text-center space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold">No campaigns yet</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Create your first campaign and let xiXoi™ generate stunning ads instantly
+                </p>
+              </div>
+              <Button size="lg" onClick={() => navigate("/create-campaign")}>
+                Create Your First Campaign
+              </Button>
             </div>
-            <Button size="lg" onClick={() => navigate("/create-campaign")}>
-              Create Your First Campaign
-            </Button>
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {campaigns.map((campaign) => (
+                <Card key={campaign.id} className="border-2 border-foreground">
+                  <CardHeader>
+                    <CardTitle className="text-lg">{campaign.name}</CardTitle>
+                    <CardDescription>
+                      <span className={`text-xs uppercase font-bold ${
+                        campaign.status === 'ready' ? 'text-green-600' : 
+                        campaign.status === 'draft' ? 'text-yellow-600' : 
+                        'text-muted-foreground'
+                      }`}>
+                        {campaign.status}
+                      </span>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <div>Created: {new Date(campaign.created_at).toLocaleDateString()}</div>
+                      {campaign.target_location && (
+                        <div>Location: {campaign.target_location}</div>
+                      )}
+                      {campaign.daily_budget && (
+                        <div>Budget: ${campaign.daily_budget}/day</div>
+                      )}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      {campaign.status === 'ready' && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => navigate(`/ad-published/${campaign.id}?paid=${!campaign.has_watermark}`)}
+                          className="flex-1"
+                        >
+                          View Ad
+                        </Button>
+                      )}
+                      <Button 
+                        size="sm" 
+                        onClick={() => navigate(`/create-campaign`)}
+                        className="flex-1"
+                      >
+                        Edit
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>
