@@ -27,13 +27,15 @@ export const Hero = () => {
           </Button>
         </div>
 
-        <button 
-          onClick={scrollToUpload}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce"
-          aria-label="Scroll to upload section"
-        >
-          <ArrowDown className="w-12 h-12 md:w-16 md:h-16" />
-        </button>
+        <div className="flex justify-center pt-8">
+          <button 
+            onClick={scrollToUpload}
+            className="animate-bounce"
+            aria-label="Scroll to upload section"
+          >
+            <ArrowDown className="w-12 h-12 md:w-16 md:h-16" />
+          </button>
+        </div>
       </div>
     </section>
   );
