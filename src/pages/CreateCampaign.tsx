@@ -348,6 +348,13 @@ export default function CreateCampaign() {
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
           campaignId={createdCampaignId}
+          onPublishFree={() => {
+            toast({
+              title: "Publishing with watermark",
+              description: "Your ad is being published with the xiXoi™ watermark!",
+            });
+            navigate(`/ad-published/${createdCampaignId}`);
+          }}
         />
       )}
     </div>

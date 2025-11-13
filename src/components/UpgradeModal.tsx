@@ -7,17 +7,23 @@ interface UpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
   campaignId: string;
+  onPublishFree?: () => void;
 }
 
-export const UpgradeModal = ({ isOpen, onClose, campaignId }: UpgradeModalProps) => {
-  const [selectedPlan, setSelectedPlan] = useState<'single' | 'unlimited'>('single');
+export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: UpgradeModalProps) => {
+  const [selectedPlan, setSelectedPlan] = useState<'free' | 'single' | 'unlimited'>('free');
   const { createCheckoutSession, loading } = useStripeCheckout();
 
   if (!isOpen) return null;
 
-  const handleContinueToPayment = async () => {
-    const priceType = selectedPlan === 'single' ? 'branding_removal' : 'pro_subscription';
-    await createCheckoutSession(priceType, campaignId, false);
+  const handleContinue = async () => {
+    if (selectedPlan === 'free') {
+      onPublishFree?.();
+      onClose();
+    } else {
+      const priceType = selectedPlan === 'single' ? 'branding_removal' : 'pro_subscription';
+      await createCheckoutSession(priceType, campaignId, false);
+    }
   };
 
   return (
@@ -43,6 +49,38 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId }: UpgradeModalProps)
 
         {/* Pricing Options */}
         <div className="space-y-4 mb-6">
+          {/* Free Option */}
+          <button
+            onClick={() => setSelectedPlan('free')}
+            className={`w-full border text-left transition-all ${
+              selectedPlan === 'free'
+                ? 'border-[2px] border-foreground'
+                : 'border border-foreground'
+            }`}
+          >
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="text-xs font-bold uppercase tracking-wide mb-1">FREE</div>
+                  <div className="text-2xl font-bold">$0</div>
+                </div>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-1 ${
+                  selectedPlan === 'free' ? 'border-foreground' : 'border-foreground'
+                }`}>
+                  {selectedPlan === 'free' && (
+                    <div className="w-3 h-3 rounded-full bg-foreground" />
+                  )}
+                </div>
+              </div>
+              <ul className="space-y-2 text-sm">
+                <li>• Keep "Powered By xiXoi™" watermark</li>
+                <li>• 1 AI ad variant included</li>
+                <li>• Publish this ad instantly</li>
+                <li>• Up to 3 ads per day</li>
+              </ul>
+            </div>
+          </button>
+
           {/* Single Publish Option */}
           <button
             onClick={() => setSelectedPlan('single')}
@@ -118,12 +156,12 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId }: UpgradeModalProps)
           <Button
             size="lg"
             className="w-full text-base md:text-lg py-6"
-            onClick={handleContinueToPayment}
+            onClick={handleContinue}
             disabled={loading}
           >
             {loading ? "Processing..." : (
               <>
-                Continue to Payment
+                {selectedPlan === 'free' ? 'Publish with Watermark' : 'Continue to Payment'}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </>
             )}
