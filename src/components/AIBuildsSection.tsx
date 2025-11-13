@@ -38,6 +38,10 @@ export const AIBuildsSection = () => {
         <p className="text-xl md:text-2xl font-medium max-w-3xl mx-auto">
           xiXoi™ builds intelligent ad variants automatically.
         </p>
+
+        <div className="flex justify-center pt-8">
+          <ArrowDown className="w-12 h-12 md:w-16 md:h-16 animate-bounce" />
+        </div>
       </div>
     </section>
   );
