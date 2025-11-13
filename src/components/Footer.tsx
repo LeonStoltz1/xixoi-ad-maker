@@ -67,9 +67,14 @@ export const Footer = () => {
 
         <div className="pt-8 border-t border-background/20">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs opacity-70">
-              © 2025 xiXoi™. All rights reserved.
-            </p>
+            <div className="text-center md:text-left">
+              <p className="text-xs opacity-70">
+                © 2025 xiXoi™. All rights reserved.
+              </p>
+              <p className="text-xs opacity-60 mt-1">
+                A product of STOLTZ ONE LLC
+              </p>
+            </div>
             <div className="flex gap-6">
               <a href="/privacy" className="text-xs opacity-70 hover:opacity-100 transition-opacity">
                 Privacy

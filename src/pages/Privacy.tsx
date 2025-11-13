@@ -107,8 +107,8 @@ const Privacy = () => {
             <p>For privacy-related questions or data requests:</p>
             <p className="mt-4">
               <strong>Email:</strong> privacy@xixoi.com<br />
-              <strong>Company:</strong> xiXoi Inc.<br />
-              <strong>Address:</strong> [Your Business Address]
+              <strong>Company:</strong> STOLTZ ONE LLC<br />
+              <strong>Product:</strong> xiXoi™ (a product of STOLTZ ONE LLC)
             </p>
           </div>
         </section>
