@@ -17,8 +17,10 @@ export default function CreateCampaign() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null);
+  const [generatedVariants, setGeneratedVariants] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -155,8 +157,15 @@ export default function CreateCampaign() {
         console.error('AI generation error:', generateError);
       }
 
+      // Fetch generated variants
+      const { data: variants } = await supabase
+        .from('ad_variants')
+        .select('*')
+        .eq('campaign_id', campaign.id);
+
       setCreatedCampaignId(campaign.id);
-      setShowPaymentModal(true);
+      setGeneratedVariants(variants || []);
+      setShowPreview(true);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -336,11 +345,71 @@ export default function CreateCampaign() {
               onClick={handleCreateCampaign}
               disabled={loading || !textContent || ((uploadType === 'image' || uploadType === 'video') && !uploadedFile)}
             >
-              {loading ? "Generating..." : "Pay to Publish"}
+              {loading ? "Generating..." : "Let me see..."}
             </Button>
           </div>
         </div>
       </main>
+
+      {/* Preview Modal */}
+      {showPreview && createdCampaignId && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
+          <div className="bg-background border border-foreground max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-8 space-y-8">
+              <div className="space-y-2">
+                <h2 className="text-3xl font-bold">Here's what xiXoi™ created</h2>
+                <p className="text-muted-foreground">AI generated {generatedVariants.length} platform-optimized variants for your campaign</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {generatedVariants.slice(0, 4).map((variant, index) => (
+                  <div key={variant.id} className="border border-foreground bg-background p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider">{variant.variant_type}</span>
+                      <span className="text-xs text-muted-foreground">ROAS: {variant.predicted_roas}x</span>
+                    </div>
+                    
+                    <div className="bg-foreground text-background px-4 py-3">
+                      <div className="text-sm font-bold">{variant.headline}</div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-sm">{variant.body_copy}</p>
+                    </div>
+
+                    <div className="border-2 border-foreground py-2 px-4 text-center">
+                      <span className="font-bold text-sm">{variant.cta_text || 'LEARN MORE'}</span>
+                    </div>
+
+                    <div className="text-right text-[9px] opacity-60">
+                      Powered By xiXoi™
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowPreview(false)}
+                  className="flex-1"
+                >
+                  Go Back
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setShowPreview(false);
+                    setShowPaymentModal(true);
+                  }}
+                  className="flex-1"
+                >
+                  Pay to Publish
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Upgrade Modal */}
       {createdCampaignId && (
