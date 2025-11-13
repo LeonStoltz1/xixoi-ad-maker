@@ -20,27 +20,34 @@ export default function Auth() {
 
   useEffect(() => {
     // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         // If user is already logged in and has a plan parameter, redirect to checkout
         if (planParam) {
-          handlePlanRedirect(planParam);
+          await handlePlanRedirect(planParam);
         } else {
           navigate("/dashboard");
         }
       }
-    });
+    };
+    checkSession();
   }, [navigate, planParam]);
 
-  const handlePlanRedirect = (plan: string) => {
+  const handlePlanRedirect = async (plan: string) => {
     // Redirect to appropriate checkout based on plan
-    if (plan === 'pro') {
-      createCheckoutSession('pro_subscription');
-    } else if (plan === 'elite') {
-      createCheckoutSession('elite_subscription');
-    } else if (plan === 'agency') {
-      createCheckoutSession('agency_subscription');
-    } else {
+    try {
+      if (plan === 'pro') {
+        await createCheckoutSession('pro_subscription', undefined, false);
+      } else if (plan === 'elite') {
+        await createCheckoutSession('elite_subscription', undefined, false);
+      } else if (plan === 'agency') {
+        await createCheckoutSession('agency_subscription', undefined, false);
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
       navigate("/dashboard");
     }
   };
@@ -65,7 +72,7 @@ export default function Auth() {
         
         // Check if user came from pricing page with a plan parameter
         if (planParam) {
-          handlePlanRedirect(planParam);
+          await handlePlanRedirect(planParam);
         } else {
           navigate("/dashboard");
         }
@@ -90,7 +97,7 @@ export default function Auth() {
         
         // Check if user came from pricing page with a plan parameter
         if (planParam) {
-          handlePlanRedirect(planParam);
+          await handlePlanRedirect(planParam);
         } else {
           navigate("/dashboard");
         }
