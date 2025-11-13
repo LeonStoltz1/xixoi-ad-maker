@@ -74,11 +74,12 @@ export const Pricing = () => {
     if (planName === "FREE") {
       navigate('/auth');
     } else if (planName === "PUBLISH PRO") {
-      // Redirect to auth page - user must be logged in to purchase
-      navigate('/auth');
-    } else if (planName === "SCALE ELITE" || planName === "AGENCY WHITE-LABEL") {
-      // Contact sales - could open a modal or redirect
-      window.location.href = 'mailto:sales@xixoi.com';
+      // Redirect to auth page with plan parameter
+      navigate('/auth?plan=pro');
+    } else if (planName === "SCALE ELITE") {
+      navigate('/auth?plan=elite');
+    } else if (planName === "AGENCY WHITE-LABEL") {
+      navigate('/auth?plan=agency');
     }
   };
 

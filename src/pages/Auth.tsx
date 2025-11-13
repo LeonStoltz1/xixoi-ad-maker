@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,15 +14,35 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const { createCheckoutSession } = useStripeCheckout();
+  const planParam = searchParams.get('plan');
 
   useEffect(() => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/dashboard");
+        // If user is already logged in and has a plan parameter, redirect to checkout
+        if (planParam) {
+          handlePlanRedirect(planParam);
+        } else {
+          navigate("/dashboard");
+        }
       }
     });
-  }, [navigate]);
+  }, [navigate, planParam]);
+
+  const handlePlanRedirect = (plan: string) => {
+    // Redirect to appropriate checkout based on plan
+    if (plan === 'pro') {
+      createCheckoutSession('pro_subscription');
+    } else if (plan === 'elite' || plan === 'agency') {
+      // For elite and agency, redirect to sales email
+      window.location.href = 'mailto:sales@xixoi.com';
+    } else {
+      navigate("/dashboard");
+    }
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +61,13 @@ export default function Auth() {
           title: "Welcome back!",
           description: "You've successfully signed in.",
         });
-        navigate("/dashboard");
+        
+        // Check if user came from pricing page with a plan parameter
+        if (planParam) {
+          handlePlanRedirect(planParam);
+        } else {
+          navigate("/dashboard");
+        }
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -57,9 +84,15 @@ export default function Auth() {
 
         toast({
           title: "Account created!",
-          description: "Welcome to xiXoi™. Redirecting to dashboard...",
+          description: "Welcome to xiXoi™. Redirecting...",
         });
-        navigate("/dashboard");
+        
+        // Check if user came from pricing page with a plan parameter
+        if (planParam) {
+          handlePlanRedirect(planParam);
+        } else {
+          navigate("/dashboard");
+        }
       }
     } catch (error: any) {
       toast({
