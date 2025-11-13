@@ -184,6 +184,68 @@ export type Database = {
           },
         ]
       }
+      campaign_performance: {
+        Row: {
+          campaign_id: string
+          clicks: number | null
+          conversions: number | null
+          cpc: number | null
+          created_at: string | null
+          ctr: number | null
+          date: string
+          id: string
+          impressions: number | null
+          is_demo: boolean | null
+          platform: string
+          revenue: number | null
+          roas: number | null
+          spend: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          campaign_id: string
+          clicks?: number | null
+          conversions?: number | null
+          cpc?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          date?: string
+          id?: string
+          impressions?: number | null
+          is_demo?: boolean | null
+          platform: string
+          revenue?: number | null
+          roas?: number | null
+          spend?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          clicks?: number | null
+          conversions?: number | null
+          cpc?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          date?: string
+          id?: string
+          impressions?: number | null
+          is_demo?: boolean | null
+          platform?: string
+          revenue?: number | null
+          roas?: number | null
+          spend?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_performance_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaigns: {
         Row: {
           created_at: string | null

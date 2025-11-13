@@ -85,22 +85,32 @@ const AdPublished = () => {
         {/* Confirmation Message */}
         <div className="space-y-4">
           <h1 className="text-4xl md:text-5xl font-bold">
-            Your ad is live.
+            Your ad is ready to publish
           </h1>
           <p className="text-muted-foreground text-lg">
-            xiXoi™ has published your campaign. You can track performance inside your ad platform.
+            Connect to your ad platforms (Meta, TikTok, Google, LinkedIn) to launch this campaign and track real-time performance.
           </p>
         </div>
 
-        {/* Create Another Button */}
-        <Button
-          size="lg"
-          className="text-lg py-6 px-12"
-          onClick={() => navigate("/create-campaign")}
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Create Another Ad
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button
+            size="lg"
+            variant="outline"
+            className="text-lg py-6 px-12"
+            onClick={() => navigate(`/analytics/${campaignId}`)}
+          >
+            View Demo Analytics
+          </Button>
+          <Button
+            size="lg"
+            className="text-lg py-6 px-12"
+            onClick={() => navigate("/create-campaign")}
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Create Another Ad
+          </Button>
+        </div>
       </div>
     </div>
   );

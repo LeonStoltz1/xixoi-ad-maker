@@ -221,22 +221,24 @@ export default function Dashboard() {
                     
                     <div className="flex gap-2">
                       {campaign.status === 'ready' && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => navigate(`/ad-published/${campaign.id}?paid=${!campaign.has_watermark}`)}
-                          className="flex-1"
-                        >
-                          View Ad
-                        </Button>
+                        <>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => navigate(`/ad-published/${campaign.id}?paid=${!campaign.has_watermark}`)}
+                            className="flex-1"
+                          >
+                            View Ad
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            onClick={() => navigate(`/analytics/${campaign.id}`)}
+                            className="flex-1"
+                          >
+                            Analytics
+                          </Button>
+                        </>
                       )}
-                      <Button 
-                        size="sm" 
-                        onClick={() => navigate(`/create-campaign`)}
-                        className="flex-1"
-                      >
-                        Edit
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
