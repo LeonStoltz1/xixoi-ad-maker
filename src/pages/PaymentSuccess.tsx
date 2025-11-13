@@ -8,10 +8,10 @@ const PaymentSuccess = () => {
   const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
-    // Redirect to dashboard after 3 seconds
+    // Redirect to ad published page after 2 seconds
     const timer = setTimeout(() => {
-      navigate('/dashboard');
-    }, 3000);
+      navigate('/ad-published');
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [navigate]);
@@ -38,7 +38,7 @@ const PaymentSuccess = () => {
         </div>
 
         <p className="text-base text-muted-foreground">
-          Redirecting to dashboard...
+          Publishing your ad...
         </p>
       </div>
     </div>

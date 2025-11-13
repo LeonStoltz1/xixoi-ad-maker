@@ -25,17 +25,17 @@ const PaymentCanceled = () => {
           <Button 
             size="lg" 
             className="w-full"
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/create-campaign')}
           >
-            Return to Dashboard
+            Try Again
           </Button>
           <Button 
             size="lg" 
             variant="outline"
             className="w-full"
-            onClick={() => window.location.href = '/#pricing'}
+            onClick={() => navigate('/dashboard')}
           >
-            View Pricing
+            Return to Dashboard
           </Button>
         </div>
       </div>

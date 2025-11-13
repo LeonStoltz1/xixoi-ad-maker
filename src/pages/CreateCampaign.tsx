@@ -4,17 +4,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Upload, Image, Video, FileText, Plus } from "lucide-react";
+import { ArrowLeft, Upload, Image, Video, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { PaymentModal } from "@/components/PaymentModal";
 
 export default function CreateCampaign() {
   const [user, setUser] = useState<any>(null);
-  const [step, setStep] = useState(1);
   const [campaignName, setCampaignName] = useState("");
   const [uploadType, setUploadType] = useState<'image' | 'video' | 'text'>('text');
   const [textContent, setTextContent] = useState("");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -41,7 +43,7 @@ export default function CreateCampaign() {
         .insert({
           user_id: user.id,
           name: campaignName || 'Untitled Campaign',
-          status: 'generating',
+          status: 'draft',
         })
         .select()
         .single();
@@ -66,15 +68,10 @@ export default function CreateCampaign() {
 
       if (generateError) {
         console.error('AI generation error:', generateError);
-        // Don't throw - campaign is still created
       }
 
-      toast({
-        title: "Campaign created!",
-        description: "xiXoi™ AI is generating your ad variants",
-      });
-
-      navigate("/dashboard");
+      setCreatedCampaignId(campaign.id);
+      setShowPaymentModal(true);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -206,11 +203,20 @@ export default function CreateCampaign() {
               onClick={handleCreateCampaign}
               disabled={loading || !textContent || ((uploadType === 'image' || uploadType === 'video') && !uploadedFile)}
             >
-              {loading ? "Creating..." : "Create Campaign"}
+              {loading ? "Generating..." : "Pay to Publish"}
             </Button>
           </div>
         </div>
       </main>
+
+      {/* Payment Modal */}
+      {createdCampaignId && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          campaignId={createdCampaignId}
+        />
+      )}
     </div>
   );
 }
