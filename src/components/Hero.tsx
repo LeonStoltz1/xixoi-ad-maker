@@ -27,7 +27,7 @@ export const Hero = () => {
           </Button>
         </div>
 
-        <div className="flex justify-center pt-arrow mt-arrow">
+        <div className="flex justify-center pt-arrow mt-arrow mb-[100px]">
           <button 
             onClick={scrollToUpload}
             className="animate-bounce"

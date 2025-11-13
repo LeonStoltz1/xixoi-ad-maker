@@ -91,7 +91,7 @@ export const AIBuildsSection = () => {
           xiXoi™ builds intelligent ad variants automatically.
         </p>
 
-        <div className="flex justify-center mt-arrow pt-arrow">
+        <div className="flex justify-center mt-arrow pt-arrow mb-[100px]">
           <ArrowDown className="w-12 h-12 md:w-16 md:h-16 stroke-[1] animate-bounce" />
         </div>
       </div>
