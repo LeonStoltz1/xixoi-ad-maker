@@ -32,6 +32,10 @@ serve(async (req) => {
     // Get the text content from assets (all asset types now have description)
     const asset = campaign.campaign_assets[0];
     const productDescription = asset?.asset_text || 'Product description';
+    
+    console.log('Campaign data:', JSON.stringify(campaign, null, 2));
+    console.log('Asset found:', asset);
+    console.log('Product description to use:', productDescription);
 
     // Use Lovable AI to generate ad variants
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -55,24 +59,31 @@ CHARACTER LIMITS (strictly enforce):
 - Google Ads: Headline 30 chars max, Description 90 chars max  
 - LinkedIn: Primary text 150 chars max
 
-REQUIREMENTS:
-- Be concise and compelling
+CRITICAL REQUIREMENTS:
+- Use the EXACT product/service details provided by the user
+- DO NOT make up generic copy like "Transform Your Business" or "AI-powered ads"
+- Extract key details from the user's description (what they sell, price, location, features, contact info)
+- Adapt their actual content to fit each platform's limits
+- Preserve specific details like prices, phone numbers, and unique selling points
+- Be concise and compelling while staying true to the user's input
 - Include clear call-to-action
-- Highlight key benefits
-- Use platform-appropriate tone
 - Return valid JSON only`
           },
           {
             role: 'user',
-            content: `Generate 4 platform-specific ad variants for: "${productDescription}"
+            content: `Generate 4 platform-specific ad variants based on this EXACT product/service description:
+
+"${productDescription}"
+
+IMPORTANT: Use the details above. Do not generate generic placeholder copy. Extract and adapt the actual product info, pricing, and details provided.
             
 Return JSON with this exact structure:
 {
   "variants": [
     {
       "platform": "meta",
-      "headline": "string (max 40 chars)",
-      "body": "string (max 125 chars)",
+      "headline": "string (max 40 chars, using actual product name/key feature)",
+      "body": "string (max 125 chars, using actual details from description)",
       "cta": "string (max 20 chars)"
     },
     {
@@ -109,11 +120,17 @@ Return JSON with this exact structure:
     const aiData = await aiResponse.json();
     const content = aiData.choices[0]?.message?.content || '{}';
     
+    console.log('AI Response status:', aiResponse.status);
+    console.log('AI Response content:', content);
+    
     // Parse AI response
     let parsedContent;
     try {
       parsedContent = JSON.parse(content);
-    } catch {
+      console.log('Successfully parsed AI response:', JSON.stringify(parsedContent, null, 2));
+    } catch (parseError) {
+      console.error('Failed to parse AI response, using fallback. Parse error:', parseError);
+      console.error('Content that failed to parse:', content);
       // If AI didn't return valid JSON, create fallback platform-specific variants
       parsedContent = {
         variants: [
