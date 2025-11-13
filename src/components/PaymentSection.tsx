@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { Check, ArrowDown } from "lucide-react";
 import { useState } from "react";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { EmbeddedCheckout } from "./EmbeddedCheckout";
@@ -77,6 +77,10 @@ export const PaymentSection = ({ campaignId }: PaymentSectionProps) => {
         <p className="text-xl md:text-2xl font-medium">
           Publish without the watermark. Instant activation.
         </p>
+
+        <div className="flex justify-center pt-8">
+          <ArrowDown className="w-12 h-12 md:w-16 md:h-16 animate-bounce" />
+        </div>
       </div>
     </section>
   );
