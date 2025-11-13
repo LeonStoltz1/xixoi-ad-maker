@@ -120,7 +120,12 @@ export default function CreateCampaign() {
   };
 
   const handleCreateCampaign = async () => {
-    if (!user) return;
+    console.log('Button clicked! User:', user, 'TextContent:', textContent, 'UploadType:', uploadType, 'File:', uploadedFile);
+    
+    if (!user) {
+      console.log('No user found, returning');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -148,6 +153,8 @@ export default function CreateCampaign() {
 
       if (assetError) throw assetError;
 
+      console.log('Campaign and asset created, calling generate-ad-variants...');
+
       // Trigger AI generation
       const { error: generateError } = await supabase.functions.invoke('generate-ad-variants', {
         body: { campaignId: campaign.id }
@@ -155,17 +162,28 @@ export default function CreateCampaign() {
 
       if (generateError) {
         console.error('AI generation error:', generateError);
+        throw generateError;
       }
 
+      console.log('AI generation complete, fetching variants...');
+
       // Fetch generated variants
-      const { data: variants } = await supabase
+      const { data: variants, error: variantsError } = await supabase
         .from('ad_variants')
         .select('*')
         .eq('campaign_id', campaign.id);
 
+      if (variantsError) {
+        console.error('Error fetching variants:', variantsError);
+      }
+
+      console.log('Fetched variants:', variants);
+
       setCreatedCampaignId(campaign.id);
       setGeneratedVariants(variants || []);
       setShowPreview(true);
+      
+      console.log('Preview should now be showing');
     } catch (error: any) {
       toast({
         variant: "destructive",
