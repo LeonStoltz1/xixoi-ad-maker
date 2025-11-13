@@ -249,12 +249,18 @@ export default function CreateCampaign() {
             {/* Content Input - Always show description */}
             <div className="space-y-2">
               <label className="text-sm font-medium uppercase tracking-wide">Product/Service Description *</label>
+              <p className="text-xs text-muted-foreground">
+                Include: What you're selling, key features, price (if applicable), target audience, and how to contact you. AI will optimize this for each platform's character limits.
+              </p>
               <Textarea
                 value={textContent}
                 onChange={(e) => setTextContent(e.target.value)}
-                placeholder="Describe your product or service so AI can create your ad..."
+                placeholder="Example: Studio apartment, 23sqm, $2500/mo. Modern finishes, downtown location. Contact +1404.775.1998 Mon-Fri. Perfect for young professionals."
                 className="border-foreground min-h-[120px]"
               />
+              <p className="text-xs text-muted-foreground">
+                ✓ Meta: Optimized for 125 chars • TikTok: 100 chars • Google: 90 chars • LinkedIn: 150 chars
+              </p>
             </div>
 
             {(uploadType === 'image' || uploadType === 'video') && (

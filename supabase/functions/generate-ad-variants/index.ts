@@ -47,22 +47,54 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert ad copywriter for xiXoi™. Generate compelling ad variants with headlines, body copy, and CTAs. Return JSON only.'
+            content: `You are an expert ad copywriter for xiXoi™. Generate platform-optimized ad copy that meets each social media platform's character limits and best practices.
+
+CHARACTER LIMITS (strictly enforce):
+- Meta (Facebook/Instagram): Primary text 125 chars max, Headline 40 chars max
+- TikTok: Text 100 chars max
+- Google Ads: Headline 30 chars max, Description 90 chars max  
+- LinkedIn: Primary text 150 chars max
+
+REQUIREMENTS:
+- Be concise and compelling
+- Include clear call-to-action
+- Highlight key benefits
+- Use platform-appropriate tone
+- Return valid JSON only`
           },
           {
             role: 'user',
-            content: `Generate 3 ad variants for this product: "${productDescription}". 
+            content: `Generate 4 platform-specific ad variants for: "${productDescription}"
             
-            Return a JSON object with this structure:
-            {
-              "variants": [
-                {
-                  "headline": "string (max 50 chars)",
-                  "body": "string (max 150 chars)",
-                  "cta": "string (max 20 chars)"
-                }
-              ]
-            }`
+Return JSON with this exact structure:
+{
+  "variants": [
+    {
+      "platform": "meta",
+      "headline": "string (max 40 chars)",
+      "body": "string (max 125 chars)",
+      "cta": "string (max 20 chars)"
+    },
+    {
+      "platform": "tiktok",
+      "headline": "string (max 30 chars)",
+      "body": "string (max 100 chars)",
+      "cta": "string (max 20 chars)"
+    },
+    {
+      "platform": "google",
+      "headline": "string (max 30 chars)",
+      "body": "string (max 90 chars)",
+      "cta": "string (max 20 chars)"
+    },
+    {
+      "platform": "linkedin",
+      "headline": "string (max 40 chars)",
+      "body": "string (max 150 chars)",
+      "cta": "string (max 20 chars)"
+    }
+  ]
+}`
           }
         ],
       }),
@@ -82,33 +114,41 @@ serve(async (req) => {
     try {
       parsedContent = JSON.parse(content);
     } catch {
-      // If AI didn't return valid JSON, create fallback variants
+      // If AI didn't return valid JSON, create fallback platform-specific variants
       parsedContent = {
         variants: [
           {
-            headline: "Transform Your Business Today",
-            body: "Experience the power of AI-driven advertising with xiXoi™",
-            cta: "Get Started"
+            platform: "meta",
+            headline: "Transform Your Business",
+            body: "AI-powered ads in 60 seconds. Join thousands of satisfied customers. Start your free trial today!",
+            cta: "Get Started Free"
           },
           {
-            headline: "Instant Results Guaranteed",
-            body: "Create professional ads in seconds, not hours",
+            platform: "tiktok",
+            headline: "Instant Ad Creation",
+            body: "Create pro ads in seconds with xiXoi™. No design skills needed. Try it free!",
+            cta: "Start Now"
+          },
+          {
+            platform: "google",
+            headline: "AI Ad Creation Platform",
+            body: "Generate professional ads instantly. No experience required. Free trial available.",
             cta: "Try Free"
           },
           {
-            headline: "Join Thousands of Happy Users",
-            body: "Trusted by businesses worldwide for instant ad creation",
-            cta: "Start Now"
+            platform: "linkedin",
+            headline: "Professional Ad Creation Made Easy",
+            body: "Streamline your advertising with xiXoi™'s AI-powered platform. Create compelling ads in under 60 seconds. Trusted by businesses worldwide.",
+            cta: "Start Free Trial"
           }
         ]
       };
     }
 
     // Insert ad variants into database
-    const variantTypes = ['static', 'video', 'ugc'];
-    const variants = parsedContent.variants.map((variant: any, index: number) => ({
+    const variants = parsedContent.variants.map((variant: any) => ({
       campaign_id: campaignId,
-      variant_type: variantTypes[index] || 'static',
+      variant_type: variant.platform,
       headline: variant.headline,
       body_copy: variant.body,
       cta_text: variant.cta,
