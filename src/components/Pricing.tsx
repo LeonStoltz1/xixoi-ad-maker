@@ -3,102 +3,119 @@ import { Check } from "lucide-react";
 
 const plans = [
   {
-    name: "Free",
+    name: "FREE",
     price: "$0",
-    period: "forever",
-    description: "Perfect for trying xiXoi™",
     features: [
-      "Unlimited campaigns",
-      "AI-generated ads",
-      "All platforms (Meta, TikTok, Google, LinkedIn)",
-      '"Powered By xiXoi™" branding on ads',
-      "Basic analytics",
+      "Build up to 3 ads/day",
+      '"Powered By xiXoi™" watermark',
+      "Basic AI generation",
+      "Auto-targeting suggestions",
+      "Publish to Meta/TikTok/Google/LinkedIn",
+      "Perfect for creators & small shops",
     ],
     cta: "Start Free",
-    popular: false,
   },
   {
-    name: "Pro",
-    price: "$49",
-    period: "per month",
-    description: "For serious advertisers",
+    name: "PUBLISH PRO",
+    price: "$29",
+    subtitle: "per ad set",
+    altPrice: "$99/mo unlimited",
     features: [
-      "Everything in Free",
-      "Remove branding on ALL ads",
-      "Premium AI variations",
-      "Advanced analytics",
-      "Priority support",
-      "API access",
+      'Remove "Powered By xiXoi™" watermark',
+      "Publish instantly",
+      "4 AI ad variants per upload",
+      "ROAS predictions",
+      "Advanced targeting",
+      "Multi-channel publishing",
+      "Priority generation speed",
     ],
-    cta: "Upgrade to Pro",
+    cta: "Publish Without Watermark",
     popular: true,
+  },
+  {
+    name: "SCALE ELITE",
+    price: "$199",
+    subtitle: "/month + 5% of ad spend",
+    features: [
+      "Autonomous AI optimizer",
+      "Auto-pause bad ads",
+      "Auto-increase winning ads",
+      "Predictive bidding",
+      "Custom avatars/UGC styles",
+      "Affiliate dashboard (earn 20%)",
+      "VIP support",
+    ],
+    cta: "Become Elite",
+  },
+  {
+    name: "AGENCY WHITE-LABEL",
+    price: "$999",
+    subtitle: "/month",
+    features: [
+      "White-label xiXoi™ platform",
+      "Team seats",
+      "Client billing",
+      "API access",
+      "Unlimited AI variants",
+      "No watermark",
+      "Agency-grade performance",
+    ],
+    cta: "Contact Sales",
   },
 ];
 
 export const Pricing = () => {
   return (
-    <section className="py-24 px-6">
-      <div className="container mx-auto max-w-6xl">
+    <section className="py-24 px-6 bg-background">
+      <div className="container mx-auto max-w-7xl">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 font-heading">
-            Simple, Transparent Pricing
+            Simple Pricing
           </h2>
           <p className="text-xl text-muted-foreground">
-            Start free. Upgrade when you're ready.
+            Pure simplicity. No clutter. No noise.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`relative rounded-2xl p-8 border transition-all duration-300 ${
-                plan.popular
-                  ? "neon-border holographic scale-105"
-                  : "glass-panel border-border/50 hover:border-accent/50 rim-light"
-              }`}
+              className={`border-2 ${
+                plan.popular ? 'border-foreground' : 'border-foreground/30'
+              } rounded-2xl p-8 transition-all hover:border-foreground`}
             >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground px-4 py-1 rounded-full text-sm font-medium shadow-[0_0_20px_rgba(15,98,254,0.5)]">
-                  Most Popular
-                </div>
-              )}
-              
               <div className="mb-6">
-                <h3 className="text-2xl font-bold mb-2 font-heading">{plan.name}</h3>
-                <p className="text-muted-foreground text-sm mb-4">
-                  {plan.description}
-                </p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-bold font-heading">{plan.price}</span>
-                  <span className="text-muted-foreground">/{plan.period}</span>
+                <h3 className="text-lg font-bold uppercase tracking-wide mb-4">{plan.name}</h3>
+                <div className="space-y-1">
+                  <div className="text-4xl font-bold">{plan.price}</div>
+                  {plan.subtitle && (
+                    <p className="text-sm text-muted-foreground">{plan.subtitle}</p>
+                  )}
+                  {plan.altPrice && (
+                    <p className="text-sm font-medium">or {plan.altPrice}</p>
+                  )}
                 </div>
               </div>
 
               <Button
-                variant={plan.popular ? "hero" : "outline"}
+                variant={plan.popular ? "default" : "outline"}
                 className="w-full mb-6"
                 size="lg"
               >
-                {plan.cta}
+                {plan.cta} →
               </Button>
 
               <div className="space-y-3">
                 {plan.features.map((feature, index) => (
                   <div key={index} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
+                    <Check className="w-5 h-5 mt-0.5 flex-shrink-0" />
                     <span className="text-sm">{feature}</span>
                   </div>
                 ))}
               </div>
             </div>
           ))}
-        </div>
-
-        <div className="text-center mt-12">
-          <p className="text-sm text-muted-foreground">
-            You can also remove branding per campaign for a one-time fee
-          </p>
         </div>
       </div>
     </section>
