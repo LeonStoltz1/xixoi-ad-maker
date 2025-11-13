@@ -1,3 +1,5 @@
+import { ArrowDown } from "lucide-react";
+
 export const ChannelsSection = () => {
   const channels = ['META', 'TIKTOK', 'GOOGLE', 'LINKEDIN'];
 
@@ -16,21 +18,13 @@ export const ChannelsSection = () => {
           ))}
         </div>
 
-        <div className="border border-foreground rounded-xl p-8 max-w-md mx-auto animate-scale-in">
-          <div className="aspect-square bg-foreground/5 rounded-lg mb-4"></div>
-          <div className="space-y-2">
-            <div className="h-8 bg-foreground rounded"></div>
-            <div className="h-4 bg-foreground/50 rounded"></div>
-            <div className="h-4 bg-foreground/50 rounded w-3/4"></div>
-            <div className="mt-4 border border-foreground rounded py-2 px-4 text-sm font-medium">
-              LEARN MORE
-            </div>
-          </div>
-        </div>
-
         <p className="text-xl md:text-2xl font-medium">
           Choose where your ad goes.
         </p>
+
+        <div className="flex justify-center pt-8">
+          <ArrowDown className="w-12 h-12 md:w-16 md:h-16 animate-bounce" />
+        </div>
       </div>
     </section>
   );
