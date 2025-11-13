@@ -5,15 +5,13 @@ export const AIBuildsSection = () => {
     <section className="flex items-center justify-center bg-background px-6 py-16">
       <div className="container mx-auto max-w-6xl text-center space-y-12">
         <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-12">
-          <div className="absolute inset-0 border-4 border-foreground rounded-full animate-pulse"></div>
-          <div className="absolute inset-4 border-2 border-foreground/50 rounded-full"></div>
           <video 
             src="/xiXoiLogo.mp4" 
             autoPlay 
             loop 
             muted 
             playsInline
-            className="absolute inset-0 w-full h-full object-contain"
+            className="w-full h-full object-contain"
           />
         </div>
 
