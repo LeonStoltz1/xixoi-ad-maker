@@ -46,9 +46,12 @@ export const PaymentSection = ({ campaignId }: PaymentSectionProps) => {
       <div className="container mx-auto max-w-md text-center space-y-12">
         <div className="border border-foreground rounded-2xl p-8 space-y-6">
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold">Remove Watermark</h3>
+            <h3 className="text-2xl font-bold">Remove Watermark (Optional)</h3>
             <p className="text-muted-foreground">
-              Publish your ads without the "Powered By xiXoi™" watermark
+              Publish your ads without the &quot;Powered By xiXoi™&quot; watermark
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Free users keep the watermark. Pay once to remove it for this campaign.
             </p>
             <div className="text-4xl font-bold">$5</div>
             <p className="text-sm text-muted-foreground">One-time payment per campaign</p>
