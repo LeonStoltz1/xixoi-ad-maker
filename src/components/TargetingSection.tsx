@@ -1,4 +1,5 @@
 import { Slider } from "@/components/ui/slider";
+import { ArrowDown } from "lucide-react";
 
 export const TargetingSection = () => {
   return (
@@ -55,6 +56,10 @@ export const TargetingSection = () => {
         <p className="text-xl md:text-2xl font-medium">
           Set location and budget. xiXoi™ handles the rest.
         </p>
+
+        <div className="flex justify-center pt-8">
+          <ArrowDown className="w-12 h-12 md:w-16 md:h-16 animate-bounce" />
+        </div>
       </div>
     </section>
   );
