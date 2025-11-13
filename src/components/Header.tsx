@@ -3,13 +3,10 @@ import { Button } from "@/components/ui/button";
 export const Header = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-24 overflow-hidden">
-      {/* Background Video */}
-      <video 
-        src="/header-banner.mp4" 
-        autoPlay 
-        loop 
-        muted 
-        playsInline
+      {/* Background Image */}
+      <img 
+        src="/header-banner.jpg" 
+        alt="xiXoi futuristic cityscape"
         className="absolute inset-0 w-full h-full object-cover z-0"
       />
       
