@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,12 +11,14 @@ import { UpgradeModal } from "@/components/UpgradeModal";
 export default function CreateCampaign() {
   const [user, setUser] = useState<any>(null);
   const [campaignName, setCampaignName] = useState("");
-  const [uploadType, setUploadType] = useState<'image' | 'video' | 'text'>('text');
+  const [uploadType, setUploadType] = useState<'image' | 'video' | 'text'>('image');
   const [textContent, setTextContent] = useState("");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -31,6 +33,23 @@ export default function CreateCampaign() {
     };
     checkUser();
   }, [navigate]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedFile(file);
+      
+      // Create preview URL for images
+      if (uploadType === 'image') {
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+      }
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
 
   const handleCreateCampaign = async () => {
     if (!user) return;
@@ -177,22 +196,39 @@ export default function CreateCampaign() {
                 <label className="text-sm font-medium uppercase tracking-wide">
                   Upload {uploadType === 'image' ? 'Image' : 'Video'}
                 </label>
-                <div className="border-2 border-dashed border-foreground/20 rounded-xl p-12 text-center">
+                <div 
+                  onClick={handleUploadClick}
+                  className="border-2 border-dashed border-foreground/20 rounded-xl p-12 text-center cursor-pointer hover:border-foreground/40 transition-colors"
+                >
                   <input
+                    ref={fileInputRef}
                     type="file"
                     accept={uploadType === 'image' ? 'image/*' : 'video/*'}
-                    onChange={(e) => setUploadedFile(e.target.files?.[0] || null)}
+                    onChange={handleFileChange}
                     className="hidden"
-                    id="file-upload"
                   />
-                  <label htmlFor="file-upload" className="cursor-pointer">
-                    <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    {uploadedFile ? (
+                  {previewUrl && uploadType === 'image' ? (
+                    <div className="space-y-2">
+                      <img 
+                        src={previewUrl} 
+                        alt="Preview" 
+                        className="max-h-48 mx-auto object-contain"
+                      />
+                      <p className="text-foreground text-sm font-medium">{uploadedFile?.name}</p>
+                      <p className="text-muted-foreground text-xs">Click to change image</p>
+                    </div>
+                  ) : uploadedFile ? (
+                    <div className="space-y-2">
+                      <Upload className="w-12 h-12 mx-auto text-foreground" />
                       <p className="text-foreground font-medium">{uploadedFile.name}</p>
-                    ) : (
+                      <p className="text-muted-foreground text-xs">Click to change file</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Upload className="w-12 h-12 mx-auto text-muted-foreground" />
                       <p className="text-muted-foreground">Click to upload {uploadType}</p>
-                    )}
-                  </label>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
