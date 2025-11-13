@@ -196,6 +196,16 @@ export default function CreateCampaign() {
                 <label className="text-sm font-medium uppercase tracking-wide">
                   Upload {uploadType === 'image' ? 'Image' : 'Video'}
                 </label>
+                {uploadType === 'image' && (
+                  <p className="text-xs text-muted-foreground">
+                    Accepted formats: JPG, JPEG, PNG (max 5MB)
+                  </p>
+                )}
+                {uploadType === 'video' && (
+                  <p className="text-xs text-muted-foreground">
+                    Accepted formats: MP4, MOV (max 100MB)
+                  </p>
+                )}
                 <div 
                   onClick={handleUploadClick}
                   className="border-2 border-dashed border-foreground/20 rounded-xl p-12 text-center cursor-pointer hover:border-foreground/40 transition-colors"
@@ -203,7 +213,7 @@ export default function CreateCampaign() {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept={uploadType === 'image' ? 'image/*' : 'video/*'}
+                    accept={uploadType === 'image' ? 'image/jpeg,image/jpg,image/png' : 'video/mp4,video/quicktime'}
                     onChange={handleFileChange}
                     className="hidden"
                   />
