@@ -7,9 +7,14 @@ export const AIBuildsSection = () => {
         <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-12">
           <div className="absolute inset-0 border-4 border-foreground rounded-full animate-pulse"></div>
           <div className="absolute inset-4 border-2 border-foreground/50 rounded-full"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl font-bold">
-            xiXoi™
-          </div>
+          <video 
+            src="/xiXoiLogo.mp4" 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            className="absolute inset-0 w-full h-full object-contain"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
