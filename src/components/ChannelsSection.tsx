@@ -2,8 +2,8 @@ export const ChannelsSection = () => {
   const channels = ['META', 'TIKTOK', 'GOOGLE', 'LINKEDIN'];
 
   return (
-    <section className="min-h-screen flex items-center justify-center bg-background px-6 py-24">
-      <div className="container mx-auto max-w-4xl text-center space-y-16">
+    <section className="flex items-center justify-center bg-background px-6 py-16">
+      <div className="container mx-auto max-w-4xl text-center space-y-12">
         <div className="flex flex-wrap justify-center gap-6">
           {channels.map((channel, index) => (
             <div

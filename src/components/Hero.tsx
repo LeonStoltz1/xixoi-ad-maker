@@ -7,8 +7,8 @@ export const Hero = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-background px-6 pt-24 pb-12">
-      <div className="container mx-auto max-w-4xl text-center space-y-12">
+    <section className="relative min-h-[90vh] flex items-center justify-center bg-background px-6 pt-20 pb-8">
+      <div className="container mx-auto max-w-4xl text-center space-y-8">
         <div className="space-y-6">
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight font-heading">
             Your Ad.<br />Already Done.
