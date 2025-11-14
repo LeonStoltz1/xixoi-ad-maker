@@ -39,7 +39,16 @@ serve(async (req) => {
     const userPlan = profile?.plan || 'free';
     const isFreeUser = userPlan === 'free';
     
-    console.log('User plan:', userPlan, 'Is free user:', isFreeUser);
+    // Variant limits by tier
+    const variantCount: Record<string, number> = {
+      free: 1,
+      pro: 4,
+      elite: 8,
+      agency: 16
+    };
+    const maxVariants = variantCount[userPlan] || 1;
+    
+    console.log('User plan:', userPlan, 'Is free user:', isFreeUser, 'Max variants:', maxVariants);
 
     // Get the text content from assets (all asset types now have description)
     const asset = campaign.campaign_assets[0];
@@ -154,12 +163,12 @@ Return JSON:
     const assetUrl = campaign.campaign_assets[0]?.asset_url || null;
     console.log('Asset URL:', assetUrl);
 
-    // For free users, only create 1 variant (Meta). For paid users, create all 4.
+    // Limit variants based on tier
     const variantsToCreate = isFreeUser 
       ? parsedContent.variants.filter((v: any) => v.platform === 'meta').slice(0, 1)
-      : parsedContent.variants;
+      : parsedContent.variants.slice(0, maxVariants);
 
-    console.log(`Creating ${variantsToCreate.length} variant(s) for ${userPlan} user`);
+    console.log(`Creating ${variantsToCreate.length} variant(s) for ${userPlan} user (max: ${maxVariants})`);
 
     // Insert ad variants into database with asset URL
     const variants = variantsToCreate.map((variant: any) => ({

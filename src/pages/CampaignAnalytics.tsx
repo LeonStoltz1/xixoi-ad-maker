@@ -13,6 +13,8 @@ export default function CampaignAnalytics() {
   const [campaign, setCampaign] = useState<any>(null);
   const [performance, setPerformance] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userPlan, setUserPlan] = useState<string>('free');
+  const [autoOptimize, setAutoOptimize] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,6 +25,14 @@ export default function CampaignAnalytics() {
         navigate("/auth");
         return;
       }
+
+      // Get user plan
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', session.user.id)
+        .single();
+      setUserPlan(profile?.plan || 'free');
 
       // Fetch campaign
       const { data: campaignData } = await supabase
@@ -217,6 +227,37 @@ export default function CampaignAnalytics() {
                 </p>
               </div>
             </div>
+          )}
+
+          {/* ELITE: Auto-Optimizer Toggle */}
+          {userPlan === 'elite' && (
+            <Card className="border-primary">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold">Auto-Optimizer</h3>
+                    <p className="text-sm text-muted-foreground font-normal mt-1">Automatically pause losers, scale winners</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={autoOptimize} 
+                      onChange={(e) => {
+                        setAutoOptimize(e.target.checked);
+                        toast({
+                          title: e.target.checked ? "Auto-Optimizer enabled" : "Auto-Optimizer disabled",
+                          description: e.target.checked 
+                            ? "Campaigns will be automatically optimized based on performance" 
+                            : "Manual optimization only"
+                        });
+                      }} 
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                </CardTitle>
+              </CardHeader>
+            </Card>
           )}
 
           {/* Campaign Info */}

@@ -27,6 +27,7 @@ export default function TargetingSetup() {
   const [audienceSuggestion, setAudienceSuggestion] = useState<AudienceSuggestion | null>(null);
   const [selectedBudget, setSelectedBudget] = useState(35);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const [userPlan, setUserPlan] = useState<string>('free');
 
   useEffect(() => {
     loadCampaign();
@@ -41,6 +42,17 @@ export default function TargetingSetup() {
         .single();
 
       if (error) throw error;
+
+      // Get user plan
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('plan')
+          .eq('id', user.id)
+          .single();
+        setUserPlan(profile?.plan || 'free');
+      }
 
       setCampaign(data);
       
@@ -60,6 +72,21 @@ export default function TargetingSetup() {
   };
 
   const togglePlatform = (platform: string) => {
+    // Platform restrictions by tier
+    const allowedPlatforms: Record<string, string[]> = {
+      free: ['meta'],
+      pro: ['meta', 'tiktok', 'google', 'linkedin'],
+      elite: ['meta', 'tiktok', 'google', 'linkedin'],
+      agency: ['meta', 'tiktok', 'google', 'linkedin']
+    };
+
+    const allowed = allowedPlatforms[userPlan] || ['meta'];
+    
+    if (!allowed.includes(platform)) {
+      toast.error(`Upgrade to Pro to use ${platform.toUpperCase()}`);
+      return;
+    }
+
     setSelectedPlatforms(prev => 
       prev.includes(platform) 
         ? prev.filter(p => p !== platform)

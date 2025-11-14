@@ -148,6 +148,35 @@ export default function CreateCampaign() {
       return;
     }
 
+    // Check user plan and enforce tier limits
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', user.id)
+      .single();
+
+    const userPlan = profile?.plan || 'free';
+
+    // FREE TIER: 1 ad per day limit
+    if (userPlan === 'free') {
+      const today = new Date().toISOString().split('T')[0];
+      const { data: todayAds } = await supabase
+        .from('campaigns')
+        .select('id')
+        .eq('user_id', user.id)
+        .gte('created_at', `${today}T00:00:00`)
+        .lte('created_at', `${today}T23:59:59`);
+
+      if (todayAds && todayAds.length >= 1) {
+        toast({
+          variant: "destructive",
+          title: "Daily limit reached",
+          description: "Free tier: 1 ad per day. Upgrade to Pro for unlimited ads.",
+        });
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       // Create campaign
