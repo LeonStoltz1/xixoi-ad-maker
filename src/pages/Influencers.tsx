@@ -437,9 +437,14 @@ export default function Influencers() {
             Join hundreds of influencers earning passive income by promoting xiXoi™. 
             Get your unique referral link in 30 seconds.
           </p>
-          <Button size="lg" onClick={() => navigate('/auth')}>
-            Create Your Affiliate Account
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" onClick={() => navigate('/auth')}>
+              Create Your Affiliate Account
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => navigate('/leaderboard')}>
+              View Leaderboard
+            </Button>
+          </div>
           <p className="text-sm text-muted-foreground mt-4">
             Already have an account? <button onClick={() => navigate('/affiliates')} className="text-primary hover:underline">View Dashboard</button>
           </p>
