@@ -105,7 +105,7 @@ export const Pricing = () => {
               } p-6 md:p-8 text-left md:text-left`}
             >
               <div className="mb-6 space-y-3">
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.5px]">{plan.name}</h3>
+                <h3 className="text-sm md:text-base font-bold uppercase tracking-[0.5px]">{plan.name}</h3>
                 <div className="space-y-1">
                   <div className="text-[36px] md:text-[48px] font-bold leading-none">{plan.price}</div>
                   {plan.subtitle && (
