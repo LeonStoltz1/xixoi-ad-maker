@@ -16,17 +16,6 @@ export const Header = () => {
                 className="w-32 h-32 object-contain"
               />
             </a>
-            <nav className="hidden md:flex gap-6">
-              <a href="#how-it-works" className="text-sm font-medium text-white hover:opacity-70 transition-opacity">
-                How It Works
-              </a>
-              <a href="#pricing" className="text-sm font-medium text-white hover:opacity-70 transition-opacity">
-                Pricing
-              </a>
-              <a href="#faq" className="text-sm font-medium text-white hover:opacity-70 transition-opacity">
-                FAQ
-              </a>
-            </nav>
           </div>
           
           <div className="flex items-center gap-3">
