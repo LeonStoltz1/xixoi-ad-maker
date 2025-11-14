@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import { linkUserToAffiliate } from "@/lib/affiliateTracking";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -77,7 +78,7 @@ export default function Auth() {
           navigate("/dashboard");
         }
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -89,6 +90,11 @@ export default function Auth() {
         });
 
         if (error) throw error;
+
+        // Link user to affiliate if they came from a referral link
+        if (data.user) {
+          await linkUserToAffiliate(data.user.id);
+        }
 
         toast({
           title: "Account created!",
