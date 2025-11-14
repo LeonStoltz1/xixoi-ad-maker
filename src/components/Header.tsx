@@ -24,9 +24,6 @@ export const Header = () => {
               <a href="#pricing" className="text-sm font-medium text-white hover:opacity-70 transition-opacity">
                 Pricing
               </a>
-              <a href="/influencers" className="text-sm font-medium text-white hover:opacity-70 transition-opacity">
-                For Influencers
-              </a>
               <a href="#faq" className="text-sm font-medium text-white hover:opacity-70 transition-opacity">
                 FAQ
               </a>
