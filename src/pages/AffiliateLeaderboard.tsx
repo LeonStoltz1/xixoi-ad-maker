@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Medal, Award, TrendingUp, Users, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
 
 interface LeaderboardEntry {
   rank: number;
@@ -135,8 +137,9 @@ export default function AffiliateLeaderboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12 px-6">
-      <div className="container mx-auto max-w-6xl">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container mx-auto max-w-6xl py-12 px-6 mt-32">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
@@ -336,6 +339,7 @@ export default function AffiliateLeaderboard() {
           </Card>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

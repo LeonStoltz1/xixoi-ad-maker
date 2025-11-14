@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { linkUserToAffiliate } from "@/lib/affiliateTracking";
+import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -135,8 +137,10 @@ export default function Auth() {
   const planDetails = getPlanDetails(planParam);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-6 py-12">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="flex items-center justify-center px-6 py-12 mt-32">
+        <div className="w-full max-w-md space-y-8">
         {planDetails && (
           <div className="border-2 border-primary bg-primary/5 rounded-xl p-4 text-center space-y-1">
             <p className="text-sm uppercase tracking-wide font-medium text-muted-foreground">
@@ -209,6 +213,8 @@ export default function Auth() {
           </div>
         </form>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 }

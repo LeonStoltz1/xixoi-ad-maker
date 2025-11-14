@@ -3,14 +3,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useNavigate } from "react-router-dom";
 import { DollarSign, Users, TrendingUp, Check, Zap, Gift } from "lucide-react";
+import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
 
 export default function Influencers() {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5 py-24 px-6">
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5 py-24 px-6 mt-32">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold font-heading">
@@ -450,6 +453,7 @@ export default function Influencers() {
           </p>
         </div>
       </section>
+      <Footer />
     </div>
   );
 }

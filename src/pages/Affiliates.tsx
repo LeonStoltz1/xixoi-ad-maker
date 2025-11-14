@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Copy, DollarSign, Users, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 
 const AffiliatesPage = () => {
   const navigate = useNavigate();
@@ -152,7 +154,8 @@ const AffiliatesPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto py-12 px-4">
+      <Header />
+      <div className="max-w-6xl mx-auto py-12 px-4 mt-32">
         {/* Header */}
         <div className="mb-8">
           <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4">
@@ -385,6 +388,7 @@ const AffiliatesPage = () => {
           </>
         )}
       </div>
+      <Footer />
     </div>
   );
 };
