@@ -46,7 +46,7 @@ export default function AdPlatformDashboard() {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-4xl font-bold mb-2">Ad Platform Connections</h1>
+      <h1 className="text-3xl md:text-4xl font-bold mb-2">Ad Platform Connections</h1>
       <p className="text-muted-foreground mb-8">
         Connect your advertising accounts to publish campaigns across platforms
       </p>

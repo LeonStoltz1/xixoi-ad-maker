@@ -6,17 +6,17 @@ const Terms = () => {
     <div className="min-h-screen bg-white">
       <Header />
       <main className="max-w-[720px] mx-auto px-6 py-24">
-        <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-8">Terms of Service</h1>
         <p className="text-sm text-black/60 mb-12">Last updated: {new Date().toLocaleDateString()}</p>
 
         <section className="space-y-8">
           <div>
-            <h2 className="text-2xl font-semibold mb-4">1. Agreement to Terms</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">1. Agreement to Terms</h2>
             <p>By accessing or using xiXoi™ ("the Platform"), you agree to be bound by these Terms of Service. If you do not agree, you may not use the Platform.</p>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">2. Description of Service</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">2. Description of Service</h2>
             <p className="mb-4">xiXoi™ is an AI-powered advertising platform that enables users to:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Upload content (images, videos, text descriptions)</li>
@@ -27,7 +27,7 @@ const Terms = () => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">3. User Eligibility</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">3. User Eligibility</h2>
             <ul className="list-disc pl-6 space-y-2">
               <li>You must be at least 18 years old to use xiXoi™</li>
               <li>You must provide accurate account information</li>
@@ -37,7 +37,7 @@ const Terms = () => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">4. Account Responsibilities</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">4. Account Responsibilities</h2>
             <p>You are responsible for:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Maintaining the confidentiality of your login credentials</li>
@@ -49,7 +49,7 @@ const Terms = () => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">5. Prohibited Uses</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">5. Prohibited Uses</h2>
             <p className="mb-4">You may NOT use xiXoi™ to:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Violate any laws or regulations</li>
@@ -63,7 +63,7 @@ const Terms = () => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">6. Pricing & Payment</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">6. Pricing & Payment</h2>
             <p className="mb-4">xiXoi™ offers four pricing tiers:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li><strong>FREE:</strong> 1 ad/day, watermark required</li>
@@ -75,12 +75,12 @@ const Terms = () => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">7. Ad Spend Billing (Elite/Agency Only)</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">7. Ad Spend Billing (Elite/Agency Only)</h2>
             <p>Scale Elite users are billed 5% of total ad spend across all connected platforms. Billing occurs monthly via Stripe invoice. You authorize xiXoi™ to access ad spend data from connected platforms for billing purposes.</p>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">8. OAuth & Platform Connections</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">8. OAuth & Platform Connections</h2>
             <p>By connecting ad platforms (Meta, TikTok, Google, LinkedIn):</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>You grant xiXoi™ permission to publish ads on your behalf</li>
@@ -91,7 +91,7 @@ const Terms = () => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">9. Content Ownership & License</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">9. Content Ownership & License</h2>
             <p>You retain ownership of uploaded content. By using xiXoi™, you grant us a worldwide, non-exclusive license to:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Process and generate ad variants using AI</li>
@@ -102,7 +102,7 @@ const Terms = () => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">10. AI-Generated Content Disclaimer</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">10. AI-Generated Content Disclaimer</h2>
             <p>xiXoi™ uses AI to generate ad copy, headlines, and targeting suggestions. While we strive for accuracy:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>AI outputs may contain errors or inaccuracies</li>
@@ -112,7 +112,7 @@ const Terms = () => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">11. Disclaimers & Limitation of Liability</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">11. Disclaimers & Limitation of Liability</h2>
             <p className="mb-4">xiXoi™ is provided "AS IS" without warranties of any kind. We do NOT guarantee:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Ad performance, ROAS, or campaign success</li>
@@ -123,7 +123,7 @@ const Terms = () => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">12. Indemnification</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">12. Indemnification</h2>
             <p>You agree to indemnify xiXoi™ from claims arising from:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Your use of the Platform</li>
@@ -134,7 +134,7 @@ const Terms = () => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">13. Termination</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">13. Termination</h2>
             <p>We may suspend or terminate your account for:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Violations of these Terms</li>
@@ -145,17 +145,17 @@ const Terms = () => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">14. Governing Law</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">14. Governing Law</h2>
             <p>These Terms are governed by the laws of the State of Georgia, United States. Disputes resolved via binding arbitration in Georgia, USA.</p>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">15. Changes to Terms</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">15. Changes to Terms</h2>
             <p>We may update these Terms periodically. Continued use after changes constitutes acceptance. Material changes will be notified via email.</p>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">16. Contact Information</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">16. Contact Information</h2>
             <p>For questions about these Terms:</p>
             <p className="mt-4">
               <strong>Email:</strong> legal@xixoi.com<br />

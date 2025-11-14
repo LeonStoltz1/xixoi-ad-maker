@@ -142,13 +142,13 @@ export default function Auth() {
             <p className="text-sm uppercase tracking-wide font-medium text-muted-foreground">
               Selected Plan
             </p>
-            <h3 className="text-xl font-bold">{planDetails.name}</h3>
-            <p className="text-lg font-medium text-primary">{planDetails.price}</p>
+            <h3 className="text-lg md:text-xl font-bold">{planDetails.name}</h3>
+            <p className="text-base md:text-lg font-medium text-primary">{planDetails.price}</p>
           </div>
         )}
 
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">xiXoi™</h1>
+          <h1 className="text-3xl md:text-4xl font-bold">xiXoi™</h1>
           <p className="text-muted-foreground">
             {isLogin ? "Sign in to your account" : "Create your account"}
           </p>

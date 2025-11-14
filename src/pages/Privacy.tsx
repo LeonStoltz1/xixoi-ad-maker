@@ -6,12 +6,12 @@ const Privacy = () => {
     <div className="min-h-screen bg-white">
       <Header />
       <main className="max-w-[720px] mx-auto px-6 py-24">
-        <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-8">Privacy Policy</h1>
         <p className="text-sm text-black/60 mb-12">Last updated: {new Date().toLocaleDateString()}</p>
 
         <section className="space-y-8">
           <div>
-            <h2 className="text-2xl font-semibold mb-4">1. Information We Collect</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">1. Information We Collect</h2>
             <p className="mb-4">xiXoi™ collects the following types of information:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li><strong>Account Information:</strong> Email address, full name, OAuth tokens from connected ad platforms (Meta, TikTok, Google Ads, LinkedIn)</li>
@@ -23,7 +23,7 @@ const Privacy = () => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">2. How We Use Your Information</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">2. How We Use Your Information</h2>
             <ul className="list-disc pl-6 space-y-2">
               <li>Create and publish advertising campaigns on connected platforms</li>
               <li>Generate AI-powered ad variants optimized for each platform</li>
@@ -35,7 +35,7 @@ const Privacy = () => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">3. Data Sharing & Third Parties</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">3. Data Sharing & Third Parties</h2>
             <p className="mb-4">We share data with the following third parties:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li><strong>Ad Platforms:</strong> Meta, TikTok, Google Ads, LinkedIn (campaign data, targeting settings, creative assets)</li>
@@ -47,7 +47,7 @@ const Privacy = () => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">4. Data Retention</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">4. Data Retention</h2>
             <ul className="list-disc pl-6 space-y-2">
               <li><strong>Active Users:</strong> Data retained for duration of account activity</li>
               <li><strong>Deleted Accounts:</strong> All user data permanently deleted within 30 days of account deletion request</li>

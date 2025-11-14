@@ -62,7 +62,7 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: Upg
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wide mb-1">FREE</div>
-                  <div className="text-2xl font-bold">$0</div>
+                  <div className="text-xl md:text-2xl font-bold">$0</div>
                 </div>
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-1 ${
                   selectedPlan === 'free' ? 'border-foreground' : 'border-foreground'
@@ -94,7 +94,7 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: Upg
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wide mb-1">PUBLISH PRO</div>
-                  <div className="text-2xl font-bold">$29 per ad set</div>
+                  <div className="text-xl md:text-2xl font-bold">$29 per ad set</div>
                 </div>
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-1 ${
                   selectedPlan === 'single' ? 'border-foreground' : 'border-foreground'
@@ -126,7 +126,7 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: Upg
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wide mb-1">UNLIMITED PRO</div>
-                  <div className="text-2xl font-bold">$99/month</div>
+                  <div className="text-xl md:text-2xl font-bold">$99/month</div>
                 </div>
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-1 ${
                   selectedPlan === 'unlimited' ? 'border-foreground' : 'border-foreground'
@@ -155,7 +155,7 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: Upg
         <div className="space-y-3">
           <Button
             size="lg"
-            className="w-full text-base md:text-lg py-6"
+            className="w-full text-sm md:text-base lg:text-lg py-6"
             onClick={handleContinue}
             disabled={loading}
           >

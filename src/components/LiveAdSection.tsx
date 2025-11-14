@@ -7,7 +7,7 @@ export const LiveAdSection = () => {
         <div className="border border-foreground p-8 max-w-md mx-auto mb-grid">
           <div className="space-y-6">
             <div className="bg-foreground text-background p-4">
-              <h3 className="text-lg font-bold">YOUR PRODUCT</h3>
+              <h3 className="text-base md:text-lg font-bold">YOUR PRODUCT</h3>
             </div>
             
             <div className="space-y-2 text-left">

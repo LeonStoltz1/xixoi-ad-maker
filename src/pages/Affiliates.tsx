@@ -130,7 +130,7 @@ const AffiliatesPage = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
-          <h1 className="text-3xl font-bold mb-4">Affiliate Program</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mb-4">Affiliate Program</h1>
           <p className="text-muted-foreground mb-6">
             You need to be logged in to access the affiliate dashboard.
           </p>
@@ -158,15 +158,15 @@ const AffiliatesPage = () => {
           <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4">
             ← Back to Dashboard
           </Button>
-          <h1 className="text-4xl font-bold mb-4">xiXoi™ Affiliate Dashboard</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">xiXoi™ Affiliate Dashboard</h1>
           <div className="inline-flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-lg px-6 py-3">
             <DollarSign className="w-6 h-6 text-primary" />
             <div>
               <p className="text-sm text-muted-foreground">Commission Rate</p>
-              <p className="text-2xl font-bold text-primary">20% Lifetime</p>
+              <p className="text-xl md:text-2xl font-bold text-primary">20% Lifetime</p>
             </div>
           </div>
-          <p className="text-muted-foreground text-lg mt-4">
+          <p className="text-muted-foreground text-base md:text-lg mt-4">
             Earn recurring commission for every paying customer you refer - for as long as they remain subscribed.
           </p>
         </div>
@@ -179,7 +179,7 @@ const AffiliatesPage = () => {
 
         {!affiliate && (
           <div className="bg-card border border-border rounded-lg p-8 mb-6 text-center">
-            <h2 className="text-2xl font-semibold mb-4">Join the Affiliate Program</h2>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">Join the Affiliate Program</h2>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
               Generate your unique affiliate link and start earning 20% commission on every payment
               from customers you refer. It's completely free to join.
@@ -194,7 +194,7 @@ const AffiliatesPage = () => {
           <>
             {/* Affiliate Link */}
             <div className="bg-card border border-border rounded-lg p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
                 <Copy className="w-5 h-5" />
                 Your Affiliate Link
               </h2>
@@ -247,7 +247,7 @@ const AffiliatesPage = () => {
                   <span className="text-sm font-medium text-foreground">Commission Rate</span>
                   <DollarSign className="w-5 h-5 text-primary" />
                 </div>
-                <div className="text-4xl font-bold text-primary">20%</div>
+                <div className="text-3xl md:text-4xl font-bold text-primary">20%</div>
                 <p className="text-xs text-muted-foreground mt-2">Lifetime recurring</p>
               </div>
               <div className="bg-card border border-border rounded-lg p-6">
@@ -255,7 +255,7 @@ const AffiliatesPage = () => {
                   <span className="text-sm text-muted-foreground">Total Earned</span>
                   <DollarSign className="w-5 h-5 text-primary" />
                 </div>
-                <div className="text-3xl font-bold">
+                <div className="text-2xl md:text-3xl font-bold">
                   ${Number(affiliate.total_earned ?? 0).toFixed(2)}
                 </div>
               </div>
@@ -264,7 +264,7 @@ const AffiliatesPage = () => {
                   <span className="text-sm text-muted-foreground">Total Paid Out</span>
                   <TrendingUp className="w-5 h-5 text-primary" />
                 </div>
-                <div className="text-3xl font-bold">
+                <div className="text-2xl md:text-3xl font-bold">
                   ${Number(affiliate.total_paid ?? 0).toFixed(2)}
                 </div>
               </div>
@@ -273,7 +273,7 @@ const AffiliatesPage = () => {
                   <span className="text-sm text-muted-foreground">Available</span>
                   <Users className="w-5 h-5 text-primary" />
                 </div>
-                <div className="text-3xl font-bold text-primary">
+                <div className="text-2xl md:text-3xl font-bold text-primary">
                   $
                   {(
                     Number(affiliate.total_earned ?? 0) -
@@ -285,7 +285,7 @@ const AffiliatesPage = () => {
 
             {/* Request Payout */}
             <div className="bg-card border border-border rounded-lg p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">Request Payout</h2>
+              <h2 className="text-lg md:text-xl font-semibold mb-4">Request Payout</h2>
               <p className="text-sm text-muted-foreground mb-4">
                 Minimum payout: <strong>$100</strong>. Payouts are processed via Stripe or PayPal (depending on your method).
               </p>
@@ -304,7 +304,7 @@ const AffiliatesPage = () => {
 
             {/* Referrals */}
             <div className="bg-card border border-border rounded-lg p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">Your Referrals</h2>
+              <h2 className="text-lg md:text-xl font-semibold mb-4">Your Referrals</h2>
               {referrals.length === 0 && (
                 <p className="text-sm text-muted-foreground">
                   No referrals yet. Share your link to get started.
@@ -342,7 +342,7 @@ const AffiliatesPage = () => {
 
             {/* Payout History */}
             <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Payout History</h2>
+              <h2 className="text-lg md:text-xl font-semibold mb-4">Payout History</h2>
               {payouts.length === 0 && (
                 <p className="text-sm text-muted-foreground">No payouts yet.</p>
               )}

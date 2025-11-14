@@ -13,10 +13,10 @@ export default function Influencers() {
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5 py-24 px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center space-y-6">
-            <h1 className="text-5xl md:text-7xl font-bold font-heading">
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold font-heading">
               Join the xiXoi™ <span className="text-primary">Influencer Program</span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto">
               Earn 20% lifetime recurring commission on every customer you refer. No caps. No limits.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
@@ -36,18 +36,18 @@ export default function Influencers() {
         <div className="container mx-auto max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="space-y-2">
-              <div className="text-4xl font-bold text-primary">20%</div>
-              <div className="text-lg font-medium">Lifetime Commission</div>
+              <div className="text-3xl md:text-4xl font-bold text-primary">20%</div>
+              <div className="text-base md:text-lg font-medium">Lifetime Commission</div>
               <div className="text-sm text-muted-foreground">On all plans, forever</div>
             </div>
             <div className="space-y-2">
-              <div className="text-4xl font-bold text-primary">$99-299</div>
-              <div className="text-lg font-medium">Monthly Plans</div>
+              <div className="text-3xl md:text-4xl font-bold text-primary">$99-299</div>
+              <div className="text-base md:text-lg font-medium">Monthly Plans</div>
               <div className="text-sm text-muted-foreground">Earn $19.80-$59.80/mo per referral</div>
             </div>
             <div className="space-y-2">
-              <div className="text-4xl font-bold text-primary">30 Days</div>
-              <div className="text-lg font-medium">Cookie Duration</div>
+              <div className="text-3xl md:text-4xl font-bold text-primary">30 Days</div>
+              <div className="text-base md:text-lg font-medium">Cookie Duration</div>
               <div className="text-sm text-muted-foreground">Get credit for all clicks</div>
             </div>
           </div>
@@ -58,8 +58,8 @@ export default function Influencers() {
       <section id="how-it-works" className="py-20 px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">How It Works</h2>
-            <p className="text-xl text-muted-foreground">Simple, transparent, and profitable</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
+            <p className="text-lg md:text-xl text-muted-foreground">Simple, transparent, and profitable</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
