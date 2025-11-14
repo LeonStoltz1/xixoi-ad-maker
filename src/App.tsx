@@ -18,6 +18,7 @@ import DeleteAccount from "./pages/DeleteAccount";
 import AdminDashboard from "./pages/AdminDashboard";
 import TargetingSetup from "./pages/TargetingSetup";
 import Affiliates from "./pages/Affiliates";
+import Influencers from "./pages/Influencers";
 import PayoutDashboard from "./pages/PayoutDashboard";
 import AdPlatformDashboard from "./pages/AdPlatformDashboard";
 import CampaignPublish from "./pages/CampaignPublish";
@@ -66,6 +67,7 @@ const App = () => (
           <Route path="/delete-account" element={<DeleteAccount />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/affiliates" element={<Affiliates />} />
+          <Route path="/influencers" element={<Influencers />} />
           <Route path="/payouts" element={<PayoutDashboard />} />
           <Route path="/ad-platforms" element={<AdPlatformDashboard />} />
           <Route path="/campaign-publish" element={<CampaignPublish />} />
