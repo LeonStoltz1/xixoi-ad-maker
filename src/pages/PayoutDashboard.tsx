@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ExportPayouts } from "@/components/ExportPayouts";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface Payout {
   id: string;
@@ -13,6 +15,7 @@ interface Payout {
 }
 
 export default function PayoutDashboard() {
+  const navigate = useNavigate();
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,7 +44,12 @@ export default function PayoutDashboard() {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Payout Dashboard</h1>
-        <ExportPayouts />
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => navigate('/payout-settings')}>
+            Settings
+          </Button>
+          <ExportPayouts />
+        </div>
       </div>
 
       <div className="bg-card shadow rounded-lg overflow-hidden border border-border">

@@ -122,6 +122,29 @@ Deno.serve(async (req) => {
 
     await Promise.all(transfers);
 
+    // Optional: Trigger Zapier webhook if configured
+    const ZAPIER_WEBHOOK = Deno.env.get('ZAPIER_PAYOUT_WEBHOOK');
+    if (ZAPIER_WEBHOOK) {
+      try {
+        await fetch(ZAPIER_WEBHOOK, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'monthly_payouts_completed',
+            month,
+            totalPayout,
+            totalAffiliatePayout,
+            totalAgencyBonus,
+            affiliateCount: subscriptions?.length || 0,
+            timestamp: new Date().toISOString()
+          })
+        });
+        console.log('Zapier webhook triggered successfully');
+      } catch (error) {
+        console.error('Failed to trigger Zapier webhook:', error);
+      }
+    }
+
     console.log(`Processed ${subscriptions?.length || 0} payouts. Total: $${totalPayout}`);
 
     return new Response(
