@@ -41,9 +41,9 @@ const Index = () => {
         <Hero />
         <UploadSection />
         <AIBuildsSection />
+        <ChannelsSection />
         <TargetingSection />
         <PaymentSection />
-        <ChannelsSection />
         <LiveAdSection />
         <div id="pricing">
           <Pricing />
