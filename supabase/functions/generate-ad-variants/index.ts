@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { embedWatermark } from "../_shared/steganography.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -151,8 +152,56 @@ Return JSON:
     }
 
     // Get campaign asset URL
-    const assetUrl = campaign.campaign_assets[0]?.asset_url || null;
+    let assetUrl = campaign.campaign_assets[0]?.asset_url || null;
     console.log('Asset URL:', assetUrl);
+
+    // For free users, embed invisible watermark in the image
+    if (isFreeUser && assetUrl) {
+      try {
+        const assetType = campaign.campaign_assets[0]?.asset_type;
+        
+        // Only embed watermark in images (not videos)
+        if (assetType === 'image') {
+          console.log('Embedding watermark for free user...');
+          
+          // Download the original image
+          const { data: imageData, error: downloadError } = await supabase.storage
+            .from('campaign-assets')
+            .download(assetUrl);
+
+          if (!downloadError && imageData) {
+            // Create unique fingerprint
+            const fingerprint = `${campaign.user_id}_${campaignId}_${Date.now()}`;
+            
+            // Embed watermark
+            const imageBuffer = new Uint8Array(await imageData.arrayBuffer());
+            const watermarkedImage = await embedWatermark(imageBuffer, fingerprint);
+            
+            // Upload watermarked version
+            const watermarkedPath = `watermarked/${campaignId}_${Date.now()}.png`;
+            const { error: uploadError } = await supabase.storage
+              .from('campaign-assets')
+              .upload(watermarkedPath, watermarkedImage, {
+                contentType: 'image/png',
+                upsert: true
+              });
+
+            if (!uploadError) {
+              assetUrl = watermarkedPath;
+              console.log('Watermarked image uploaded:', watermarkedPath);
+              
+              // Store fingerprint in free_ads table
+              // Note: We'll insert after variants are created to get variant IDs
+            } else {
+              console.error('Failed to upload watermarked image:', uploadError);
+            }
+          }
+        }
+      } catch (watermarkError) {
+        console.error('Watermark embedding failed:', watermarkError);
+        // Continue with original image if watermarking fails
+      }
+    }
 
     // For free users, only create 1 variant (Meta). For paid users, create all 4.
     const variantsToCreate = isFreeUser 
@@ -172,11 +221,34 @@ Return JSON:
       predicted_roas: (2.5 + Math.random() * 2).toFixed(2),
     }));
 
-    const { error: insertError } = await supabase
+    const { data: insertedVariants, error: insertError } = await supabase
       .from('ad_variants')
-      .insert(variants);
+      .insert(variants)
+      .select();
 
     if (insertError) throw insertError;
+
+    // For free users, create fingerprint records
+    if (isFreeUser && insertedVariants && insertedVariants.length > 0) {
+      const fingerprint = `${campaign.user_id}_${campaignId}_${Date.now()}`;
+      
+      const fingerprintRecords = insertedVariants.map((variant: any) => ({
+        user_id: campaign.user_id,
+        ad_variant_id: variant.id,
+        fingerprint: fingerprint,
+        image_url: assetUrl
+      }));
+
+      const { error: fingerprintError } = await supabase
+        .from('free_ads')
+        .insert(fingerprintRecords);
+
+      if (fingerprintError) {
+        console.error('Failed to create fingerprint records:', fingerprintError);
+      } else {
+        console.log('Fingerprint records created for free user');
+      }
+    }
 
     // Update campaign status
     await supabase
