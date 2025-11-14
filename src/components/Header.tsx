@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 
 export const Header = () => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-20 bg-black border-b border-white/20">
+    <header className="fixed top-0 left-0 right-0 z-50 h-32 bg-black border-b border-white/20">
       <div className="container mx-auto max-w-content px-6 h-full flex items-center">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-8">
@@ -13,7 +13,7 @@ export const Header = () => {
                 loop 
                 muted 
                 playsInline
-                className="w-16 h-16 object-contain"
+                className="w-32 h-32 object-contain"
               />
               xiXoi™
             </a>

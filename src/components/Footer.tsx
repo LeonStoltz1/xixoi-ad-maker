@@ -39,7 +39,7 @@ export const Footer = () => {
                 loop 
                 muted 
                 playsInline
-                className="w-12 h-12 object-contain"
+                className="w-24 h-24 object-contain"
               />
               <h3 className="text-xl md:text-2xl font-bold">xiXoi™</h3>
             </div>
