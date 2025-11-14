@@ -29,3 +29,27 @@ verify_jwt = true
 
 [functions.admin-charge-watermark]
 verify_jwt = true
+
+[functions.meta-oauth]
+verify_jwt = false
+
+[functions.google-oauth]
+verify_jwt = false
+
+[functions.tiktok-oauth]
+verify_jwt = false
+
+[functions.linkedin-oauth]
+verify_jwt = false
+
+[functions.publish-meta]
+verify_jwt = false
+
+[functions.publish-google]
+verify_jwt = false
+
+[functions.publish-tiktok]
+verify_jwt = false
+
+[functions.publish-linkedin]
+verify_jwt = false

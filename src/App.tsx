@@ -18,6 +18,12 @@ import DeleteAccount from "./pages/DeleteAccount";
 import AdminDashboard from "./pages/AdminDashboard";
 import TargetingSetup from "./pages/TargetingSetup";
 import Affiliates from "./pages/Affiliates";
+import AdPlatformDashboard from "./pages/AdPlatformDashboard";
+import CampaignPublish from "./pages/CampaignPublish";
+import MetaConnect from "./pages/connect/MetaConnect";
+import GoogleConnect from "./pages/connect/GoogleConnect";
+import TikTokConnect from "./pages/connect/TikTokConnect";
+import LinkedInConnect from "./pages/connect/LinkedInConnect";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -59,6 +65,12 @@ const App = () => (
           <Route path="/delete-account" element={<DeleteAccount />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/affiliates" element={<Affiliates />} />
+          <Route path="/ad-platforms" element={<AdPlatformDashboard />} />
+          <Route path="/campaign-publish" element={<CampaignPublish />} />
+          <Route path="/connect/meta" element={<MetaConnect />} />
+          <Route path="/connect/google" element={<GoogleConnect />} />
+          <Route path="/connect/tiktok" element={<TikTokConnect />} />
+          <Route path="/connect/linkedin" element={<LinkedInConnect />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
