@@ -158,9 +158,16 @@ const AffiliatesPage = () => {
           <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4">
             ← Back to Dashboard
           </Button>
-          <h1 className="text-4xl font-bold mb-2">xiXoi™ Affiliate Dashboard</h1>
-          <p className="text-muted-foreground text-lg">
-            Earn <span className="font-semibold text-foreground">20% lifetime commission</span> for every paying customer you refer.
+          <h1 className="text-4xl font-bold mb-4">xiXoi™ Affiliate Dashboard</h1>
+          <div className="inline-flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-lg px-6 py-3">
+            <DollarSign className="w-6 h-6 text-primary" />
+            <div>
+              <p className="text-sm text-muted-foreground">Commission Rate</p>
+              <p className="text-2xl font-bold text-primary">20% Lifetime</p>
+            </div>
+          </div>
+          <p className="text-muted-foreground text-lg mt-4">
+            Earn recurring commission for every paying customer you refer - for as long as they remain subscribed.
           </p>
         </div>
 
@@ -234,7 +241,15 @@ const AffiliatesPage = () => {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              <div className="bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/30 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-foreground">Commission Rate</span>
+                  <DollarSign className="w-5 h-5 text-primary" />
+                </div>
+                <div className="text-4xl font-bold text-primary">20%</div>
+                <p className="text-xs text-muted-foreground mt-2">Lifetime recurring</p>
+              </div>
               <div className="bg-card border border-border rounded-lg p-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">Total Earned</span>
