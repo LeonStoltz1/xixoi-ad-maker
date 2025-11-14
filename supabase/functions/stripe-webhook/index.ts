@@ -309,6 +309,52 @@ serve(async (req) => {
               .eq('id', subscriptionRecord.user_id);
             
             console.log('Updated user plan after payment:', planType);
+
+            // AFFILIATE TRACKING: Update affiliate earnings (20% commission)
+            if (invoice.customer && invoice.amount_paid) {
+              const stripeCustomerId = String(invoice.customer);
+              const amount = invoice.amount_paid / 100; // cents to dollars
+
+              // Find referral by stripe_customer_id
+              const { data: referral, error: refError } = await supabase
+                .from('affiliate_referrals')
+                .select('*')
+                .eq('stripe_customer_id', stripeCustomerId)
+                .maybeSingle();
+
+              if (referral && !refError) {
+                const commissionRate = 0.2; // 20% commission
+                const commission = amount * commissionRate;
+
+                // Update referral
+                await supabase
+                  .from('affiliate_referrals')
+                  .update({
+                    total_revenue: (referral.total_revenue ?? 0) + amount,
+                    affiliate_earnings: (referral.affiliate_earnings ?? 0) + commission,
+                    first_payment_at: referral.first_payment_at ?? new Date().toISOString(),
+                  })
+                  .eq('id', referral.id);
+
+                // Update affiliate totals
+                const { data: currentAffiliate } = await supabase
+                  .from('affiliates')
+                  .select('total_earned')
+                  .eq('id', referral.affiliate_id)
+                  .single();
+
+                if (currentAffiliate) {
+                  await supabase
+                    .from('affiliates')
+                    .update({
+                      total_earned: (currentAffiliate.total_earned ?? 0) + commission,
+                    })
+                    .eq('id', referral.affiliate_id);
+                  
+                  console.log('Updated affiliate earnings:', { affiliateId: referral.affiliate_id, commission });
+                }
+              }
+            }
           }
         }
         break;
@@ -383,6 +429,13 @@ serve(async (req) => {
             }, {
               onConflict: 'stripe_customer_id'
             });
+
+          // Update affiliate referral with stripe_customer_id if exists
+          await supabase
+            .from('affiliate_referrals')
+            .update({ stripe_customer_id: customer.id })
+            .eq('referred_user_id', userId)
+            .is('stripe_customer_id', null);
         }
         break;
       }
