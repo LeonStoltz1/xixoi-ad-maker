@@ -15,7 +15,6 @@ export const Header = () => {
                 playsInline
                 className="w-32 h-32 object-contain"
               />
-              xiXoi™
             </a>
             <nav className="hidden md:flex gap-6">
               <a href="#how-it-works" className="text-sm font-medium text-white hover:opacity-70 transition-opacity">

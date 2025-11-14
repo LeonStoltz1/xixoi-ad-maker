@@ -41,7 +41,6 @@ export const Footer = () => {
                 playsInline
                 className="w-24 h-24 object-contain"
               />
-              <h3 className="text-xl md:text-2xl font-bold">xiXoi™</h3>
             </div>
             <p className="text-sm opacity-70">
               Instant Ads for Everyone.
