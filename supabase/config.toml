@@ -3,6 +3,9 @@ project_id = "kkpbwuzxunefujucrbfr"
 [functions.generate-ad-variants]
 verify_jwt = false
 
+[functions.process-payouts]
+verify_jwt = false
+
 [functions.publish-ad]
 verify_jwt = true
 
