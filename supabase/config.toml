@@ -6,6 +6,11 @@ verify_jwt = false
 [functions.process-payouts]
 verify_jwt = false
 
+[functions.send-payout-email]
+verify_jwt = false
+
+[functions.create-stripe-connect-account]
+
 [functions.publish-ad]
 verify_jwt = true
 

@@ -14,6 +14,7 @@ const AffiliatesPage = () => {
   const [isRequestingPayout, setIsRequestingPayout] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [stripeSetupStatus, setStripeSetupStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -21,6 +22,31 @@ const AffiliatesPage = () => {
       setUser(user);
     };
     getUser();
+
+    // Check for Stripe Connect callback
+    const params = new URLSearchParams(window.location.search);
+    const setupStatus = params.get('setup');
+    if (setupStatus) {
+      setStripeSetupStatus(setupStatus);
+      if (setupStatus === 'success') {
+        toast.success('Bank account connected successfully! You can now receive payouts.');
+        // Update affiliate record
+        if (affiliate) {
+          supabase
+            .from('affiliates' as any)
+            .update({ stripe_onboarding_complete: true })
+            .eq('user_id', user?.id)
+            .then(() => {
+              // Reload the page to refresh affiliate data
+              window.location.href = '/affiliates';
+            });
+        }
+      } else if (setupStatus === 'failed') {
+        toast.error('Failed to connect bank account. Please try again.');
+      }
+      // Clean up URL
+      window.history.replaceState({}, document.title, '/affiliates');
+    }
   }, []);
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -59,6 +85,14 @@ const AffiliatesPage = () => {
 
   const handleRequestPayout = async () => {
     if (!affiliate) return;
+    
+    // Check if Stripe Connect is set up
+    if (!affiliate.stripe_account_id || !affiliate.stripe_onboarding_complete) {
+      toast.error("Please connect your bank account via Stripe before requesting payouts");
+      setRequestError("Stripe Connect setup required");
+      return;
+    }
+
     setIsRequestingPayout(true);
     setRequestError(null);
 
@@ -157,6 +191,33 @@ const AffiliatesPage = () => {
                 <Copy className="w-5 h-5" />
                 Your Affiliate Link
               </h2>
+              
+              {/* Stripe Connect Warning */}
+              {(!affiliate.stripe_account_id || !affiliate.stripe_onboarding_complete) && (
+                <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                  <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300 mb-2">
+                    ⚠️ Connect your bank account to receive payouts
+                  </p>
+                  <Button 
+                    onClick={async () => {
+                      try {
+                        const response = await supabase.functions.invoke('create-stripe-connect-account');
+                        if (response.data?.url) {
+                          window.location.href = response.data.url;
+                        } else if (response.error) {
+                          toast.error(response.error.message || 'Failed to create Stripe Connect account');
+                        }
+                      } catch (error: any) {
+                        toast.error(error.message || 'Failed to connect Stripe');
+                      }
+                    }}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    Connect Bank Account with Stripe
+                  </Button>
+                </div>
+              )}
+
               <div className="flex flex-col gap-3">
                 <code className="bg-muted p-3 rounded text-sm break-all">
                   {referralLink}

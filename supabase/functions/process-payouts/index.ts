@@ -105,17 +105,48 @@ Deno.serve(async (req) => {
         // Update affiliate total_earned directly
         const { data: affiliate } = await supabase
           .from('affiliates')
-          .select('total_earned')
+          .select('total_earned, payout_email, code')
           .eq('id', referral.affiliate_id)
           .single();
         
         if (affiliate) {
+          const newTotalEarned = (affiliate.total_earned || 0) + affiliatePayout;
           await supabase
             .from('affiliates')
             .update({
-              total_earned: (affiliate.total_earned || 0) + affiliatePayout
+              total_earned: newTotalEarned
             })
             .eq('id', referral.affiliate_id);
+
+          // Send email notification to affiliate
+          if (affiliate.payout_email) {
+            const { count: referralCount } = await supabase
+              .from('affiliate_referrals')
+              .select('*', { count: 'exact', head: true })
+              .eq('affiliate_id', referral.affiliate_id);
+
+            try {
+              await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-payout-email`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+                },
+                body: JSON.stringify({
+                  email: affiliate.payout_email,
+                  affiliateCode: affiliate.code,
+                  amount: affiliatePayout,
+                  month,
+                  totalEarned: newTotalEarned,
+                  referralCount: referralCount || 0
+                })
+              });
+              console.log(`Payout email sent to ${affiliate.payout_email}`);
+            } catch (emailError) {
+              console.error('Failed to send email:', emailError);
+              // Don't fail the whole process if email fails
+            }
+          }
         }
       }
     }
