@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
         .eq('referred_user_id', sub.user_id)
         .maybeSingle();
 
-      const affiliatePayout = price * 0.30;
+      const affiliatePayout = price * 0.20;
       const agencyBonus = price > 99 ? (price - 99) * 0.10 : 0;
       const total = affiliatePayout + agencyBonus;
 
