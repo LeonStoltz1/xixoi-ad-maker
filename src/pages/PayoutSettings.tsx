@@ -139,7 +139,7 @@ export default function PayoutSettings() {
                 <div>
                   <div className="font-medium">Automatic Calculations</div>
                   <div className="text-sm text-muted-foreground">
-                    Calculates 30% affiliate commission + 10% agency bonus for all active subscriptions
+                    Calculates 20% affiliate commission + 10% agency bonus for all active subscriptions
                   </div>
                 </div>
               </div>

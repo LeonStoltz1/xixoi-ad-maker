@@ -17,7 +17,7 @@ export default function Influencers() {
               Join the xiXoi™ <span className="text-primary">Influencer Program</span>
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
-              Earn 30% lifetime recurring commission on every customer you refer. No caps. No limits.
+              Earn 20% lifetime recurring commission on every customer you refer. No caps. No limits.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
               <Button size="lg" onClick={() => navigate('/auth')}>
@@ -36,14 +36,14 @@ export default function Influencers() {
         <div className="container mx-auto max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="space-y-2">
-              <div className="text-4xl font-bold text-primary">30%</div>
+              <div className="text-4xl font-bold text-primary">20%</div>
               <div className="text-lg font-medium">Lifetime Commission</div>
               <div className="text-sm text-muted-foreground">On all plans, forever</div>
             </div>
             <div className="space-y-2">
               <div className="text-4xl font-bold text-primary">$99-299</div>
               <div className="text-lg font-medium">Monthly Plans</div>
-              <div className="text-sm text-muted-foreground">Earn $29.70-$89.70/mo per referral</div>
+              <div className="text-sm text-muted-foreground">Earn $19.80-$59.80/mo per referral</div>
             </div>
             <div className="space-y-2">
               <div className="text-4xl font-bold text-primary">30 Days</div>
@@ -100,7 +100,7 @@ export default function Influencers() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Earn 30% commission every month your referrals stay subscribed. Request payouts anytime you reach $100.
+                  Earn 20% commission every month your referrals stay subscribed. Request payouts anytime you reach $100.
                 </p>
               </CardContent>
             </Card>
@@ -125,17 +125,17 @@ export default function Influencers() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="text-3xl font-bold">$99<span className="text-lg text-muted-foreground">/mo</span></div>
-                  <div className="text-primary text-2xl font-bold">= $29.70/mo</div>
-                  <div className="text-sm text-muted-foreground">Your commission (30%)</div>
+                  <div className="text-primary text-2xl font-bold">= $19.80/mo</div>
+                  <div className="text-sm text-muted-foreground">Your commission (20%)</div>
                 </div>
                 <div className="pt-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Check className="w-4 h-4 text-primary" />
-                    <span>30% lifetime recurring</span>
+                    <span>20% lifetime recurring</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Check className="w-4 h-4 text-primary" />
-                    <span>$356.40/year per referral</span>
+                    <span>$237.60/year per referral</span>
                   </div>
                 </div>
               </CardContent>
@@ -153,17 +153,17 @@ export default function Influencers() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="text-3xl font-bold">$199<span className="text-lg text-muted-foreground">/mo</span></div>
-                  <div className="text-primary text-2xl font-bold">= $59.70/mo</div>
-                  <div className="text-sm text-muted-foreground">Your commission (30%)</div>
+                  <div className="text-primary text-2xl font-bold">= $39.80/mo</div>
+                  <div className="text-sm text-muted-foreground">Your commission (20%)</div>
                 </div>
                 <div className="pt-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Check className="w-4 h-4 text-primary" />
-                    <span>30% lifetime recurring</span>
+                    <span>20% lifetime recurring</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Check className="w-4 h-4 text-primary" />
-                    <span>$716.40/year per referral</span>
+                    <span>$477.60/year per referral</span>
                   </div>
                 </div>
               </CardContent>
@@ -177,17 +177,17 @@ export default function Influencers() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="text-3xl font-bold">$299<span className="text-lg text-muted-foreground">/mo</span></div>
-                  <div className="text-primary text-2xl font-bold">= $89.70/mo</div>
-                  <div className="text-sm text-muted-foreground">Your commission (30%)</div>
+                  <div className="text-primary text-2xl font-bold">= $59.80/mo</div>
+                  <div className="text-sm text-muted-foreground">Your commission (20%)</div>
                 </div>
                 <div className="pt-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Check className="w-4 h-4 text-primary" />
-                    <span>30% lifetime recurring</span>
+                    <span>20% lifetime recurring</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Check className="w-4 h-4 text-primary" />
-                    <span>$1,076.40/year per referral</span>
+                    <span>$717.60/year per referral</span>
                   </div>
                 </div>
               </CardContent>
@@ -201,8 +201,8 @@ export default function Influencers() {
                   <TrendingUp className="w-6 h-6 text-primary" />
                   <h3 className="text-xl font-bold">Example: 10 Active Referrals</h3>
                 </div>
-                <p className="text-3xl font-bold text-primary mb-2">$297-$897/month</p>
-                <p className="text-muted-foreground">$3,564-$10,764/year passive income</p>
+                <p className="text-3xl font-bold text-primary mb-2">$198-$598/month</p>
+                <p className="text-muted-foreground">$2,376-$7,176/year passive income</p>
               </CardContent>
             </Card>
           </div>
@@ -227,7 +227,7 @@ export default function Influencers() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Unlike one-time payouts, you earn 30% every single month your referral stays subscribed. The longer they stay, the more you earn.
+                  Unlike one-time payouts, you earn 20% every single month your referral stays subscribed. The longer they stay, the more you earn.
                 </p>
               </CardContent>
             </Card>
@@ -319,8 +319,8 @@ export default function Influencers() {
                 How much can I earn as an affiliate?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                You earn 30% recurring commission on all plans. For the Pro plan ($99/mo), that's $29.70/month per referral. 
-                For Elite ($199/mo), that's $59.70/month. For Agency ($299/mo), that's $89.70/month. There's no cap on how many 
+                You earn 20% recurring commission on all plans. For the Pro plan ($99/mo), that's $19.80/month per referral. 
+                For Elite ($199/mo), that's $39.80/month. For Agency ($299/mo), that's $59.80/month. There's no cap on how many
                 referrals you can make or how much you can earn. If you refer 100 customers on the Pro plan, that's $2,970/month 
                 in recurring income ($35,640/year).
               </AccordionContent>
@@ -331,8 +331,8 @@ export default function Influencers() {
                 How long do I earn commission for each referral?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Forever! As long as your referral remains a paying customer, you'll continue earning 30% commission every single month. 
-                This is a lifetime recurring commission, not a one-time payment. If a customer stays for 2 years, you earn commission 
+                Forever! As long as your referral remains a paying customer, you'll continue earning 20% commission every single month. 
+                This is a lifetime recurring commission, not a one-time payment. If a customer stays for 2 years, you earn commission
                 for all 24 months.
               </AccordionContent>
             </AccordionItem>
@@ -374,9 +374,9 @@ export default function Influencers() {
                 What if my referral upgrades or downgrades their plan?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                You'll continue earning 30% commission based on their current plan. If they upgrade from Pro ($99/mo) to 
-                Elite ($199/mo), your commission increases from $29.70/mo to $59.70/mo. If they downgrade, your commission 
-                adjusts accordingly. You always earn 30% of whatever they're currently paying.
+                You'll continue earning 20% commission based on their current plan. If they upgrade from Pro ($99/mo) to 
+                Elite ($199/mo), your commission increases from $19.80/mo to $39.80/mo. If they downgrade, your commission 
+                adjusts accordingly. You always earn 20% of whatever they're currently paying.
               </AccordionContent>
             </AccordionItem>
 

@@ -321,7 +321,7 @@ export default function AffiliateLeaderboard() {
             <CardContent className="py-12">
               <h3 className="text-3xl font-bold mb-4">Want to Join the Leaderboard?</h3>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Start earning 30% recurring commission on every referral. The more you promote, 
+                Start earning 20% recurring commission on every referral. The more you promote, 
                 the higher you climb on the leaderboard.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
