@@ -60,7 +60,7 @@ export default function PayoutDashboard() {
                 Month
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
-                Affiliate (30%)
+                Affiliate (20%)
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">
                 Agency Bonus (10% Δ)
@@ -104,7 +104,7 @@ export default function PayoutDashboard() {
       </div>
 
       <div className="mt-6 text-sm text-muted-foreground space-y-1">
-        <p>* Affiliate earns 30% lifetime on full MRR</p>
+        <p>* Affiliate earns 20% lifetime on full MRR</p>
         <p>* Agency earns 10% on upgrade delta only</p>
       </div>
     </div>
