@@ -201,14 +201,77 @@ Return JSON:
       }
     }
 
-    // Update campaign status
+    // Generate AI audience targeting suggestions
+    const audiencePrompt = `Analyze this product/service and suggest advertising targeting:
+
+Product Description: "${productDescription}"
+${assetUrl ? `Image URL: ${assetUrl}` : ''}
+
+Return ONLY valid JSON with this exact structure:
+{
+  "product_type": "descriptive product category",
+  "audience": {
+    "age_range": "25-45",
+    "gender": "women/men/all",
+    "interests": ["interest1", "interest2", "interest3"]
+  },
+  "locations": ["US", "UK", "CA"],
+  "daily_budget": 35,
+  "platforms": ["meta", "tiktok"],
+  "reasoning": "brief explanation of targeting strategy"
+}`;
+
+    let audienceSuggestion = null;
+    try {
+      const audienceResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an expert digital advertising strategist. Analyze products and suggest optimal ad targeting. Return ONLY valid JSON, no markdown formatting.'
+            },
+            {
+              role: 'user',
+              content: audiencePrompt
+            }
+          ],
+        }),
+      });
+
+      if (audienceResponse.ok) {
+        const audienceData = await audienceResponse.json();
+        let audienceContent = audienceData.choices[0]?.message?.content || '{}';
+        audienceContent = audienceContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        audienceSuggestion = JSON.parse(audienceContent);
+        console.log('AI Audience Suggestion:', JSON.stringify(audienceSuggestion, null, 2));
+      }
+    } catch (error) {
+      console.error('Failed to generate audience suggestions:', error);
+      // Continue without audience suggestions if AI fails
+    }
+
+    // Update campaign with audience suggestions and status
+    const campaignUpdate: any = { status: 'ready' };
+    if (audienceSuggestion) {
+      campaignUpdate.audience_suggestion = audienceSuggestion;
+      campaignUpdate.auto_targeted = true;
+      campaignUpdate.detected_product_type = audienceSuggestion.product_type;
+      campaignUpdate.suggested_daily_budget = audienceSuggestion.daily_budget;
+    }
+
     await supabase
       .from('campaigns')
-      .update({ status: 'ready' })
+      .update(campaignUpdate)
       .eq('id', campaignId);
 
     return new Response(
-      JSON.stringify({ success: true, variants }),
+      JSON.stringify({ success: true, variants, audienceSuggestion }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,

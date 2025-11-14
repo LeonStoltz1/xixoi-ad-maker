@@ -226,13 +226,9 @@ export default function CreateCampaign() {
       setCreatedCampaignId(campaign.id);
       setGeneratedVariants(variants || []);
       setUploadedAssetUrl(assetUrl);
-      // Auto-select first variant for free users (they have no choice)
-      if (variants && variants.length === 1) {
-        setSelectedVariantId(variants[0].id);
-      }
-      setShowPreview(true);
       
-      console.log('Preview should now be showing with asset URL:', assetUrl);
+      // Redirect to AI targeting screen
+      navigate(`/targeting/${campaign.id}`);
     } catch (error: any) {
       toast({
         variant: "destructive",
