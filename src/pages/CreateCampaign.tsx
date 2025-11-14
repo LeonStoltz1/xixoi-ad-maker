@@ -286,7 +286,7 @@ export default function CreateCampaign() {
               playsInline
               className="w-12 h-12 object-contain"
             />
-            <h1 className="text-2xl font-bold text-white">xiXoi™</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-white">xiXoi™</h1>
           </div>
         </div>
       </header>
@@ -295,7 +295,7 @@ export default function CreateCampaign() {
       <main className="container mx-auto px-6 py-12">
         <div className="max-w-2xl mx-auto space-y-8">
           <div className="text-center space-y-2">
-            <h2 className="text-3xl font-bold">Create New Campaign</h2>
+            <h2 className="text-2xl md:text-3xl font-bold">Create New Campaign</h2>
             <p className="text-muted-foreground">Upload your content and let AI do the rest</p>
           </div>
 
@@ -457,7 +457,7 @@ export default function CreateCampaign() {
           <div className="bg-background border border-foreground max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-8 space-y-8">
               <div className="space-y-2">
-                <h2 className="text-3xl font-bold">Here's what xiXoi™ created</h2>
+                <h2 className="text-2xl md:text-3xl font-bold">Here's what xiXoi™ created</h2>
                 <p className="text-muted-foreground">
                   {generatedVariants.length === 1 
                     ? "AI generated 1 platform-optimized variant (free tier)" 

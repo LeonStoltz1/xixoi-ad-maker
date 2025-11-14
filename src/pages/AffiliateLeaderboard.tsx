@@ -139,11 +139,11 @@ export default function AffiliateLeaderboard() {
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-4 flex items-center justify-center gap-3">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
             <Trophy className="w-12 h-12 text-primary" />
             Affiliate Leaderboard
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto">
             Our top-performing affiliates earning passive income with xiXoi™
           </p>
         </div>
@@ -157,7 +157,7 @@ export default function AffiliateLeaderboard() {
                   <Users className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <div className="text-3xl font-bold">{stats.totalAffiliates}</div>
+                  <div className="text-2xl md:text-3xl font-bold">{stats.totalAffiliates}</div>
                   <div className="text-sm text-muted-foreground">Active Affiliates</div>
                 </div>
               </div>
@@ -171,7 +171,7 @@ export default function AffiliateLeaderboard() {
                   <DollarSign className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <div className="text-3xl font-bold">${stats.totalEarnings.toLocaleString()}</div>
+                  <div className="text-2xl md:text-3xl font-bold">${stats.totalEarnings.toLocaleString()}</div>
                   <div className="text-sm text-muted-foreground">Total Paid Out</div>
                 </div>
               </div>
@@ -185,7 +185,7 @@ export default function AffiliateLeaderboard() {
                   <TrendingUp className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <div className="text-3xl font-bold">{stats.totalReferrals}</div>
+                  <div className="text-2xl md:text-3xl font-bold">{stats.totalReferrals}</div>
                   <div className="text-sm text-muted-foreground">Total Referrals</div>
                 </div>
               </div>
@@ -206,7 +206,7 @@ export default function AffiliateLeaderboard() {
                 <CardDescription className="font-mono text-lg">{leaderboard[1].code}</CardDescription>
               </CardHeader>
               <CardContent className="text-center space-y-2">
-                <div className="text-3xl font-bold text-primary">
+                <div className="text-2xl md:text-3xl font-bold text-primary">
                   ${leaderboard[1].total_earned.toLocaleString()}
                 </div>
                 <div className="text-sm text-muted-foreground">Total Earned</div>
@@ -228,7 +228,7 @@ export default function AffiliateLeaderboard() {
                 <CardDescription className="font-mono text-lg">{leaderboard[0].code}</CardDescription>
               </CardHeader>
               <CardContent className="text-center space-y-2">
-                <div className="text-4xl font-bold text-primary">
+                <div className="text-3xl md:text-4xl font-bold text-primary">
                   ${leaderboard[0].total_earned.toLocaleString()}
                 </div>
                 <div className="text-sm text-muted-foreground">Total Earned</div>
@@ -250,7 +250,7 @@ export default function AffiliateLeaderboard() {
                 <CardDescription className="font-mono text-lg">{leaderboard[2].code}</CardDescription>
               </CardHeader>
               <CardContent className="text-center space-y-2">
-                <div className="text-3xl font-bold text-primary">
+                <div className="text-2xl md:text-3xl font-bold text-primary">
                   ${leaderboard[2].total_earned.toLocaleString()}
                 </div>
                 <div className="text-sm text-muted-foreground">Total Earned</div>
@@ -299,7 +299,7 @@ export default function AffiliateLeaderboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-primary">
+                        <div className="text-xl md:text-2xl font-bold text-primary">
                           ${entry.total_earned.toLocaleString()}
                         </div>
                         <div className="text-xs text-muted-foreground">Total Earned</div>
@@ -319,7 +319,7 @@ export default function AffiliateLeaderboard() {
         <div className="mt-12 text-center">
           <Card className="bg-gradient-to-br from-primary/10 via-background to-primary/5 border-primary/20">
             <CardContent className="py-12">
-              <h3 className="text-3xl font-bold mb-4">Want to Join the Leaderboard?</h3>
+              <h3 className="text-2xl md:text-3xl font-bold mb-4">Want to Join the Leaderboard?</h3>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
                 Start earning 20% recurring commission on every referral. The more you promote, 
                 the higher you climb on the leaderboard.

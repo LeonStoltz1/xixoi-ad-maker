@@ -12,7 +12,7 @@ export default function CampaignPublish() {
   if (!id) {
     return (
       <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold">Campaign not found</h1>
+        <h1 className="text-xl md:text-2xl font-bold">Campaign not found</h1>
       </div>
     );
   }
@@ -26,7 +26,7 @@ export default function CampaignPublish() {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-4xl font-bold mb-2">Publish Campaign</h1>
+      <h1 className="text-3xl md:text-4xl font-bold mb-2">Publish Campaign</h1>
       <p className="text-muted-foreground mb-8">
         Choose which platforms to publish your campaign to
       </p>

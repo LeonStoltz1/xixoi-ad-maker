@@ -188,7 +188,7 @@ const AdPublished = () => {
 
         {/* Confirmation Message */}
         <div className="space-y-4">
-          <h1 className="text-4xl md:text-5xl font-bold">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">
             Your ad is ready to publish
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -202,7 +202,7 @@ const AdPublished = () => {
             <Button
               size="lg"
               variant="outline"
-              className="text-lg py-6 px-12 border-foreground"
+              className="text-base md:text-lg py-6 px-12 border-foreground"
               onClick={handlePublish}
               disabled={isPublishing || hasPaid}
             >
@@ -219,7 +219,7 @@ const AdPublished = () => {
             {!hasPaid && (
               <Button
                 size="lg"
-                className="text-lg py-6 px-12"
+                className="text-base md:text-lg py-6 px-12"
                 onClick={handleRemoveWatermark}
                 disabled={stripeLoading || isPublishing}
               >

@@ -83,7 +83,7 @@ export default function PayoutSettings() {
     <div className="min-h-screen bg-background py-12 px-6">
       <div className="container mx-auto max-w-4xl">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
             <Settings className="w-10 h-10 text-primary" />
             Payout Automation Settings
           </h1>

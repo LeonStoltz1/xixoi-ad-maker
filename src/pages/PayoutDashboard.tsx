@@ -43,7 +43,7 @@ export default function PayoutDashboard() {
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Payout Dashboard</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Payout Dashboard</h1>
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => navigate('/payout-settings')}>
             Settings

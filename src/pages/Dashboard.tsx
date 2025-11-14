@@ -99,7 +99,7 @@ export default function Dashboard() {
                 playsInline
                 className="w-12 h-12 object-contain"
               />
-              <h1 className="text-2xl font-bold text-white">xiXoi™</h1>
+              <h1 className="text-xl md:text-2xl font-bold text-white">xiXoi™</h1>
             </div>
             
             {/* Navigation */}
@@ -170,7 +170,7 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto space-y-8">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-3xl font-bold">Your Campaigns</h2>
+              <h2 className="text-2xl md:text-3xl font-bold">Your Campaigns</h2>
               <p className="text-muted-foreground mt-2">Create and manage your ad campaigns</p>
             </div>
             <Button size="lg" onClick={() => navigate("/create-campaign")}>
@@ -183,7 +183,7 @@ export default function Dashboard() {
           {campaigns.length === 0 ? (
             <div className="border-2 border-dashed border-foreground/20 rounded-2xl p-12 text-center space-y-4">
               <div className="space-y-2">
-                <h3 className="text-xl font-bold">No campaigns yet</h3>
+                <h3 className="text-lg md:text-xl font-bold">No campaigns yet</h3>
                 <p className="text-muted-foreground max-w-md mx-auto">
                   Create your first campaign and let xiXoi™ generate stunning ads instantly
                 </p>

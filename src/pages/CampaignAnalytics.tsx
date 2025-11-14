@@ -206,7 +206,7 @@ export default function CampaignAnalytics() {
               playsInline
               className="w-12 h-12 object-contain"
             />
-            <h1 className="text-2xl font-bold text-white">Campaign Analytics</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-white">Campaign Analytics</h1>
           </div>
         </div>
       </header>
@@ -235,7 +235,7 @@ export default function CampaignAnalytics() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-bold">Auto-Optimizer</h3>
+                    <h3 className="text-lg md:text-xl font-bold">Auto-Optimizer</h3>
                     <p className="text-sm text-muted-foreground font-normal mt-1">Automatically pause losers, scale winners</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -262,7 +262,7 @@ export default function CampaignAnalytics() {
 
           {/* Campaign Info */}
           <div>
-            <h2 className="text-3xl font-bold">{campaign?.name || "Campaign"}</h2>
+            <h2 className="text-2xl md:text-3xl font-bold">{campaign?.name || "Campaign"}</h2>
             <p className="text-muted-foreground mt-2">
               Performance overview • Last 7 days
             </p>
@@ -276,7 +276,7 @@ export default function CampaignAnalytics() {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{totals.impressions.toLocaleString()}</div>
+                <div className="text-xl md:text-2xl font-bold">{totals.impressions.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">Across all platforms</p>
               </CardContent>
             </Card>
@@ -287,7 +287,7 @@ export default function CampaignAnalytics() {
                 <MousePointer className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{totals.clicks.toLocaleString()}</div>
+                <div className="text-xl md:text-2xl font-bold">{totals.clicks.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">{totals.avgCtr}% CTR</p>
               </CardContent>
             </Card>
@@ -298,7 +298,7 @@ export default function CampaignAnalytics() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${totals.spend.toFixed(2)}</div>
+                <div className="text-xl md:text-2xl font-bold">${totals.spend.toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground">${totals.avgCpc} avg CPC</p>
               </CardContent>
             </Card>
@@ -309,7 +309,7 @@ export default function CampaignAnalytics() {
                 <Target className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{totals.totalRoas}x</div>
+                <div className="text-xl md:text-2xl font-bold">{totals.totalRoas}x</div>
                 <p className="text-xs text-muted-foreground">${totals.revenue.toFixed(2)} revenue</p>
               </CardContent>
             </Card>

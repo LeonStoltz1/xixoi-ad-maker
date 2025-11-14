@@ -141,7 +141,7 @@ export default function AffiliateAdmin() {
       <div className="container mx-auto max-w-6xl">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-4xl font-bold">Affiliate Management</h1>
+            <h1 className="text-3xl md:text-4xl font-bold">Affiliate Management</h1>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => navigate('/payouts')}>
                 View Payouts
@@ -157,28 +157,28 @@ export default function AffiliateAdmin() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold">{affiliates.length}</div>
+              <div className="text-xl md:text-2xl font-bold">{affiliates.length}</div>
               <div className="text-sm text-muted-foreground">Total Affiliates</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold text-primary">${totalEarnings.toFixed(2)}</div>
+              <div className="text-xl md:text-2xl font-bold text-primary">${totalEarnings.toFixed(2)}</div>
               <div className="text-sm text-muted-foreground">Total Earned</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold text-green-600">${totalPaid.toFixed(2)}</div>
+              <div className="text-xl md:text-2xl font-bold text-green-600">${totalPaid.toFixed(2)}</div>
               <div className="text-sm text-muted-foreground">Total Paid</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold text-yellow-600">${totalPending.toFixed(2)}</div>
+              <div className="text-xl md:text-2xl font-bold text-yellow-600">${totalPending.toFixed(2)}</div>
               <div className="text-sm text-muted-foreground">Pending</div>
             </CardContent>
           </Card>

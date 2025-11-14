@@ -137,7 +137,7 @@ export default function AdminDashboard() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Watermark Violations Dashboard</h1>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">Watermark Violations Dashboard</h1>
               <p className="text-muted-foreground">Monitor free ads, detect tampering, and enforce payments</p>
             </div>
             <div className="flex gap-3">
@@ -157,7 +157,7 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-medium">Total Free Ads</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{ads.length}</div>
+              <div className="text-xl md:text-2xl font-bold">{ads.length}</div>
             </CardContent>
           </Card>
           <Card>
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-medium">Tampered</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-destructive">{tamperedCount}</div>
+              <div className="text-xl md:text-2xl font-bold text-destructive">{tamperedCount}</div>
             </CardContent>
           </Card>
           <Card>
@@ -173,7 +173,7 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-medium">Charged</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{chargedCount}</div>
+              <div className="text-xl md:text-2xl font-bold text-green-600">{chargedCount}</div>
             </CardContent>
           </Card>
           <Card>
@@ -181,7 +181,7 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+              <div className="text-xl md:text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
             </CardContent>
           </Card>
         </div>
