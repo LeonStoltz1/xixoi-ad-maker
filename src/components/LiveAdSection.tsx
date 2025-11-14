@@ -16,18 +16,18 @@ export const LiveAdSection = () => {
               <div className="h-2 bg-foreground w-4/6"></div>
             </div>
 
-            <div className="border border-foreground py-3 px-6 inline-block font-bold text-xs">
+            <div className="border border-foreground py-3 px-6 inline-block font-bold text-[10px] md:text-xs">
               SHOP NOW
             </div>
 
-            <div className="text-right text-[11px] opacity-70">
+            <div className="text-right text-[10px] md:text-[11px] opacity-70">
               Powered By xiXoi™
             </div>
           </div>
         </div>
 
         <div className="space-y-tight mb-element">
-          <p className="text-2xl font-bold">
+          <p className="text-xl md:text-2xl font-bold">
             Your ad is live.
           </p>
           <p className="text-base">
