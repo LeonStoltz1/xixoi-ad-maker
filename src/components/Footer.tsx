@@ -9,7 +9,7 @@ const footerLinks = {
     { label: "About", href: "/#about" },
     { label: "Blog", href: "/#blog" },
     { label: "Careers", href: "/#careers" },
-    { label: "Affiliates", href: "/affiliates" },
+    { label: "For Influencers", href: "/influencers" },
     { label: "Contact", href: "mailto:support@xixoi.com" }
   ],
   Legal: [
