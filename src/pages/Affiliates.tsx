@@ -33,14 +33,14 @@ const AffiliatesPage = () => {
     if (!affiliate) return;
     
     const fetchData = async () => {
-      const { data: refs } = await supabase
+      const { data: refs } = await (supabase as any)
         .from('affiliate_referrals')
         .select('*')
         .eq('affiliate_id', affiliate.id)
         .order('referred_at', { ascending: false });
       setReferrals(refs ?? []);
 
-      const { data: payoutsData } = await supabase
+      const { data: payoutsData } = await (supabase as any)
         .from('affiliate_payouts')
         .select('*')
         .eq('affiliate_id', affiliate.id)
@@ -71,7 +71,7 @@ const AffiliatesPage = () => {
       return;
     }
 
-    const { error } = await supabase.from('affiliate_payouts').insert({
+    const { error } = await (supabase as any).from('affiliate_payouts').insert({
       affiliate_id: affiliate.id,
       amount: available,
       method: affiliate.payout_method ?? 'stripe',
@@ -81,7 +81,7 @@ const AffiliatesPage = () => {
       setRequestError(error.message);
     } else {
       toast.success('Payout request submitted! We will process it soon.');
-      const { data: payoutsData } = await supabase
+      const { data: payoutsData } = await (supabase as any)
         .from('affiliate_payouts')
         .select('*')
         .eq('affiliate_id', affiliate.id)

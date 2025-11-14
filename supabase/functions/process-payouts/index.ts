@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       // Check if user has affiliate referral
       const { data: referral } = await supabase
         .from('affiliate_referrals')
-        .select('affiliate_id, affiliates!inner(stripe_account_id)')
+        .select('affiliate_id, total_revenue, affiliate_earnings, affiliates!inner(stripe_account_id)')
         .eq('referred_user_id', sub.user_id)
         .maybeSingle();
 
@@ -63,13 +63,13 @@ Deno.serve(async (req) => {
       totalAgencyBonus += agencyBonus;
 
       // Transfer to Affiliate if exists
-      if (referral?.affiliates?.stripe_account_id) {
+      if (referral && Array.isArray(referral.affiliates) && referral.affiliates[0]?.stripe_account_id) {
         console.log(`Transferring $${affiliatePayout} to affiliate`);
         transfers.push(
           stripe.transfers.create({
             amount: Math.round(affiliatePayout * 100),
             currency: 'usd',
-            destination: referral.affiliates.stripe_account_id,
+            destination: referral.affiliates[0].stripe_account_id,
             metadata: { 
               type: 'affiliate', 
               subscription_id: sub.id,
@@ -91,20 +91,32 @@ Deno.serve(async (req) => {
 
       // Update affiliate earnings
       if (referral) {
+        const currentTotalRevenue = referral.total_revenue || 0;
+        const currentAffiliateEarnings = referral.affiliate_earnings || 0;
+        
         await supabase
           .from('affiliate_referrals')
           .update({
-            total_revenue: referral.total_revenue + price,
-            affiliate_earnings: referral.affiliate_earnings + affiliatePayout
+            total_revenue: currentTotalRevenue + price,
+            affiliate_earnings: currentAffiliateEarnings + affiliatePayout
           })
           .eq('referred_user_id', sub.user_id);
 
-        await supabase.rpc('increment', {
-          table_name: 'affiliates',
-          row_id: referral.affiliate_id,
-          column_name: 'total_earned',
-          increment_by: affiliatePayout
-        });
+        // Update affiliate total_earned directly
+        const { data: affiliate } = await supabase
+          .from('affiliates')
+          .select('total_earned')
+          .eq('id', referral.affiliate_id)
+          .single();
+        
+        if (affiliate) {
+          await supabase
+            .from('affiliates')
+            .update({
+              total_earned: (affiliate.total_earned || 0) + affiliatePayout
+            })
+            .eq('id', referral.affiliate_id);
+        }
       }
     }
 

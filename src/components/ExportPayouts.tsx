@@ -6,7 +6,7 @@ import { toast } from "sonner";
 export function ExportPayouts() {
   const handleExport = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("payouts")
         .select("*")
         .order("month", { ascending: false });
@@ -19,7 +19,7 @@ export function ExportPayouts() {
 
       const csv = [
         ["Month", "Affiliate Payout", "Agency Bonus", "Total Payout", "xiXoi Net"],
-        ...data.map((p) => [
+        ...data.map((p: any) => [
           p.month,
           p.affiliate.toFixed(2),
           p.agency.toFixed(2),

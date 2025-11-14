@@ -23,7 +23,7 @@ export async function linkUserToAffiliate(userId: string, stripeCustomerId?: str
   if (!code) return;
 
   // Find affiliate by code
-  const { data: affiliate, error } = await supabase
+  const { data: affiliate, error } = await (supabase as any)
     .from('affiliates')
     .select('id')
     .eq('code', code)
@@ -35,7 +35,7 @@ export async function linkUserToAffiliate(userId: string, stripeCustomerId?: str
   }
 
   // Check if referral already exists
-  const { data: existingReferral } = await supabase
+  const { data: existingReferral } = await (supabase as any)
     .from('affiliate_referrals')
     .select('id')
     .eq('referred_user_id', userId)
@@ -47,7 +47,7 @@ export async function linkUserToAffiliate(userId: string, stripeCustomerId?: str
   }
 
   // Create referral
-  const { error: insertError } = await supabase.from('affiliate_referrals').insert({
+  const { error: insertError } = await (supabase as any).from('affiliate_referrals').insert({
     affiliate_id: affiliate.id,
     referred_user_id: userId,
     stripe_customer_id: stripeCustomerId ?? null,
