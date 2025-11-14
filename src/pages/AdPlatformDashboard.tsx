@@ -21,7 +21,7 @@ export default function AdPlatformDashboard() {
       return;
     }
 
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("ad_accounts")
       .select("*")
       .eq("user_id", user.id);

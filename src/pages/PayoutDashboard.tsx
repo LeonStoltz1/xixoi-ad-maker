@@ -18,7 +18,7 @@ export default function PayoutDashboard() {
 
   useEffect(() => {
     const fetchPayouts = async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("payouts")
         .select("*")
         .order("month", { ascending: false });

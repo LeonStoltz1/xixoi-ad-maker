@@ -22,7 +22,7 @@ export function useAffiliate() {
       setLoading(true);
       setError(null);
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('affiliates')
         .select('*')
         .eq('user_id', user.id)
@@ -52,7 +52,7 @@ export function useAffiliate() {
       .toUpperCase();
     const code = `${base}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('affiliates')
       .insert({
         user_id: user.id,
