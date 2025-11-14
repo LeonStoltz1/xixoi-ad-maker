@@ -111,7 +111,46 @@ serve(async (req) => {
               payment_type: 'branding_removal',
             });
 
-        } else if (priceType === 'pro_subscription' && session.subscription) {
+          console.log('Branding watermark removed for campaign:', campaignId);
+        }
+
+        // Handle watermark tampering auto-charge
+        if (session.metadata?.reason === 'watermark_tampered') {
+          const variantId = session.metadata?.variant_id;
+          
+          if (variantId) {
+            // Mark as charged and tampered in free_ads
+            await supabase
+              .from('free_ads')
+              .update({ 
+                charged: true,
+                tampered: true
+              })
+              .eq('ad_variant_id', variantId);
+
+            // Get campaign from variant
+            const { data: variant } = await supabase
+              .from('ad_variants')
+              .select('campaign_id')
+              .eq('id', variantId)
+              .single();
+
+            if (variant) {
+              // Remove watermark since they paid the $29
+              await supabase
+                .from('campaigns')
+                .update({ 
+                  has_watermark: false,
+                  stripe_payment_id: session.payment_intent as string
+                })
+                .eq('id', variant.campaign_id);
+            }
+
+            console.log('Watermark tampering charge processed for variant:', variantId);
+          }
+        }
+
+        if (priceType === 'pro_subscription' && session.subscription) {
           // Handle Pro subscription
           const subscription = await stripe.subscriptions.retrieve(
             session.subscription as string
