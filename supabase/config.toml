@@ -3,6 +3,24 @@ project_id = "kkpbwuzxunefujucrbfr"
 [functions.generate-ad-variants]
 verify_jwt = false
 
+[functions.wallet-reload]
+verify_jwt = true
+
+[functions.process-batch-funding]
+verify_jwt = false
+
+[functions.generate-campaign-variants]
+verify_jwt = true
+
+[functions.check-performance-alerts]
+verify_jwt = false
+
+[functions.ai-support]
+verify_jwt = true
+
+[functions.create-platform-ad-account]
+verify_jwt = false
+
 [functions.process-payouts]
 verify_jwt = false
 
