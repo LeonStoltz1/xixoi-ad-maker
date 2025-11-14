@@ -135,8 +135,20 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Watermark Violations Dashboard</h1>
-          <p className="text-muted-foreground">Monitor free ads, detect tampering, and enforce payments</p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">Watermark Violations Dashboard</h1>
+              <p className="text-muted-foreground">Monitor free ads, detect tampering, and enforce payments</p>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => navigate('/affiliate-admin')}>
+                Affiliate Management
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/payouts')}>
+                Payouts
+              </Button>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
