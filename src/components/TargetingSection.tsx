@@ -23,7 +23,7 @@ export const TargetingSection = () => {
               <label className="text-xs font-bold uppercase tracking-wide">Daily Budget</label>
               <div className="space-y-3">
                 <Slider defaultValue={[20]} max={500} min={5} step={1} />
-                <p className="text-lg font-bold">$20/day</p>
+                <p className="text-base md:text-lg font-bold">$20/day</p>
               </div>
             </div>
 
@@ -33,7 +33,7 @@ export const TargetingSection = () => {
               
               <div className="space-y-tight">
                 <div className="px-4 py-3 border border-foreground">
-                  <p className="text-sm font-medium">Women 25–45, Engaged Shoppers</p>
+                  <p className="text-xs md:text-sm font-medium">Women 25–45, Engaged Shoppers</p>
                 </div>
                 
                 <p className="text-xs opacity-70">

@@ -9,9 +9,9 @@ export const ChannelsSection = () => {
         <div className="grid grid-cols-2 gap-tight mb-grid">
           {channels.map((channel) => (
             <div
-              key={channel}
-              className="border border-foreground px-6 py-4 text-sm font-bold hover:bg-foreground hover:text-background transition-all cursor-pointer"
-            >
+            key={channel}
+            className="border border-foreground px-6 py-4 text-xs md:text-sm font-bold hover:bg-foreground hover:text-background transition-all cursor-pointer"
+          >
               {channel}
             </div>
           ))}

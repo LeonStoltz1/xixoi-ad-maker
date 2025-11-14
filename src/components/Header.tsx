@@ -6,7 +6,7 @@ export const Header = () => {
       <div className="container mx-auto max-w-content px-6 h-full flex items-center">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-8">
-            <a href="/" className="text-xl font-bold font-heading flex items-center gap-2 text-white">
+            <a href="/" className="text-lg md:text-xl font-bold font-heading flex items-center gap-2 text-white">
               <video 
                 src="/xiXoiLogo.mp4" 
                 autoPlay 

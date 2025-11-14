@@ -22,7 +22,7 @@ export const AIBuildsSection = () => {
               </div>
             </div>
             <div className="px-4 py-2 text-center border-t border-foreground">
-              <span className="text-xs font-medium">Static Image Ad</span>
+              <span className="text-[10px] md:text-xs font-medium">Static Image Ad</span>
             </div>
           </div>
           
@@ -40,7 +40,7 @@ export const AIBuildsSection = () => {
               <div className="h-3 bg-foreground w-2/3"></div>
             </div>
             <div className="px-4 py-2 text-center border-t border-foreground">
-              <span className="text-xs font-medium">Video Frame</span>
+              <span className="text-[10px] md:text-xs font-medium">Video Frame</span>
             </div>
           </div>
           
@@ -61,15 +61,15 @@ export const AIBuildsSection = () => {
               <div className="h-2 bg-foreground w-4/5"></div>
             </div>
             <div className="px-4 py-2 text-center border-t border-foreground">
-              <span className="text-xs font-medium">UGC-Style</span>
+              <span className="text-[10px] md:text-xs font-medium">UGC-Style</span>
             </div>
           </div>
           
           {/* ROAS Prediction - Data visualization */}
           <div className="border border-foreground aspect-square flex flex-col justify-center items-center p-6">
             <TrendingUp className="w-12 h-12 mb-3 stroke-[2]" />
-            <p className="text-5xl font-bold mb-1">3.2×</p>
-            <p className="text-sm font-bold mb-4">ROAS</p>
+            <p className="text-4xl md:text-5xl font-bold mb-1">3.2×</p>
+            <p className="text-xs md:text-sm font-bold mb-4">ROAS</p>
             <div className="w-full space-y-1">
               <div className="flex items-center gap-2">
                 <div className="h-1 bg-foreground w-full"></div>

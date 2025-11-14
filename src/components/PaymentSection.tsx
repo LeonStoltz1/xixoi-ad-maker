@@ -7,15 +7,15 @@ export const PaymentSection = () => {
         <div className="border border-foreground p-8 mb-grid">
           <div className="space-y-element">
             <div className="space-y-tight">
-              <h3 className="text-xl font-bold">Remove Watermark (Optional)</h3>
+              <h3 className="text-lg md:text-xl font-bold">Remove Watermark (Optional)</h3>
               <p className="text-sm">
                 Free users keep the watermark. Pay once to remove it for this campaign.
               </p>
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm font-bold">PUBLISH PRO — $29 per ad set</p>
-              <p className="text-xs">or $99/mo unlimited</p>
+              <p className="text-xs md:text-sm font-bold">PUBLISH PRO — $29 per ad set</p>
+              <p className="text-[10px] md:text-xs">or $99/mo unlimited</p>
             </div>
 
             <div className="border border-foreground py-3 px-6 text-sm font-bold">
