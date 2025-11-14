@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut, Crown, Settings, Home, CreditCard } from "lucide-react";
+import { Plus, LogOut, Crown, Settings, Home, CreditCard, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -177,6 +177,26 @@ export default function Dashboard() {
               <Plus className="w-5 h-5 mr-2" />
               New Campaign
             </Button>
+          </div>
+
+          {/* Add Ad Budget Section */}
+          <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-6 text-white">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <h3 className="text-lg md:text-xl font-bold">Reload Ad Budget</h3>
+                <p className="text-sm md:text-base opacity-90">
+                  Add funds in 60 seconds. $5 service fee per reload. Ads go live instantly.
+                </p>
+              </div>
+              <Button 
+                onClick={() => navigate("/add-ad-budget")}
+                size="lg"
+                className="bg-white text-green-700 hover:bg-green-50 whitespace-nowrap"
+              >
+                <Zap className="w-5 h-5 mr-2" />
+                Add Ad Budget
+              </Button>
+            </div>
           </div>
 
           {/* Campaigns List or Empty State */}

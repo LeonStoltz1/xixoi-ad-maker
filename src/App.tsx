@@ -15,6 +15,7 @@ import CampaignAnalytics from "./pages/CampaignAnalytics";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import DeleteAccount from "./pages/DeleteAccount";
+import AddAdBudget from "./pages/AddAdBudget";
 import AdminDashboard from "./pages/AdminDashboard";
 import TargetingSetup from "./pages/TargetingSetup";
 import Affiliates from "./pages/Affiliates";
@@ -68,6 +69,7 @@ const App = () => (
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/delete-account" element={<DeleteAccount />} />
+          <Route path="/add-ad-budget" element={<AddAdBudget />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/affiliates" element={<Affiliates />} />
           <Route path="/affiliate-admin" element={<AffiliateAdmin />} />
