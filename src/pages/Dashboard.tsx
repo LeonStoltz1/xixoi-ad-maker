@@ -11,6 +11,7 @@ import { RealTimeROIDashboard } from "@/components/RealTimeROIDashboard";
 import { PerformanceAlerts } from "@/components/PerformanceAlerts";
 import { AISupportChat } from "@/components/AISupportChat";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -195,6 +196,7 @@ export default function Dashboard() {
           )}
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
