@@ -332,7 +332,7 @@ export default function CreateCampaign() {
                 value={textContent}
                 onChange={(e) => setTextContent(e.target.value)}
                 placeholder="Example: Studio apartment, 23sqm, $2500/mo. Modern finishes, downtown location. Contact +1404.775.1998 Mon-Fri. Perfect for young professionals."
-                className="border-foreground min-h-[120px]"
+                className="border-foreground min-h-[120px] placeholder:opacity-67"
               />
               <p className="text-xs text-muted-foreground">
                 ✓ Meta: Optimized for 125 chars • TikTok: 100 chars • Google: 90 chars • LinkedIn: 150 chars
