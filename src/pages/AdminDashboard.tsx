@@ -48,7 +48,7 @@ export default function AdminDashboard() {
     }
 
     const { data: roles } = await supabase
-      .from('user_roles')
+      .from('user_roles' as any)
       .select('role')
       .eq('user_id', user.id)
       .eq('role', 'admin')
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
   const fetchAds = async () => {
     setLoading(true);
     let query = supabase
-      .from('admin_watermark_report')
+      .from('admin_watermark_report' as any)
       .select('*')
       .order('published_at', { ascending: false });
 
@@ -78,7 +78,7 @@ export default function AdminDashboard() {
       toast.error('Failed to load data');
       console.error(error);
     } else {
-      setAds(data || []);
+      setAds((data as any) || []);
     }
     setLoading(false);
   };
@@ -103,7 +103,7 @@ export default function AdminDashboard() {
     if (!confirm('Forgive this violation? This will mark it as not tampered and not charged.')) return;
 
     const { error } = await supabase
-      .from('free_ads')
+      .from('free_ads' as any)
       .update({ tampered: false, charged: false })
       .eq('id', adId);
 

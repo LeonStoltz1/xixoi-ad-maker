@@ -54,10 +54,10 @@ export default function TargetingSetup() {
         setUserPlan(profile?.plan || 'free');
       }
 
-      setCampaign(data);
+      setCampaign(data as any);
       
-      if (data.audience_suggestion) {
-        const suggestion = data.audience_suggestion as unknown as AudienceSuggestion;
+      if ((data as any).audience_suggestion) {
+        const suggestion = (data as any).audience_suggestion as unknown as AudienceSuggestion;
         setAudienceSuggestion(suggestion);
         setSelectedBudget(suggestion.daily_budget || 35);
         setSelectedPlatforms(suggestion.platforms || ['meta']);
