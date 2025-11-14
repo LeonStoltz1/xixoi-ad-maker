@@ -1,8 +1,10 @@
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 
 const AdPublished = () => {
   const navigate = useNavigate();
@@ -11,6 +13,8 @@ const AdPublished = () => {
   const hasPaid = searchParams.get('paid') === 'true';
   const [campaign, setCampaign] = useState<any>(null);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const { createCheckoutSession, loading: stripeLoading } = useStripeCheckout();
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -35,11 +39,86 @@ const AdPublished = () => {
     fetchCampaign();
   }, [campaignId]);
 
+  const handlePublish = async () => {
+    if (!selectedVariant?.id) {
+      toast.error('No ad variant found');
+      return;
+    }
+
+    setIsPublishing(true);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error('Please sign in to publish');
+        navigate('/auth');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('publish-ad', {
+        body: { variantId: selectedVariant.id }
+      });
+
+      if (error) {
+        // Check if it's a payment required error (402)
+        if (error.message?.includes('requiresPayment') || data?.requiresPayment) {
+          // Redirect to Stripe checkout
+          if (data?.checkoutUrl) {
+            window.location.href = data.checkoutUrl;
+          } else {
+            toast.error('Payment required but no checkout URL provided');
+          }
+        } else {
+          throw error;
+        }
+      } else if (data?.requiresPayment && data?.checkoutUrl) {
+        // Watermark was tampered - redirect to payment
+        toast.info('Watermark removed. Redirecting to payment...');
+        setTimeout(() => {
+          window.location.href = data.checkoutUrl;
+        }, 1000);
+      } else {
+        // Success - ad published with watermark
+        toast.success('Ad published successfully!');
+        // Optionally redirect to analytics or dashboard
+        setTimeout(() => {
+          navigate(`/analytics/${campaignId}`);
+        }, 1500);
+      }
+    } catch (error: any) {
+      console.error('Publish error:', error);
+      toast.error(error.message || 'Failed to publish ad');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleRemoveWatermark = async () => {
+    if (!campaignId) {
+      toast.error('No campaign found');
+      return;
+    }
+
+    try {
+      await createCheckoutSession('branding_removal', campaignId, false);
+    } catch (error) {
+      console.error('Failed to create checkout session:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-6 py-12">
       <div className="max-w-2xl mx-auto text-center space-y-12">
         {/* Ad Preview Card */}
-        <div className="border border-foreground bg-background p-8 mx-auto max-w-md">
+        <div className="border border-foreground bg-background p-8 mx-auto max-w-md relative">
+          {/* Free Preview Badge */}
+          {!hasPaid && (
+            <div className="absolute top-4 left-4 bg-foreground text-background px-3 py-1 text-xs font-bold">
+              FREE PREVIEW
+            </div>
+          )}
+          
           <div className="space-y-6">
             {/* Show uploaded image if available */}
             {selectedVariant?.creative_url && (
@@ -88,28 +167,61 @@ const AdPublished = () => {
             Your ad is ready to publish
           </h1>
           <p className="text-muted-foreground text-lg">
-            Connect to your ad platforms (Meta, TikTok, Google, LinkedIn) to launch this campaign and track real-time performance.
+            {!hasPaid ? 'Free with xiXoi™ credit. Remove watermark for $29.' : 'Connect to your ad platforms to launch this campaign.'}
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button
-            size="lg"
-            variant="outline"
-            className="text-lg py-6 px-12"
-            onClick={() => navigate(`/analytics/${campaignId}`)}
-          >
-            View Demo Analytics
-          </Button>
-          <Button
-            size="lg"
-            className="text-lg py-6 px-12"
-            onClick={() => navigate("/create-campaign")}
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Create Another Ad
-          </Button>
+        <div className="flex flex-col gap-4 items-center">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              size="lg"
+              variant="outline"
+              className="text-lg py-6 px-12 border-foreground"
+              onClick={handlePublish}
+              disabled={isPublishing || hasPaid}
+            >
+              {isPublishing ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Publishing...
+                </>
+              ) : (
+                'Publish Free'
+              )}
+            </Button>
+            
+            {!hasPaid && (
+              <Button
+                size="lg"
+                className="text-lg py-6 px-12"
+                onClick={handleRemoveWatermark}
+                disabled={stripeLoading || isPublishing}
+              >
+                Remove Watermark – $29
+              </Button>
+            )}
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              size="lg"
+              variant="ghost"
+              className="text-base"
+              onClick={() => navigate(`/analytics/${campaignId}`)}
+            >
+              View Demo Analytics
+            </Button>
+            <Button
+              size="lg"
+              variant="ghost"
+              className="text-base"
+              onClick={() => navigate("/create-campaign")}
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Create Another Ad
+            </Button>
+          </div>
         </div>
       </div>
     </div>
