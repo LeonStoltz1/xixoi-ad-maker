@@ -14,6 +14,7 @@ const AdPublished = () => {
   const [campaign, setCampaign] = useState<any>(null);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [userPlan, setUserPlan] = useState<string>('free');
   const { createCheckoutSession, loading: stripeLoading } = useStripeCheckout();
 
   useEffect(() => {
@@ -31,6 +32,17 @@ const AdPublished = () => {
         .select('*')
         .eq('campaign_id', campaignId)
         .limit(1);
+
+      // Get user plan
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('plan')
+          .eq('id', user.id)
+          .single();
+        setUserPlan(profile?.plan || 'free');
+      }
       
       setCampaign(campaignData);
       setSelectedVariant(variants?.[0]);
@@ -81,6 +93,19 @@ const AdPublished = () => {
       } else {
         // Success - ad published with watermark
         toast.success('Ad published successfully!');
+        
+        // Upsell triggers based on plan
+        if (userPlan === 'free') {
+          setTimeout(() => {
+            toast.info('Want unlimited ads? Upgrade to Pro →', {
+              action: {
+                label: 'Go Pro',
+                onClick: () => navigate('/pricing')
+              }
+            });
+          }, 2000);
+        }
+        
         // Optionally redirect to analytics or dashboard
         setTimeout(() => {
           navigate(`/analytics/${campaignId}`);
