@@ -304,9 +304,62 @@ export default function TargetingSetup() {
 
     setSavingEdit(true);
     try {
-      console.log('Saving campaign with description:', editDescription);
+      console.log('Validating campaign description:', editDescription);
+
+      // First, update the asset temporarily so we can validate it
+      const { error: tempUpdateError } = await supabase
+        .from('campaign_assets')
+        .update({ asset_text: editDescription.trim() })
+        .eq('campaign_id', campaign.id);
+
+      if (tempUpdateError) {
+        console.error('Temporary asset update error:', tempUpdateError);
+        throw tempUpdateError;
+      }
+
+      // Step 1: Validate content against ALL platforms before saving
+      const { data: moderation, error: moderationError } = await supabase.functions.invoke(
+        'moderate-ad-content',
+        {
+          body: {
+            campaignId: campaign.id,
+            platforms: ['meta', 'tiktok', 'google', 'linkedin', 'x'] // Check against all platforms
+          }
+        }
+      );
+
+      if (moderationError) {
+        console.error('Moderation validation error:', moderationError);
+        toast.error('Failed to validate content. Please try again.');
+        setSavingEdit(false);
+        return;
+      }
+
+      console.log('Validation result:', moderation);
+
+      // Step 2: Check if content has violations
+      if (!moderation.approved) {
+        // Show detailed violations
+        const violationMessages = moderation.violations
+          .map((v: any) => `${v.platform}: ${v.issue}`)
+          .join('\n');
+        
+        toast.error(
+          <div className="space-y-2">
+            <p className="font-semibold">Campaign description violates advertising policies:</p>
+            <pre className="text-xs whitespace-pre-wrap">{violationMessages}</pre>
+            <p className="text-sm">Please remove discriminatory or prohibited content.</p>
+          </div>,
+          { duration: 10000 }
+        );
+        
+        setSavingEdit(false);
+        return;
+      }
+
+      // Step 3: If approved, update campaign name and regenerate
+      console.log('Content approved, saving campaign...');
       
-      // Update campaign name
       const { error: campaignError } = await supabase
         .from('campaigns')
         .update({ 
@@ -318,25 +371,6 @@ export default function TargetingSetup() {
       if (campaignError) {
         console.error('Campaign update error:', campaignError);
         throw campaignError;
-      }
-
-      // Update campaign asset description
-      const { data: updateData, error: assetError } = await supabase
-        .from('campaign_assets')
-        .update({ asset_text: editDescription.trim() })
-        .eq('campaign_id', campaign.id)
-        .select();
-
-      console.log('Asset update result:', { updateData, assetError });
-
-      if (assetError) {
-        console.error('Asset update error:', assetError);
-        throw assetError;
-      }
-
-      if (!updateData || updateData.length === 0) {
-        console.warn('No assets were updated - this might indicate a permission issue');
-        throw new Error('Failed to update campaign description. Please try again.');
       }
 
       toast.success('Campaign updated! Regenerating targeting...');
