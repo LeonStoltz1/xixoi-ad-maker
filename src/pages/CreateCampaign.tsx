@@ -41,6 +41,28 @@ export default function CreateCampaign() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Character limits for each platform
+  const platformLimits = {
+    meta: 125,
+    linkedin: 150,
+    tiktok: 100,
+    google: 90
+  };
+
+  // Get the strictest character limit based on selected platforms
+  const getCharacterLimit = () => {
+    const selected = Object.entries(selectedPlatforms)
+      .filter(([_, data]) => data.selected)
+      .map(([platform, _]) => platformLimits[platform as keyof typeof platformLimits]);
+    
+    return selected.length > 0 ? Math.min(...selected) : 125;
+  };
+
+  const characterLimit = getCharacterLimit();
+  const characterCount = textContent.length;
+  const isOverLimit = characterCount > characterLimit;
+  const isNearLimit = characterCount > characterLimit * 0.9;
+
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -394,9 +416,21 @@ export default function CreateCampaign() {
                 placeholder="Sunlit 23sqm studio, $2500/mo. Modern, bright, and steps from Miami cafés + shoreline. Call 555-321-7788. Alex Rivera, Realtor®, OceanGate Realty."
                 className="border-foreground min-h-[120px] placeholder:opacity-40"
               />
-              <p className="text-xs text-muted-foreground">
-                ✓ Meta: 125 chars • TikTok: 100 chars • Google: 90 chars • LinkedIn: 150 chars • X: 280 chars
-              </p>
+              <div className="flex justify-between items-center text-xs">
+                <p className="text-muted-foreground">
+                  ✓ Meta: 125 chars • TikTok: 100 chars • Google: 90 chars • LinkedIn: 150 chars
+                </p>
+                <p className={`font-medium ${
+                  isOverLimit 
+                    ? 'text-destructive' 
+                    : isNearLimit 
+                      ? 'text-yellow-600 dark:text-yellow-500' 
+                      : 'text-muted-foreground'
+                }`}>
+                  {characterCount} / {characterLimit}
+                  {isOverLimit && ' ⚠️'}
+                </p>
+              </div>
             </div>
 
             {(uploadType === 'image' || uploadType === 'video') && (
