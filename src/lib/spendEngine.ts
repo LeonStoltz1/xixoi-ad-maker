@@ -13,7 +13,8 @@ const PLATFORM_MIN_DAILY: Record<Platform, number> = {
 
 export function getMinimumDailySpend(platforms: Platform[]): number {
   if (platforms.length === 0) return 0;
-  return Math.max(...platforms.map(p => PLATFORM_MIN_DAILY[p]));
+  // Sum all platform minimums since budget is allocated across all platforms
+  return platforms.reduce((sum, p) => sum + PLATFORM_MIN_DAILY[p], 0);
 }
 
 export function getMinimumTotalSpend(platforms: Platform[], durationDays: number): number {
