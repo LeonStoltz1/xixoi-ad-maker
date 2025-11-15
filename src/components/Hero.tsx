@@ -3,7 +3,17 @@ import { ArrowDown } from "lucide-react";
 
 export const Hero = () => {
   const scrollToUpload = () => {
-    document.getElementById('upload-section')?.scrollIntoView({ behavior: 'smooth' });
+    const element = document.getElementById('upload-section');
+    if (element) {
+      const headerOffset = 128; // Account for fixed header height
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
   };
 
   return (
