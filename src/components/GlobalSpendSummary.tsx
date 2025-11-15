@@ -7,8 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface SpendSummary {
   todaySpend: number;
   monthSpend: number;
-  activeCampaigns: number;
-  pausedCampaigns: number;
+  totalSpent: number;
   totalRemainingBudget: number;
 }
 
@@ -16,8 +15,7 @@ export function GlobalSpendSummary() {
   const [summary, setSummary] = useState<SpendSummary>({
     todaySpend: 0,
     monthSpend: 0,
-    activeCampaigns: 0,
-    pausedCampaigns: 0,
+    totalSpent: 0,
     totalRemainingBudget: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -43,8 +41,8 @@ export function GlobalSpendSummary() {
 
       if (!campaigns) return;
 
-      const activeCampaigns = campaigns.filter(c => c.status === 'active' && c.is_active).length;
-      const pausedCampaigns = campaigns.filter(c => c.status === 'paused' || !c.is_active).length;
+      // Calculate total spent across all campaigns
+      const totalSpent = campaigns.reduce((sum, c) => sum + (c.total_spent || 0), 0);
 
       // Calculate total remaining budget across all campaigns
       const totalRemaining = campaigns.reduce((sum, c) => {
@@ -75,8 +73,7 @@ export function GlobalSpendSummary() {
       setSummary({
         todaySpend,
         monthSpend,
-        activeCampaigns,
-        pausedCampaigns,
+        totalSpent,
         totalRemainingBudget: totalRemaining,
       });
     } catch (error) {
@@ -88,74 +85,44 @@ export function GlobalSpendSummary() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[1, 2, 3, 4].map(i => (
-          <Card key={i}>
-            <CardContent className="p-6">
-              <Skeleton className="h-16 w-full" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <Skeleton className="h-12 w-full" />
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <Card className="border-2 border-primary/20">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Today's Spend</p>
-              <p className="text-2xl font-bold">${summary.todaySpend.toFixed(2)}</p>
-            </div>
-            <DollarSign className="w-8 h-8 text-primary" />
+    <Card className="mb-6 border-2 border-primary/20">
+      <CardContent className="p-4">
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Spend Today</span>
+            <span className="text-xl font-bold">${summary.todaySpend.toFixed(2)}</span>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-2 border-blue-500/20">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">This Month</p>
-              <p className="text-2xl font-bold">${summary.monthSpend.toFixed(2)}</p>
-            </div>
-            <TrendingUp className="w-8 h-8 text-blue-500" />
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Spend This Month</span>
+            <span className="text-xl font-bold">${summary.monthSpend.toFixed(2)}</span>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-2 border-green-500/20">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Active Campaigns</p>
-              <p className="text-2xl font-bold">
-                {summary.activeCampaigns}
-                {summary.pausedCampaigns > 0 && (
-                  <span className="text-sm text-muted-foreground ml-2">
-                    ({summary.pausedCampaigns} paused)
-                  </span>
-                )}
-              </p>
-            </div>
-            <Activity className="w-8 h-8 text-green-500" />
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Total Spent</span>
+            <span className="text-xl font-bold">${summary.totalSpent.toFixed(2)}</span>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-2 border-orange-500/20">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Total Remaining Budget</p>
-              <p className="text-2xl font-bold">${summary.totalRemainingBudget.toFixed(2)}</p>
-            </div>
-            <Wallet className="w-8 h-8 text-orange-500" />
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Remaining Budget</span>
+            <span className="text-xl font-bold">
+              {summary.totalRemainingBudget > 0 
+                ? `$${summary.totalRemainingBudget.toFixed(2)}` 
+                : 'Unlimited'
+              }
+            </span>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
