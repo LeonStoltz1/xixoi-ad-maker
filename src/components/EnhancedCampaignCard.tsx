@@ -94,10 +94,13 @@ export function EnhancedCampaignCard({
   const [editedBodyCopy, setEditedBodyCopy] = useState("");
   const [editedCtaText, setEditedCtaText] = useState("");
   const [savingAd, setSavingAd] = useState(false);
+  const [userPlan, setUserPlan] = useState<string | null>(null);
+  const [hasWatermark, setHasWatermark] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     loadAdVariants();
+    loadUserPlanAndWatermark();
   }, [campaign.id]);
 
   const loadAdVariants = async () => {
@@ -109,6 +112,33 @@ export function EnhancedCampaignCard({
     
     if (data) {
       setAdVariants(data);
+    }
+  };
+
+  const loadUserPlanAndWatermark = async () => {
+    // Load user's plan
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile) {
+        setUserPlan(profile.plan);
+      }
+    }
+
+    // Load campaign watermark status
+    const { data: campaignData } = await supabase
+      .from('campaigns')
+      .select('has_watermark')
+      .eq('id', campaign.id)
+      .single();
+    
+    if (campaignData) {
+      setHasWatermark(campaignData.has_watermark ?? false);
     }
   };
 
@@ -405,12 +435,20 @@ export function EnhancedCampaignCard({
                     className="flex-shrink-0 w-48 border rounded-lg p-3 space-y-2 bg-card hover:bg-accent/5 hover:border-primary transition-all cursor-pointer"
                   >
                     {variant.creative_url && (
-                      <div className="aspect-square rounded overflow-hidden bg-muted">
+                      <div className="aspect-square rounded overflow-hidden bg-muted relative">
                         <img 
                           src={variant.creative_url} 
                           alt={variant.headline || 'Ad creative'} 
                           className="w-full h-full object-cover"
                         />
+                        {/* Watermark Badge for Free Users */}
+                        {userPlan === 'free' && hasWatermark && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm py-1 px-2">
+                            <p className="text-white text-[10px] font-semibold text-center">
+                              Powered by xiXoi™
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                     {variant.headline && (
@@ -541,12 +579,20 @@ export function EnhancedCampaignCard({
             <div className="space-y-4">
               {/* Ad Creative */}
               {selectedVariant.creative_url && (
-                <div className="rounded-lg overflow-hidden bg-muted">
+                <div className="rounded-lg overflow-hidden bg-muted relative">
                   <img 
                     src={selectedVariant.creative_url} 
                     alt={selectedVariant.headline || 'Ad creative'} 
                     className="w-full h-auto object-contain max-h-[400px]"
                   />
+                  {/* Watermark Overlay for Free Users */}
+                  {userPlan === 'free' && hasWatermark && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm py-2 px-4">
+                      <p className="text-white text-sm font-semibold text-center">
+                        Powered by xiXoi™
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
               
