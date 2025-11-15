@@ -12,6 +12,7 @@ import { PerformanceAlerts } from "@/components/PerformanceAlerts";
 import { AISupportChat } from "@/components/AISupportChat";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { BudgetManager } from "@/components/BudgetManager";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -53,18 +54,38 @@ export default function Dashboard() {
         setUserPlan(profile.plan || 'free');
       }
 
-      // Fetch user campaigns
-      const { data: campaignsData } = await supabase
-        .from('campaigns')
-        .select('*, ad_variants(count)')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false });
+        // Fetch user campaigns
+      await loadCampaigns(session.user.id);
 
-      if (campaignsData) {
-        setCampaigns(campaignsData);
-        
-        // Fetch aggregated metrics if user has multiple campaigns
-        if (campaignsData.length > 1) {
+      setLoading(false);
+    };
+
+    checkUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        navigate("/auth");
+      } else if (session) {
+        setUser(session.user);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const loadCampaigns = async (userId: string) => {
+    const { data: campaignsData } = await supabase
+      .from('campaigns')
+      .select('*, ad_variants(count)')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (campaignsData) {
+      setCampaigns(campaignsData);
+      
+      // Fetch aggregated metrics if user has multiple campaigns
+      if (campaignsData.length > 1) {
           const campaignIds = campaignsData.map(c => c.id);
           const { data: performanceData } = await supabase
             .from('campaign_performance')
@@ -91,23 +112,7 @@ export default function Dashboard() {
           }
         }
       }
-
-      setLoading(false);
-    };
-
-    checkUser();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        navigate("/auth");
-      } else if (session) {
-        setUser(session.user);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+  };
 
   const handlePauseResumeCampaign = async (campaignId: string, currentlyActive: boolean) => {
     setPausingCampaigns(prev => new Set(prev).add(campaignId));
@@ -178,15 +183,23 @@ export default function Dashboard() {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-12 mt-32">
         <div className="max-w-6xl mx-auto space-y-8">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold">Your Campaigns</h2>
               <p className="text-muted-foreground mt-2">Create and manage your ad campaigns</p>
             </div>
-            <Button size="lg" onClick={() => navigate("/create-campaign")}>
-              <Plus className="w-5 h-5 mr-2" />
-              New Campaign
-            </Button>
+            <div className="flex gap-2">
+              {campaigns.length > 1 && (
+                <BudgetManager 
+                  campaigns={campaigns} 
+                  onBudgetUpdate={() => user && loadCampaigns(user.id)} 
+                />
+              )}
+              <Button size="lg" onClick={() => navigate("/create-campaign")}>
+                <Plus className="w-5 h-5 mr-2" />
+                New Campaign
+              </Button>
+            </div>
           </div>
 
           {/* Add Ad Budget Section */}
@@ -299,8 +312,10 @@ export default function Dashboard() {
                       {campaign.target_location && (
                         <div>Location: {campaign.target_location}</div>
                       )}
-                      {campaign.daily_budget && (
-                        <div>Budget: ${campaign.daily_budget}/day</div>
+                      {campaign.daily_budget ? (
+                        <div className="font-semibold text-foreground">Budget: ${campaign.daily_budget}/day</div>
+                      ) : (
+                        <div className="text-orange-600">No budget set</div>
                       )}
                       {!campaign.is_active && campaign.paused_reason && (
                         <div className="text-orange-600 flex items-start gap-1 mt-2">
