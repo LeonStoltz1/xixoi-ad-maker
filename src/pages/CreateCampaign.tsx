@@ -8,7 +8,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Upload, Image, Video, FileText, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UpgradeModal } from "@/components/UpgradeModal";
-import equalHousingLogo from "@/assets/equal-housing-logo.png";
 
 export default function CreateCampaign() {
   const [user, setUser] = useState<any>(null);
@@ -392,18 +391,12 @@ export default function CreateCampaign() {
               <Textarea
                 value={textContent}
                 onChange={(e) => setTextContent(e.target.value)}
-                placeholder="Sunlit 23sqm studio, $2500/mo. Modern, bright, and steps from Miami cafés + shoreline. Call 555-321-7788. Alex Rivera, Realtor®, OceanGate Realty."
+                placeholder="Sunlit 23sqm studio, $2500/mo. Modern, bright, and steps from Miami cafés + shoreline. Call 555-321-7788. Alex Rivera, Realtor®, OceanGate Realty. ⚖️"
                 className="border-foreground min-h-[120px] placeholder:opacity-40"
               />
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  ✓ Meta: 125 chars • TikTok: 100 chars • Google: 90 chars • LinkedIn: 150 chars • X: 280 chars
-                </p>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">For real estate ads:</span>
-                  <img src={equalHousingLogo} alt="Equal Housing Opportunity" className="h-6 opacity-60" />
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground">
+                ✓ Meta: 125 chars • TikTok: 100 chars • Google: 90 chars • LinkedIn: 150 chars • X: 280 chars
+              </p>
             </div>
 
             {(uploadType === 'image' || uploadType === 'video') && (
