@@ -61,7 +61,7 @@ serve(async (req) => {
 
 PROHIBITED CONTENT (AUTO-REJECT):
 - Discrimination: ANY targeting/exclusion based on race, ethnicity, national origin, religion, age, sex, sexual orientation, gender identity, family status, disability, medical condition, genetic information
-- Housing/Employment/Credit: MUST NOT target protected characteristics - use only interest/behavioral targeting
+- Housing/Employment/Credit: MUST NOT use discriminatory language, preferences, or coded terms that exclude protected groups. Standard factual information (address, price, property features, open house times, agent contact) is ALLOWED and EXPECTED in real estate ads.
 - Health: No before/after images, no weight loss claims without disclaimers, no unsafe supplements, no misleading medical claims
 - Substances: No tobacco, vaping, drugs, unsafe supplements, recreational drugs
 - Adult Content: No nudity, sexual services, dating with sexual intent
@@ -69,6 +69,20 @@ PROHIBITED CONTENT (AUTO-REJECT):
 - Misleading: No false claims, no clickbait, no sensational language, no unrealistic promises
 - Shocking: No violence, gore, disturbing content
 - Personal Attributes: Cannot assert or imply personal characteristics (race, religion, health, financial status, sexual orientation)
+
+REAL ESTATE ADS - WHAT IS ALLOWED:
+- Property address, neighborhood, city, state
+- Listing price and property features
+- Open house dates and times
+- Agent/broker name and contact information
+- Factual property descriptions (bedrooms, bathrooms, square footage, amenities)
+- Fair housing disclaimer is recommended but not required for approval
+
+REAL ESTATE ADS - WHAT IS PROHIBITED:
+- Language indicating preference for/against protected groups ("perfect for young professionals", "ideal for families without children")
+- Coded terms suggesting racial/ethnic preferences ("urban", "exclusive", "traditional")
+- Targeting settings that exclude protected characteristics
+- Suggesting neighborhood demographics in discriminatory ways
 
 REQUIRED ELEMENTS:
 - Clear, honest product representation
@@ -82,7 +96,7 @@ REQUIRED ELEMENTS:
       tiktok: `TikTok Advertising Policies - STRICT ENFORCEMENT:
 
 PROHIBITED CONTENT (AUTO-REJECT):
-- Discrimination: No targeting based on protected characteristics (race, ethnicity, religion, gender, age, disability, sexual orientation)
+- Discrimination: No discriminatory language or preferences targeting protected characteristics. Standard factual information in real estate ads (address, price, features) is ALLOWED.
 - Misleading: No exaggerated claims, false information, or deceptive practices
 - Dangerous: No illegal activities, weapons, explosives, dangerous organizations
 - Substances: No tobacco, drugs, alcohol to minors, unsafe supplements
@@ -104,7 +118,7 @@ REQUIRED ELEMENTS:
       google: `Google Ads Policies - STRICT ENFORCEMENT:
 
 PROHIBITED CONTENT (AUTO-REJECT):
-- Discrimination: No content targeting/excluding based on protected classes (race, religion, national origin, disability, age, sex, sexual orientation)
+- Discrimination: No discriminatory language or targeting excluding protected classes. Standard factual real estate information (address, price, property details) is ALLOWED and EXPECTED.
 - Counterfeit: No fake goods, replica products, unauthorized replicas
 - Dangerous: No explosives, weapons, tobacco, recreational drugs, unsafe supplements
 - Dishonest: No phishing, malware, deceptive behavior, misleading claims, get-rich-quick schemes
@@ -123,10 +137,10 @@ REQUIRED ELEMENTS:
 - Realistic, verifiable claims
 - Clear value proposition`,
       
-      linkedin: `LinkedIn Advertising Policies - STRICT ENFORCEMENT:
+      linkedin: `LinkedIn Advertising Policies - PROFESSIONAL STANDARDS:
 
 PROHIBITED CONTENT (AUTO-REJECT):
-- Discrimination: No targeting/content based on protected characteristics (race, ethnicity, religion, gender, age, disability, sexual orientation, national origin)
+- Discrimination: No discriminatory language or preferences. Factual job requirements and property details are ALLOWED.
 - Misleading Employment: No false job opportunities, no misleading salary claims, no fake company profiles
 - Professional Standards: No offensive language, no inappropriate content, no spam
 - Adult Content: No sexual services, no dating focused on physical encounters
@@ -144,10 +158,10 @@ REQUIRED ELEMENTS:
 - Legitimate business practices
 - Accurate job/salary information if applicable`,
       
-      x: `X (Twitter) Advertising Policies - STRICT ENFORCEMENT:
+      x: `X (Twitter) Advertising Policies - BRAND SAFETY:
 
 PROHIBITED CONTENT (AUTO-REJECT):
-- Discrimination: No content targeting/based on protected classes (race, ethnicity, religion, national origin, gender, sexual orientation, disability, age)
+- Discrimination: No discriminatory language or content targeting/excluding based on protected characteristics. Standard property and job information is ALLOWED.
 - Illegal: No illegal products, services, or activities
 - Adult: No sexual content, escort services, adult entertainment
 - Substances: No illegal drugs, tobacco products (restrictions on alcohol)
@@ -185,34 +199,41 @@ REQUIRED ELEMENTS:
         messages: [
           {
             role: 'system',
-            content: `You are a STRICT social media advertising compliance expert. Your job is to review ad content with ZERO TOLERANCE for policy violations.
+            content: `You are an advertising compliance officer. Your role is to review ad content for ACTUAL policy violations, not to flag standard business practices.
 
-CRITICAL COMPLIANCE RULES:
-1. HOUSING/REAL ESTATE: NEVER allow targeting based on race, color, religion, national origin, sex, familial status, or disability - Fair Housing Act violation = INSTANT REJECTION
-2. EMPLOYMENT: NEVER allow targeting based on protected characteristics - EEOC violation = INSTANT REJECTION
-3. CREDIT/FINANCIAL: NEVER allow discrimination - ECOA violation = INSTANT REJECTION
-4. If content mentions ANY protected class in a targeting context = AUTO-REJECT
-5. If content makes unrealistic promises or misleading claims = REJECT
-6. If content could be seen as discriminatory in ANY way = REJECT
-7. Better to reject borderline content than risk platform rejection
+CRITICAL DISTINCTION FOR HOUSING/EMPLOYMENT/CREDIT ADS:
+- REJECT: Discriminatory language, preferences for/against protected groups, coded terms suggesting exclusion
+- APPROVE: Factual information (address, price, features, requirements, contact info, open house times)
+
+Standard real estate ads MUST include property location, price, and contact information - this is EXPECTED and LEGAL.
+Housing discrimination occurs through LANGUAGE and TARGETING, not through listing factual property details.
+
+Examples of ACTUAL violations:
+❌ "Perfect for young professionals" (age discrimination)
+❌ "Traditional family neighborhood" (family status discrimination)  
+❌ "No Section 8" (source of income discrimination)
+❌ Targeting that excludes protected groups
+
+Examples of COMPLIANT content:
+✅ "3BR home in [neighborhood] for $500K. Open house Saturday."
+✅ "Charming property at [address]. Call [agent] at [phone]."
+✅ "Beautiful home priced at $2.3M. Contact for details."
 
 Analyze the content against these platform guidelines:
 
 ${selectedGuidelines}
 
 Check for these specific red flags:
-- ANY mention of race, ethnicity, religion in targeting
-- Protected class characteristics (age, gender, disability, etc.) in targeting  
+- Discriminatory language or preferences based on protected characteristics
 - "Before/after" health claims without disclaimers
 - Unrealistic promises ("guaranteed", "instant", "miracle")
 - Clickbait or sensational language
-- Vague or misleading pricing
+- Misleading pricing or false claims
 - Implied personal characteristics about viewers
-- Any language that could be interpreted as discriminatory
 
 Return a JSON object with:
 {
-  "approved": boolean (false if ANY violation detected),
+  "approved": boolean,
   "violations": [
     {
       "platform": "platform name",
@@ -222,10 +243,10 @@ Return a JSON object with:
     }
   ],
   "overallRisk": "high" | "medium" | "low" | "none",
-  "summary": "detailed explanation of approval/rejection"
+  "summary": "brief overall assessment"
 }
 
-BE EXTREMELY STRICT - it's better to reject compliant content than approve violating content. When in doubt, REJECT.`
+Focus on ACTUAL violations, not standard business information.`
           },
           {
             role: 'user',
