@@ -84,7 +84,10 @@ export default function TargetingSetup() {
         body: { campaignId }
       });
 
-      if (error) throw error;
+      if (error) {
+        const errorMessage = error.message || 'Failed to generate targeting suggestions';
+        throw new Error(errorMessage);
+      }
 
       // Reload the campaign to get the new audience suggestion
       const { data: updatedCampaign, error: fetchError } = await supabase
@@ -106,8 +109,16 @@ export default function TargetingSetup() {
       }
     } catch (error) {
       console.error('Error generating audience suggestion:', error);
-      toast.error('Failed to generate targeting suggestions');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate targeting suggestions';
+      
+      toast.error(errorMessage, {
+        duration: 6000,
+        description: 'Please review your campaign description and try again.',
+      });
+      
       navigate('/dashboard');
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -145,6 +145,16 @@ Return JSON:
     console.log('AI Response status:', aiResponse.status);
     console.log('AI Response content:', content);
     
+    // Check if AI refused the request (common with discriminatory or illegal content)
+    if (content.toLowerCase().includes('cannot fulfill') || 
+        content.toLowerCase().includes('cannot create') ||
+        content.toLowerCase().includes('violates') ||
+        content.toLowerCase().includes('discriminatory') ||
+        content.toLowerCase().includes('illegal')) {
+      console.error('AI refused to generate content:', content);
+      throw new Error('This campaign contains content that violates advertising policies. Please review your campaign description and remove any discriminatory or illegal content.');
+    }
+    
     // Strip markdown code blocks if present
     content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     
@@ -156,7 +166,7 @@ Return JSON:
     } catch (parseError) {
       console.error('Failed to parse AI response. Parse error:', parseError);
       console.error('Content that failed to parse:', content);
-      throw new Error('AI failed to generate valid ad variants');
+      throw new Error('AI failed to generate valid ad variants. This may be due to content policy violations or technical issues.');
     }
 
     // Get campaign asset URL
@@ -289,11 +299,20 @@ Return ONLY valid JSON with this exact structure:
 
   } catch (error: any) {
     console.error('Error in generate-ad-variants:', error);
+    
+    // Provide more specific error messages
+    let userMessage = error.message;
+    if (error.message.includes('content that violates')) {
+      userMessage = error.message; // Already user-friendly
+    } else if (error.message.includes('AI failed to generate')) {
+      userMessage = 'Unable to generate ad variants. Please review your campaign description for any policy violations or try again.';
+    }
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: userMessage }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: 400,
       }
     );
   }
