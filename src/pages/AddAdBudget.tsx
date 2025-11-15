@@ -303,7 +303,7 @@ export default function AddAdBudget() {
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder={minimumBudget ? minimumBudget.total.toFixed(2) : "Select platforms first"}
                   disabled={!minimumBudget}
-                  className="pl-8 text-lg md:text-xl h-12"
+                  className="pl-8 text-lg md:text-xl h-12 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
               
