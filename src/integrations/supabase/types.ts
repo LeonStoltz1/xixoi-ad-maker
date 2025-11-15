@@ -844,6 +844,8 @@ export type Database = {
         Row: {
           audience_suggestion: Json | null
           auto_targeted: boolean | null
+          contact_email: string | null
+          contact_phone: string | null
           created_at: string | null
           daily_budget: number | null
           detected_product_type: string | null
@@ -851,12 +853,14 @@ export type Database = {
           has_watermark: boolean | null
           id: string
           is_active: boolean | null
+          landing_url: string | null
           last_payment_check: string | null
           lifetime_budget: number | null
           name: string
           paused_at: string | null
           paused_reason: string | null
           payment_failures: number | null
+          primary_goal: string | null
           start_date: string | null
           status: string | null
           status_reason: string | null
@@ -871,6 +875,8 @@ export type Database = {
         Insert: {
           audience_suggestion?: Json | null
           auto_targeted?: boolean | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string | null
           daily_budget?: number | null
           detected_product_type?: string | null
@@ -878,12 +884,14 @@ export type Database = {
           has_watermark?: boolean | null
           id?: string
           is_active?: boolean | null
+          landing_url?: string | null
           last_payment_check?: string | null
           lifetime_budget?: number | null
           name: string
           paused_at?: string | null
           paused_reason?: string | null
           payment_failures?: number | null
+          primary_goal?: string | null
           start_date?: string | null
           status?: string | null
           status_reason?: string | null
@@ -898,6 +906,8 @@ export type Database = {
         Update: {
           audience_suggestion?: Json | null
           auto_targeted?: boolean | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string | null
           daily_budget?: number | null
           detected_product_type?: string | null
@@ -905,12 +915,14 @@ export type Database = {
           has_watermark?: boolean | null
           id?: string
           is_active?: boolean | null
+          landing_url?: string | null
           last_payment_check?: string | null
           lifetime_budget?: number | null
           name?: string
           paused_at?: string | null
           paused_reason?: string | null
           payment_failures?: number | null
+          primary_goal?: string | null
           start_date?: string | null
           status?: string | null
           status_reason?: string | null
