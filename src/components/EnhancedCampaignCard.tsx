@@ -467,54 +467,52 @@ export function EnhancedCampaignCard({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        {/* Spend Metrics */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Spend Today</p>
-            <p className="text-xl font-bold">${performance.spendToday.toFixed(2)}</p>
+      <CardContent className="space-y-3">
+        {/* Line 1: Spend Metrics + Daily Budget */}
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-sm">
+          <div className="flex items-baseline gap-2">
+            <span className="text-xs text-muted-foreground">Spend Today</span>
+            <span className="text-lg font-bold">${performance.spendToday.toFixed(2)}</span>
           </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Spend This Month</p>
-            <p className="text-xl font-bold">${performance.spendThisMonth.toFixed(2)}</p>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xs text-muted-foreground">Spend This Month</span>
+            <span className="text-lg font-bold">${performance.spendThisMonth.toFixed(2)}</span>
           </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Total Spent</p>
-            <p className="text-lg font-semibold">${campaign.total_spent.toFixed(2)}</p>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xs text-muted-foreground">Total Spent</span>
+            <span className="text-lg font-bold">${campaign.total_spent.toFixed(2)}</span>
           </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Remaining Budget</p>
-            <p className={`text-lg font-semibold ${budgetStatus === 'low' ? 'text-red-600' : ''}`}>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xs text-muted-foreground">Remaining Budget</span>
+            <span className={`text-lg font-bold ${budgetStatus === 'low' ? 'text-red-600' : ''}`}>
               {remainingBudget !== null ? `$${remainingBudget.toFixed(2)}` : 'Unlimited'}
-            </p>
+            </span>
           </div>
         </div>
 
-        {/* Budget Info */}
-        <div className="flex items-center justify-between text-sm border-t pt-3">
-          <span className="text-muted-foreground">Daily Budget:</span>
-          <span className="font-medium">${campaign.daily_budget?.toFixed(2) || '0.00'}</span>
-        </div>
-
-        {/* Performance Preview */}
-        <div className="grid grid-cols-4 gap-2 text-center border-t pt-3">
-          <div>
-            <p className="text-xs text-muted-foreground">CTR</p>
-            <p className="text-sm font-semibold">{performance.ctr.toFixed(2)}%</p>
+        {/* Line 2: Daily Budget + Performance Metrics */}
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-sm border-t pt-3">
+          <div className="flex items-baseline gap-2">
+            <span className="text-xs text-muted-foreground">Daily Budget:</span>
+            <span className="text-base font-medium">${campaign.daily_budget?.toFixed(2) || '0.00'}</span>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">CPM</p>
-            <p className="text-sm font-semibold">${performance.cpm.toFixed(2)}</p>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xs text-muted-foreground">CTR</span>
+            <span className="text-base font-semibold">{performance.ctr.toFixed(2)}%</span>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">CPC</p>
-            <p className="text-sm font-semibold">${performance.cpc.toFixed(2)}</p>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xs text-muted-foreground">CPM</span>
+            <span className="text-base font-semibold">${performance.cpm.toFixed(2)}</span>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">ROAS</p>
-            <p className="text-sm font-semibold">
+          <div className="flex items-baseline gap-2">
+            <span className="text-xs text-muted-foreground">CPC</span>
+            <span className="text-base font-semibold">${performance.cpc.toFixed(2)}</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xs text-muted-foreground">ROAS</span>
+            <span className="text-base font-semibold">
               {performance.roas ? `${performance.roas.toFixed(2)}x` : 'N/A'}
-            </p>
+            </span>
           </div>
         </div>
 
