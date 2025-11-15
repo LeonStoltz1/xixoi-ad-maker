@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_accounts: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          platform: string
+          platform_account_id: string
+          refresh_token: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          platform: string
+          platform_account_id: string
+          refresh_token?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          platform?: string
+          platform_account_id?: string
+          refresh_token?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      ad_budget_reloads: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          payment_status: string
+          platforms: string[]
+          service_fee: number
+          stripe_payment_intent_id: string | null
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          payment_status?: string
+          platforms: string[]
+          service_fee?: number
+          stripe_payment_intent_id?: string | null
+          total_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          payment_status?: string
+          platforms?: string[]
+          service_fee?: number
+          stripe_payment_intent_id?: string | null
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ad_spend_tracking: {
         Row: {
           amount: number
@@ -65,6 +143,13 @@ export type Database = {
             foreignKeyName: "ad_spend_tracking_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
+            referencedRelation: "admin_watermark_report"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "ad_spend_tracking_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -109,6 +194,290 @@ export type Database = {
             foreignKeyName: "ad_variants_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
+            referencedRelation: "admin_watermark_report"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "ad_variants_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ad_wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          total_deposited: number
+          total_spent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_deposited?: number
+          total_spent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_deposited?: number
+          total_spent?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      affiliate_payouts: {
+        Row: {
+          admin_note: string | null
+          affiliate_id: string | null
+          amount: number
+          id: string
+          method: string | null
+          processed_at: string | null
+          requested_at: string | null
+          status: string | null
+          transaction_id: string | null
+        }
+        Insert: {
+          admin_note?: string | null
+          affiliate_id?: string | null
+          amount: number
+          id?: string
+          method?: string | null
+          processed_at?: string | null
+          requested_at?: string | null
+          status?: string | null
+          transaction_id?: string | null
+        }
+        Update: {
+          admin_note?: string | null
+          affiliate_id?: string | null
+          amount?: number
+          id?: string
+          method?: string | null
+          processed_at?: string | null
+          requested_at?: string | null
+          status?: string | null
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_payouts_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_referrals: {
+        Row: {
+          affiliate_earnings: number | null
+          affiliate_id: string | null
+          first_payment_at: string | null
+          id: string
+          notes: string | null
+          referred_at: string | null
+          referred_user_id: string | null
+          stripe_customer_id: string | null
+          total_revenue: number | null
+        }
+        Insert: {
+          affiliate_earnings?: number | null
+          affiliate_id?: string | null
+          first_payment_at?: string | null
+          id?: string
+          notes?: string | null
+          referred_at?: string | null
+          referred_user_id?: string | null
+          stripe_customer_id?: string | null
+          total_revenue?: number | null
+        }
+        Update: {
+          affiliate_earnings?: number | null
+          affiliate_id?: string | null
+          first_payment_at?: string | null
+          id?: string
+          notes?: string | null
+          referred_at?: string | null
+          referred_user_id?: string | null
+          stripe_customer_id?: string | null
+          total_revenue?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_referrals_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliates: {
+        Row: {
+          code: string
+          created_at: string | null
+          id: string
+          is_blocked: boolean | null
+          payout_email: string | null
+          payout_method: string | null
+          stripe_account_id: string | null
+          stripe_onboarding_complete: boolean | null
+          total_earned: number | null
+          total_paid: number | null
+          user_id: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          id?: string
+          is_blocked?: boolean | null
+          payout_email?: string | null
+          payout_method?: string | null
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean | null
+          total_earned?: number | null
+          total_paid?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          id?: string
+          is_blocked?: boolean | null
+          payout_email?: string | null
+          payout_method?: string | null
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean | null
+          total_earned?: number | null
+          total_paid?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      agency_clients: {
+        Row: {
+          agency_user_id: string
+          client_name: string
+          client_user_id: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          markup_percentage: number | null
+        }
+        Insert: {
+          agency_user_id: string
+          client_name: string
+          client_user_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          markup_percentage?: number | null
+        }
+        Update: {
+          agency_user_id?: string
+          client_name?: string
+          client_user_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          markup_percentage?: number | null
+        }
+        Relationships: []
+      }
+      agency_config: {
+        Row: {
+          agency_name: string
+          created_at: string
+          custom_domain: string | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          primary_color: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agency_name: string
+          created_at?: string
+          custom_domain?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          primary_color?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agency_name?: string
+          created_at?: string
+          custom_domain?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          primary_color?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      batch_funding_queue: {
+        Row: {
+          amount: number
+          batch_id: string | null
+          campaign_id: string
+          created_at: string
+          id: string
+          platform: string
+          processed_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          batch_id?: string | null
+          campaign_id: string
+          created_at?: string
+          id?: string
+          platform: string
+          processed_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          batch_id?: string | null
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          platform?: string
+          processed_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batch_funding_queue_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "admin_watermark_report"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "batch_funding_queue_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -144,6 +513,13 @@ export type Database = {
             foreignKeyName: "campaign_assets_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
+            referencedRelation: "admin_watermark_report"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "campaign_assets_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -175,6 +551,13 @@ export type Database = {
           is_connected?: boolean | null
         }
         Relationships: [
+          {
+            foreignKeyName: "campaign_channels_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "admin_watermark_report"
+            referencedColumns: ["campaign_id"]
+          },
           {
             foreignKeyName: "campaign_channels_campaign_id_fkey"
             columns: ["campaign_id"]
@@ -241,46 +624,95 @@ export type Database = {
             foreignKeyName: "campaign_performance_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
+            referencedRelation: "admin_watermark_report"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "campaign_performance_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
         ]
       }
+      campaign_templates: {
+        Row: {
+          ai_prompt: string
+          category: string
+          created_at: string
+          example_output: Json | null
+          id: string
+          is_active: boolean | null
+          name: string
+        }
+        Insert: {
+          ai_prompt: string
+          category: string
+          created_at?: string
+          example_output?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+        }
+        Update: {
+          ai_prompt?: string
+          category?: string
+          created_at?: string
+          example_output?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+        }
+        Relationships: []
+      }
       campaigns: {
         Row: {
+          audience_suggestion: Json | null
+          auto_targeted: boolean | null
           created_at: string | null
           daily_budget: number | null
+          detected_product_type: string | null
           has_watermark: boolean | null
           id: string
           name: string
           status: string | null
           stripe_payment_id: string | null
+          suggested_daily_budget: number | null
           target_audience: string | null
           target_location: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          audience_suggestion?: Json | null
+          auto_targeted?: boolean | null
           created_at?: string | null
           daily_budget?: number | null
+          detected_product_type?: string | null
           has_watermark?: boolean | null
           id?: string
           name: string
           status?: string | null
           stripe_payment_id?: string | null
+          suggested_daily_budget?: number | null
           target_audience?: string | null
           target_location?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          audience_suggestion?: Json | null
+          auto_targeted?: boolean | null
           created_at?: string | null
           daily_budget?: number | null
+          detected_product_type?: string | null
           has_watermark?: boolean | null
           id?: string
           name?: string
           status?: string | null
           stripe_payment_id?: string | null
+          suggested_daily_budget?: number | null
           target_audience?: string | null
           target_location?: string | null
           updated_at?: string | null
@@ -292,6 +724,83 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fraud_checks: {
+        Row: {
+          action_taken: string | null
+          check_type: string
+          created_at: string
+          details: Json | null
+          id: string
+          risk_level: string
+          user_id: string
+        }
+        Insert: {
+          action_taken?: string | null
+          check_type: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          risk_level: string
+          user_id: string
+        }
+        Update: {
+          action_taken?: string | null
+          check_type?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          risk_level?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      free_ads: {
+        Row: {
+          ad_variant_id: string
+          charged: boolean | null
+          created_at: string | null
+          fingerprint: string
+          id: string
+          image_url: string | null
+          published_at: string | null
+          tampered: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ad_variant_id: string
+          charged?: boolean | null
+          created_at?: string | null
+          fingerprint: string
+          id?: string
+          image_url?: string | null
+          published_at?: string | null
+          tampered?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ad_variant_id?: string
+          charged?: boolean | null
+          created_at?: string | null
+          fingerprint?: string
+          id?: string
+          image_url?: string | null
+          published_at?: string | null
+          tampered?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "free_ads_ad_variant_id_fkey"
+            columns: ["ad_variant_id"]
+            isOneToOne: false
+            referencedRelation: "ad_variants"
             referencedColumns: ["id"]
           },
         ]
@@ -335,6 +844,13 @@ export type Database = {
             foreignKeyName: "payment_transactions_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
+            referencedRelation: "admin_watermark_report"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -346,6 +862,134 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payouts: {
+        Row: {
+          affiliate: number | null
+          agency: number | null
+          created_at: string | null
+          id: string
+          month: string
+          net: number | null
+          subscription_id: string | null
+          total: number | null
+        }
+        Insert: {
+          affiliate?: number | null
+          agency?: number | null
+          created_at?: string | null
+          id?: string
+          month: string
+          net?: number | null
+          subscription_id?: string | null
+          total?: number | null
+        }
+        Update: {
+          affiliate?: number | null
+          agency?: number | null
+          created_at?: string | null
+          id?: string
+          month?: string
+          net?: number | null
+          subscription_id?: string | null
+          total?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_alerts: {
+        Row: {
+          acted_at: string | null
+          alert_type: string
+          campaign_id: string
+          created_at: string
+          current_value: number | null
+          id: string
+          message: string
+          read_at: string | null
+          status: string
+          threshold_value: number | null
+          user_id: string
+        }
+        Insert: {
+          acted_at?: string | null
+          alert_type: string
+          campaign_id: string
+          created_at?: string
+          current_value?: number | null
+          id?: string
+          message: string
+          read_at?: string | null
+          status?: string
+          threshold_value?: number | null
+          user_id: string
+        }
+        Update: {
+          acted_at?: string | null
+          alert_type?: string
+          campaign_id?: string
+          created_at?: string
+          current_value?: number | null
+          id?: string
+          message?: string
+          read_at?: string | null
+          status?: string
+          threshold_value?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_alerts_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "admin_watermark_report"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "performance_alerts_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_ad_accounts: {
+        Row: {
+          created_at: string
+          id: string
+          parent_business_manager_id: string | null
+          platform: string
+          platform_ad_account_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parent_business_manager_id?: string | null
+          platform: string
+          platform_ad_account_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parent_business_manager_id?: string | null
+          platform?: string
+          platform_ad_account_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -465,15 +1109,163 @@ export type Database = {
           },
         ]
       }
+      support_tickets: {
+        Row: {
+          ai_response: string | null
+          created_at: string
+          human_assigned_to: string | null
+          id: string
+          message: string
+          resolved_at: string | null
+          status: string
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          ai_response?: string | null
+          created_at?: string
+          human_assigned_to?: string | null
+          id?: string
+          message: string
+          resolved_at?: string | null
+          status?: string
+          subject: string
+          user_id: string
+        }
+        Update: {
+          ai_response?: string | null
+          created_at?: string
+          human_assigned_to?: string | null
+          id?: string
+          message?: string
+          resolved_at?: string | null
+          status?: string
+          subject?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          campaign_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          stripe_payment_intent_id: string | null
+          type: string
+          user_id: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          campaign_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          stripe_payment_intent_id?: string | null
+          type: string
+          user_id: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          campaign_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          stripe_payment_intent_id?: string | null
+          type?: string
+          user_id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_transactions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "admin_watermark_report"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "wallet_transactions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "ad_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      admin_watermark_report: {
+        Row: {
+          ad_variant_id: string | null
+          campaign_id: string | null
+          campaign_name: string | null
+          charged: boolean | null
+          creative_url: string | null
+          fingerprint: string | null
+          id: string | null
+          image_url: string | null
+          platform: string | null
+          published_at: string | null
+          revenue: number | null
+          stripe_customer_id: string | null
+          tampered: boolean | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "free_ads_ad_variant_id_fkey"
+            columns: ["ad_variant_id"]
+            isOneToOne: false
+            referencedRelation: "ad_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -600,6 +1392,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
