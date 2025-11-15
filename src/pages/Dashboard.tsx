@@ -697,7 +697,17 @@ export default function Dashboard() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
+            <AlertDialogDescription className="space-y-3">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-3">
+                <p className="font-semibold text-primary flex items-center gap-2">
+                  <StopCircle className="w-5 h-5" />
+                  Campaign will be stopped on all ad platforms before deletion
+                </p>
+                <p className="text-sm mt-1 text-muted-foreground">
+                  We will automatically pause your ads on Meta, TikTok, Google, LinkedIn, and X to prevent continued spending.
+                </p>
+              </div>
+              
               <p>
                 This action cannot be undone. This will permanently delete your campaign and remove all associated data including:
               </p>
