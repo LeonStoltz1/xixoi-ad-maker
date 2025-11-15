@@ -856,6 +856,7 @@ export type Database = {
           landing_url: string | null
           last_payment_check: string | null
           lifetime_budget: number | null
+          media_rights_confirmed_at: string | null
           name: string
           paused_at: string | null
           paused_reason: string | null
@@ -887,6 +888,7 @@ export type Database = {
           landing_url?: string | null
           last_payment_check?: string | null
           lifetime_budget?: number | null
+          media_rights_confirmed_at?: string | null
           name: string
           paused_at?: string | null
           paused_reason?: string | null
@@ -918,6 +920,7 @@ export type Database = {
           landing_url?: string | null
           last_payment_check?: string | null
           lifetime_budget?: number | null
+          media_rights_confirmed_at?: string | null
           name?: string
           paused_at?: string | null
           paused_reason?: string | null
