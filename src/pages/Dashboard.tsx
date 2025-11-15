@@ -19,6 +19,13 @@ export default function Dashboard() {
   const [userPlan, setUserPlan] = useState<string>('free');
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [pausingCampaigns, setPausingCampaigns] = useState<Set<string>>(new Set());
+  const [aggregatedMetrics, setAggregatedMetrics] = useState<{
+    totalSpend: number;
+    totalImpressions: number;
+    totalClicks: number;
+    totalConversions: number;
+    avgROAS: number;
+  } | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { createCheckoutSession, openCustomerPortal, loading: stripeLoading } = useStripeCheckout();
@@ -55,6 +62,34 @@ export default function Dashboard() {
 
       if (campaignsData) {
         setCampaigns(campaignsData);
+        
+        // Fetch aggregated metrics if user has multiple campaigns
+        if (campaignsData.length > 1) {
+          const campaignIds = campaignsData.map(c => c.id);
+          const { data: performanceData } = await supabase
+            .from('campaign_performance')
+            .select('spend, impressions, clicks, conversions, roas')
+            .in('campaign_id', campaignIds);
+
+          if (performanceData && performanceData.length > 0) {
+            const totals = performanceData.reduce((acc, curr) => ({
+              totalSpend: acc.totalSpend + (curr.spend || 0),
+              totalImpressions: acc.totalImpressions + (curr.impressions || 0),
+              totalClicks: acc.totalClicks + (curr.clicks || 0),
+              totalConversions: acc.totalConversions + (curr.conversions || 0),
+              avgROAS: acc.avgROAS + (curr.roas || 0),
+            }), {
+              totalSpend: 0,
+              totalImpressions: 0,
+              totalClicks: 0,
+              totalConversions: 0,
+              avgROAS: 0,
+            });
+            
+            totals.avgROAS = totals.avgROAS / performanceData.length;
+            setAggregatedMetrics(totals);
+          }
+        }
       }
 
       setLoading(false);
@@ -173,6 +208,40 @@ export default function Dashboard() {
               </Button>
             </div>
           </div>
+
+          {/* Aggregated Metrics - Show when user has multiple campaigns */}
+          {campaigns.length > 1 && aggregatedMetrics && (
+            <Card className="border-2 border-primary">
+              <CardHeader>
+                <CardTitle className="text-xl">Overall Performance</CardTitle>
+                <CardDescription>Aggregated metrics across all your active campaigns</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Total Spend</p>
+                    <p className="text-2xl font-bold">${aggregatedMetrics.totalSpend.toFixed(2)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Impressions</p>
+                    <p className="text-2xl font-bold">{aggregatedMetrics.totalImpressions.toLocaleString()}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Clicks</p>
+                    <p className="text-2xl font-bold">{aggregatedMetrics.totalClicks.toLocaleString()}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Conversions</p>
+                    <p className="text-2xl font-bold">{aggregatedMetrics.totalConversions.toLocaleString()}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Avg ROAS</p>
+                    <p className="text-2xl font-bold">{aggregatedMetrics.avgROAS.toFixed(2)}x</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Campaigns List or Empty State */}
           {campaigns.length === 0 ? (
