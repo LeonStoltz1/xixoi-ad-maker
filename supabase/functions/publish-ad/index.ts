@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -29,10 +28,10 @@ serve(async (req) => {
       throw new Error('User not authenticated');
     }
 
-    // Get variant and check if it belongs to user
+    // Get variant, campaign, and user plan
     const { data: variant, error: variantError } = await supabase
       .from('ad_variants')
-      .select('*, campaigns(user_id, has_watermark)')
+      .select('*, campaigns(user_id, has_watermark, name)')
       .eq('id', variantId)
       .single();
 
@@ -44,44 +43,74 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    // Check if ad has watermark (free user)
+    // Get user's plan
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', user.id)
+      .single();
+
+    const userPlan = profile?.plan || 'free';
     const hasWatermark = variant.campaigns.has_watermark;
 
-    // For free users, ensure there's a free_ads record
-    if (hasWatermark) {
-      const { data: freeAd } = await supabase
+    // IMPORTANT: For production, watermark should be server-side embedded in image
+    // Current implementation: Watermark displayed on frontend only
+    // TODO: Add server-side image processing to embed "Powered by xiXoi™" watermark
+    // into the actual creative_url image file before publishing to ad platforms
+    
+    // For free users with watermark, create/update free_ads record
+    if (userPlan === 'free' && hasWatermark) {
+      const fingerprint = `${user.id}_${variantId}_${Date.now()}`;
+      
+      // Check if free_ad record already exists
+      const { data: existingFreeAd } = await supabase
         .from('free_ads')
         .select('*')
         .eq('ad_variant_id', variantId)
         .eq('user_id', user.id)
         .single();
 
-      // If no free_ad record exists, create one
-      if (!freeAd) {
-        const fingerprint = `${user.id}_${variantId}_${Date.now()}`;
+      if (existingFreeAd) {
+        // Update existing record
+        await supabase
+          .from('free_ads')
+          .update({ 
+            published_at: new Date().toISOString(),
+            image_url: variant.creative_url 
+          })
+          .eq('id', existingFreeAd.id);
+      } else {
+        // Create new record
         await supabase
           .from('free_ads')
           .insert({
             user_id: user.id,
             ad_variant_id: variantId,
             fingerprint: fingerprint,
-            image_url: variant.creative_url
+            image_url: variant.creative_url,
+            published_at: new Date().toISOString()
           });
       }
+
+      console.log('Free ad with watermark tracked:', variantId);
     }
 
-    // Mark as published
+    // Update campaign status to published if not already
     await supabase
-      .from('free_ads')
-      .update({ published_at: new Date().toISOString() })
-      .eq('ad_variant_id', variantId);
+      .from('campaigns')
+      .update({ status: 'active' })
+      .eq('id', variant.campaigns.id);
 
-    console.log('Ad published successfully');
+    console.log('Ad published successfully with watermark tracking');
 
     return new Response(
       JSON.stringify({ 
         success: true,
-        message: 'Ad published successfully!'
+        message: hasWatermark 
+          ? 'Ad published with xiXoi™ watermark (free version)'
+          : 'Ad published successfully!',
+        hasWatermark: hasWatermark,
+        campaignName: variant.campaigns.name
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

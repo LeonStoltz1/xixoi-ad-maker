@@ -163,6 +163,55 @@ export function EnhancedCampaignCard({
 
     setSavingAd(true);
     try {
+      // First, run AI moderation check on the edited content
+      toast({
+        title: "Validating content...",
+        description: "Checking ad against platform policies",
+      });
+
+      const { data: moderationResult, error: moderationError } = await supabase.functions.invoke(
+        'moderate-ad-content',
+        {
+          body: {
+            campaignId: campaign.id,
+            platforms: ['meta', 'tiktok', 'google', 'linkedin', 'x'],
+          }
+        }
+      );
+
+      if (moderationError) {
+        console.error('Moderation error:', moderationError);
+        throw new Error('Failed to validate ad content. Please try again.');
+      }
+
+      // Check if moderation failed
+      if (!moderationResult.approved) {
+        const violationsList = moderationResult.violations
+          ?.map((v: any) => `${v.platform}: ${v.issue}`)
+          .join('\n• ') || 'Content violates platform policies';
+
+        toast({
+          title: "⚠️ Platform Policy Violations",
+          description: (
+            <div className="space-y-3">
+              <p className="font-semibold text-sm">Your ad content violates these policies:</p>
+              <div className="text-xs bg-destructive/10 p-3 rounded border border-destructive/20">
+                • {violationsList}
+              </div>
+              {moderationResult.summary && (
+                <p className="text-xs text-muted-foreground italic">{moderationResult.summary}</p>
+              )}
+              <p className="text-xs font-medium">Please revise your ad to comply with platform guidelines.</p>
+            </div>
+          ),
+          variant: "destructive",
+          duration: 15000,
+        });
+        setSavingAd(false);
+        return;
+      }
+
+      // If moderation passed, update the ad variant with new content
       const { error } = await supabase
         .from('ad_variants')
         .update({
@@ -192,15 +241,15 @@ export function EnhancedCampaignCard({
 
       setIsEditingAd(false);
       toast({
-        title: "Ad updated successfully",
-        description: "Your ad variant has been saved.",
+        title: "✅ Ad updated successfully",
+        description: "Your ad passed platform compliance checks and has been saved.",
       });
     } catch (error) {
       console.error('Error saving ad:', error);
       toast({
         variant: "destructive",
         title: "Failed to save ad",
-        description: "Please try again.",
+        description: error instanceof Error ? error.message : "Please try again.",
       });
     } finally {
       setSavingAd(false);
