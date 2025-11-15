@@ -37,6 +37,7 @@ import { RealtorIdentification } from "./components/onboarding/RealtorIdentifica
 import { RealtorProvider } from "./contexts/RealtorContext";
 import { PoliticalProvider } from "./contexts/PoliticalContext";
 import VerifyCandidate from "./pages/political/VerifyCandidate";
+import GeneratePoliticalAd from "./pages/political/GeneratePoliticalAd";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +70,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<RealtorIdentification />} />
             <Route path="/political/verify" element={<VerifyCandidate />} />
+            <Route path="/political/generate" element={<GeneratePoliticalAd />} />
             <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-campaign" element={<CreateCampaign />} />
           <Route path="/targeting/:campaignId" element={<TargetingSetup />} />
