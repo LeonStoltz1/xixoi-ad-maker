@@ -242,19 +242,31 @@ export default function TargetingSetup() {
   };
 
   const handleEditClick = async () => {
-    if (!campaign) return;
-    
-    setEditName(campaign.name);
-    
-    // Get the campaign asset description
-    const { data: assets } = await supabase
-      .from('campaign_assets')
-      .select('asset_text')
-      .eq('campaign_id', campaign.id)
-      .single();
-    
-    setEditDescription(assets?.asset_text || '');
-    setShowEditDialog(true);
+    try {
+      // Always fetch fresh campaign data
+      const { data: campaignData, error: campaignError } = await supabase
+        .from('campaigns')
+        .select('*, campaign_assets(*)')
+        .eq('id', campaignId)
+        .single();
+      
+      if (campaignError) {
+        console.error('Error loading campaign for edit:', campaignError);
+        toast.error('Failed to load campaign details');
+        return;
+      }
+
+      setEditName(campaignData.name);
+      
+      // Get the campaign asset description
+      const asset = campaignData.campaign_assets?.[0];
+      setEditDescription(asset?.asset_text || '');
+      
+      setShowEditDialog(true);
+    } catch (error) {
+      console.error('Error in handleEditClick:', error);
+      toast.error('Failed to open edit dialog');
+    }
   };
 
   const handleEditSave = async () => {
