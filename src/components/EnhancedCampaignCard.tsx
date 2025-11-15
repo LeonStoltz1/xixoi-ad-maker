@@ -17,7 +17,8 @@ import {
   AlertTriangle,
   Zap,
   X,
-  Save
+  Save,
+  Trash2
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -33,6 +34,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -96,6 +107,9 @@ export function EnhancedCampaignCard({
   const [savingAd, setSavingAd] = useState(false);
   const [userPlan, setUserPlan] = useState<string | null>(null);
   const [hasWatermark, setHasWatermark] = useState(false);
+  const [deletingAdId, setDeletingAdId] = useState<string | null>(null);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [adToDelete, setAdToDelete] = useState<AdVariant | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -357,6 +371,51 @@ export function EnhancedCampaignCard({
     }
   };
 
+  const handleDeleteAd = (variant: AdVariant, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setAdToDelete(variant);
+    setShowDeleteAlert(true);
+  };
+
+  const confirmDeleteAd = async () => {
+    if (!adToDelete) return;
+    
+    setDeletingAdId(adToDelete.id);
+    try {
+      const { error } = await supabase
+        .from('ad_variants')
+        .delete()
+        .eq('id', adToDelete.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Ad deleted',
+        description: 'Ad variant has been removed',
+      });
+
+      // Update local state
+      setAdVariants(adVariants.filter(v => v.id !== adToDelete.id));
+      
+      // Close modal if we deleted the currently selected variant
+      if (selectedVariant?.id === adToDelete.id) {
+        setShowAdModal(false);
+        setSelectedVariant(null);
+      }
+    } catch (error) {
+      console.error('Error deleting ad:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete ad variant',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingAdId(null);
+      setShowDeleteAlert(false);
+      setAdToDelete(null);
+    }
+  };
+
   return (
     <Card className="relative overflow-hidden">
       {/* Status indicator bar */}
@@ -477,12 +536,24 @@ export function EnhancedCampaignCard({
                 {adVariants.map((variant) => (
                   <div
                     key={variant.id}
-                    onClick={() => {
-                      setSelectedVariant(variant);
-                      setShowAdModal(true);
-                    }}
-                    className="flex-shrink-0 w-48 border rounded-lg p-3 space-y-2 bg-card hover:bg-accent/5 hover:border-primary transition-all cursor-pointer"
+                    className="flex-shrink-0 w-48 border rounded-lg p-3 space-y-2 bg-card hover:bg-accent/5 hover:border-primary transition-all cursor-pointer relative group"
                   >
+                    <div 
+                      onClick={() => {
+                        setSelectedVariant(variant);
+                        setShowAdModal(true);
+                      }}
+                      className="space-y-2"
+                    >
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 h-7 w-7 p-0"
+                        onClick={(e) => handleDeleteAd(variant, e)}
+                        disabled={deletingAdId === variant.id}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
                     {variant.creative_url && (
                       <div className="aspect-square rounded overflow-hidden bg-muted relative">
                         <img 
@@ -509,13 +580,14 @@ export function EnhancedCampaignCard({
                     {variant.cta_text && (
                       <div className="text-xs font-medium text-primary">{variant.cta_text}</div>
                     )}
-                    <div className="flex items-center justify-between text-xs">
-                      <Badge variant="outline" className="text-xs">{variant.variant_type}</Badge>
-                      {variant.predicted_roas && (
-                        <span className="text-xs text-green-600 font-medium">
-                          {variant.predicted_roas.toFixed(1)}x ROAS
-                        </span>
-                      )}
+                      <div className="flex items-center justify-between text-xs">
+                        <Badge variant="outline" className="text-xs">{variant.variant_type}</Badge>
+                        {variant.predicted_roas && (
+                          <span className="text-xs text-green-600 font-medium">
+                            {variant.predicted_roas.toFixed(1)}x ROAS
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -592,14 +664,25 @@ export function EnhancedCampaignCard({
                   <Badge variant="outline">{selectedVariant.variant_type}</Badge>
                 )}
                 {!isEditingAd ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleEditAd}
-                  >
-                    <Pencil className="w-4 h-4 mr-2" />
-                    Edit
-                  </Button>
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleEditAd}
+                    >
+                      <Pencil className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={(e) => selectedVariant && handleDeleteAd(selectedVariant, e)}
+                      disabled={selectedVariant && deletingAdId === selectedVariant.id}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                  </>
                 ) : (
                   <div className="flex gap-2">
                     <Button
@@ -725,6 +808,27 @@ export function EnhancedCampaignCard({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Alert */}
+      <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Ad Variant?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this ad variant. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteAd}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
