@@ -492,8 +492,8 @@ export function EnhancedCampaignCard({
                         />
                         {/* Watermark Badge for Free Users */}
                         {userPlan === 'free' && hasWatermark && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm py-1 px-2">
-                            <p className="text-white text-[10px] font-semibold text-center">
+                          <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm py-1 px-3 rounded">
+                            <p className="text-white text-[9px] font-semibold">
                               Powered by xiXoi™
                             </p>
                           </div>
@@ -636,8 +636,8 @@ export function EnhancedCampaignCard({
                   />
                   {/* Watermark Overlay for Free Users */}
                   {userPlan === 'free' && hasWatermark && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm py-2 px-4">
-                      <p className="text-white text-sm font-semibold text-center">
+                    <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm py-2 px-4 rounded">
+                      <p className="text-white text-xs font-semibold">
                         Powered by xiXoi™
                       </p>
                     </div>
