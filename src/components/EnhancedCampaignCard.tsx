@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,8 @@ import {
   Zap,
   X,
   Save,
-  Trash2
+  Trash2,
+  Rocket
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -96,6 +98,8 @@ export function EnhancedCampaignCard({
   onEdit,
   onViewAnalytics,
 }: EnhancedCampaignCardProps) {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [adVariants, setAdVariants] = useState<AdVariant[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<AdVariant | null>(null);
@@ -111,7 +115,6 @@ export function EnhancedCampaignCard({
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [adToDelete, setAdToDelete] = useState<AdVariant | null>(null);
   const [complianceViolations, setComplianceViolations] = useState<Array<{platform: string, issue: string}>>([]);
-  const { toast } = useToast();
 
   useEffect(() => {
     loadAdVariants();
@@ -801,7 +804,7 @@ export function EnhancedCampaignCard({
               
               {/* Performance Prediction */}
               {selectedVariant.predicted_roas && !isEditingAd && (
-                <div className="border-t pt-4">
+                <div className="border-t pt-4 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground">Predicted ROAS</p>
@@ -814,6 +817,16 @@ export function EnhancedCampaignCard({
                       historical campaign performance
                     </div>
                   </div>
+                  
+                  {/* Publish Button */}
+                  <Button 
+                    onClick={() => navigate(`/campaign-publish?id=${campaign.id}`)}
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Rocket className="w-4 h-4 mr-2" />
+                    Publish Ad to Platforms
+                  </Button>
                 </div>
               )}
             </div>
