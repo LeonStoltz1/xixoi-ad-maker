@@ -110,6 +110,7 @@ export function EnhancedCampaignCard({
   const [deletingAdId, setDeletingAdId] = useState<string | null>(null);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [adToDelete, setAdToDelete] = useState<AdVariant | null>(null);
+  const [complianceViolations, setComplianceViolations] = useState<Array<{platform: string, issue: string}>>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -161,6 +162,7 @@ export function EnhancedCampaignCard({
       setEditedHeadline(selectedVariant.headline || "");
       setEditedBodyCopy(selectedVariant.body_copy || "");
       setEditedCtaText(selectedVariant.cta_text || "");
+      setComplianceViolations([]);
       setIsEditingAd(true);
     }
   };
@@ -170,6 +172,7 @@ export function EnhancedCampaignCard({
     setEditedHeadline("");
     setEditedBodyCopy("");
     setEditedCtaText("");
+    setComplianceViolations([]);
   };
 
   const handleSaveAd = async () => {
@@ -200,28 +203,34 @@ export function EnhancedCampaignCard({
 
       // Check if moderation failed
       if (!moderationResult.approved) {
-        const violationsList = moderationResult.violations
-          ?.map((v: any) => `${v.platform}: ${v.issue}`)
+        const violations = moderationResult.violations || [];
+        setComplianceViolations(violations);
+        
+        const violationsList = violations
+          .map((v: any) => `${v.platform}: ${v.issue}`)
           .join('\n• ') || 'Content violates platform policies';
 
         toast({
-          title: "⚠️ Platform Policy Violations",
+          title: "⚠️ Compliance Check Failed",
           description: (
             <div className="space-y-3">
-              <p className="font-semibold text-sm">Your ad content violates these policies:</p>
+              <p className="font-semibold text-sm">Your ad content violates these platform policies:</p>
               <div className="text-xs bg-destructive/10 p-3 rounded border border-destructive/20">
                 • {violationsList}
               </div>
               {moderationResult.summary && (
-                <p className="text-xs text-muted-foreground italic">{moderationResult.summary}</p>
+                <p className="text-xs text-muted-foreground italic mt-2">{moderationResult.summary}</p>
               )}
-              <p className="text-xs font-medium">Please revise your ad to comply with platform guidelines.</p>
+              <div className="text-xs font-semibold text-foreground mt-3 pt-3 border-t border-border">
+                💡 Your changes were not saved. Please revise the content above and try saving again.
+              </div>
             </div>
           ),
           variant: "destructive",
-          duration: 15000,
+          duration: 20000,
         });
         setSavingAd(false);
+        // Keep edit mode active so user can fix issues
         return;
       }
 
@@ -254,6 +263,7 @@ export function EnhancedCampaignCard({
       });
 
       setIsEditingAd(false);
+      setComplianceViolations([]);
       toast({
         title: "✅ Ad updated successfully",
         description: "Your ad passed platform compliance checks and has been saved.",
@@ -653,6 +663,7 @@ export function EnhancedCampaignCard({
         setShowAdModal(open);
         if (!open) {
           setIsEditingAd(false);
+          setComplianceViolations([]);
         }
       }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -728,6 +739,28 @@ export function EnhancedCampaignCard({
                 </div>
               )}
               
+              {/* Compliance Violations Alert */}
+              {isEditingAd && complianceViolations.length > 0 && (
+                <div className="border border-destructive bg-destructive/5 rounded-lg p-4 space-y-2">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <p className="font-semibold text-sm text-foreground">Platform Policy Violations</p>
+                      <div className="space-y-1.5">
+                        {complianceViolations.map((violation, idx) => (
+                          <div key={idx} className="text-xs bg-background/50 p-2 rounded border border-destructive/20">
+                            <span className="font-medium">{violation.platform}:</span> {violation.issue}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground italic">
+                        Please revise your ad content below to comply with these policies before saving again.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Ad Copy */}
               <div className="space-y-4">
                 {/* Headline */}
