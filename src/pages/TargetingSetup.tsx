@@ -75,9 +75,9 @@ export default function TargetingSetup() {
     // Platform restrictions by tier
     const allowedPlatforms: Record<string, string[]> = {
       free: ['meta'],
-      pro: ['meta', 'tiktok', 'google', 'linkedin'],
-      elite: ['meta', 'tiktok', 'google', 'linkedin'],
-      agency: ['meta', 'tiktok', 'google', 'linkedin']
+      pro: ['meta', 'tiktok', 'google', 'linkedin', 'x'],
+      elite: ['meta', 'tiktok', 'google', 'linkedin', 'x'],
+      agency: ['meta', 'tiktok', 'google', 'linkedin', 'x']
     };
 
     const allowed = allowedPlatforms[userPlan] || ['meta'];
@@ -154,6 +154,7 @@ export default function TargetingSetup() {
     { id: 'tiktok', name: 'TikTok', description: 'Short-form video' },
     { id: 'google', name: 'Google', description: 'Search & Display' },
     { id: 'linkedin', name: 'LinkedIn', description: 'B2B Professional' },
+    { id: 'x', name: 'X', description: 'Real-time conversations' },
   ];
 
   const estimatedReach = Math.floor(selectedBudget * 35);

@@ -20,7 +20,7 @@ const Terms = () => {
             <p className="mb-4">xiXoi™ is an AI-powered advertising platform that enables users to:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Upload content (images, videos, text descriptions)</li>
-              <li>Generate AI-optimized ad variants for Meta, TikTok, Google Ads, and LinkedIn</li>
+              <li>Generate AI-optimized ad variants for Meta, TikTok, Google Ads, LinkedIn, and X</li>
               <li>Publish campaigns directly to connected ad platforms via OAuth</li>
               <li>Track ad spend and performance (Elite/Agency tiers)</li>
             </ul>
@@ -42,7 +42,7 @@ const Terms = () => {
             <ul className="list-disc pl-6 space-y-2">
               <li>Maintaining the confidentiality of your login credentials</li>
               <li>All activities conducted under your account</li>
-              <li>Compliance with Meta, TikTok, Google Ads, and LinkedIn advertising policies</li>
+              <li>Compliance with Meta, TikTok, Google Ads, LinkedIn, and X advertising policies</li>
               <li>Ad spend incurred on connected platforms</li>
               <li>Content uploaded to xiXoi™ (must own rights or have permission)</li>
             </ul>
@@ -81,7 +81,7 @@ const Terms = () => {
 
           <div>
             <h2 className="text-xl md:text-2xl font-semibold mb-4">8. OAuth & Platform Connections</h2>
-            <p>By connecting ad platforms (Meta, TikTok, Google, LinkedIn):</p>
+            <p>By connecting ad platforms (Meta, TikTok, Google, LinkedIn, X):</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>You grant xiXoi™ permission to publish ads on your behalf</li>
               <li>You remain solely responsible for ad spend and compliance with platform policies</li>

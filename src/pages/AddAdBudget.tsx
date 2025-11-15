@@ -21,6 +21,8 @@ export default function AddAdBudget() {
     { id: 'meta', name: 'Meta (Facebook/Instagram)' },
     { id: 'tiktok', name: 'TikTok' },
     { id: 'google', name: 'Google' },
+    { id: 'linkedin', name: 'LinkedIn' },
+    { id: 'x', name: 'X (Twitter)' },
   ];
 
   const serviceFee = 5.00;

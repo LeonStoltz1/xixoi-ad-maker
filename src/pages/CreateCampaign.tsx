@@ -360,7 +360,7 @@ export default function CreateCampaign() {
                 className="border-foreground min-h-[120px] placeholder:opacity-40"
               />
               <p className="text-xs text-muted-foreground">
-                ✓ Meta: Optimized for 125 chars • TikTok: 100 chars • Google: 90 chars • LinkedIn: 150 chars
+                ✓ Meta: 125 chars • TikTok: 100 chars • Google: 90 chars • LinkedIn: 150 chars • X: 280 chars
               </p>
             </div>
 
@@ -571,7 +571,8 @@ export default function CreateCampaign() {
                   { key: 'meta', name: 'Meta (Facebook & Instagram)', icon: '📘' },
                   { key: 'tiktok', name: 'TikTok', icon: '🎵' },
                   { key: 'google', name: 'Google Ads', icon: '🔍' },
-                  { key: 'linkedin', name: 'LinkedIn', icon: '💼' }
+                  { key: 'linkedin', name: 'LinkedIn', icon: '💼' },
+                  { key: 'x', name: 'X (Twitter)', icon: '𝕏' }
                 ].map(platform => (
                   <div 
                     key={platform.key}

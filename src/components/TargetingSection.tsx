@@ -42,7 +42,7 @@ export const TargetingSection = () => {
                 
                 <div className="px-4 py-3 border border-foreground">
                   <p className="text-xs">
-                    <span className="font-bold">Recommended channels:</span> Meta, TikTok, Google
+                    <span className="font-bold">Recommended channels:</span> Meta, TikTok, Google, LinkedIn, X
                   </p>
                 </div>
               </div>
