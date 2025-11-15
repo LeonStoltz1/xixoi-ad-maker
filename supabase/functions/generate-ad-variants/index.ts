@@ -53,12 +53,65 @@ serve(async (req) => {
     // Get the text content from assets (all asset types now have description)
     const asset = campaign.campaign_assets[0];
     const productDescription = asset?.asset_text || 'Product description';
+    const imageAsset = campaign.campaign_assets.find((a: any) => a.asset_type === 'image');
+    const imageUrl = imageAsset?.asset_url || null;
     
     console.log('Campaign data:', JSON.stringify(campaign, null, 2));
     console.log('Asset found:', asset);
+    console.log('Image URL:', imageUrl);
     console.log('Product description to use:', productDescription);
 
-    // Use Lovable AI to generate ad variants
+    // Step 1: If there's an image, analyze it first with vision AI
+    let imageAnalysis = '';
+    if (imageUrl) {
+      console.log('Analyzing image with vision AI...');
+      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+      
+      const visionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: `Analyze this image in detail for advertising purposes. Describe:
+1. What type of product/property/service is shown
+2. Key visual features and selling points
+3. Style, design elements, and ambiance
+4. Unique or luxury features visible
+5. Target audience based on what you see
+
+Be specific and detailed. Focus on features that would make compelling ad copy.`
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: imageUrl
+                  }
+                }
+              ]
+            }
+          ]
+        })
+      });
+
+      if (visionResponse.ok) {
+        const visionData = await visionResponse.json();
+        imageAnalysis = visionData.choices[0]?.message?.content || '';
+        console.log('Image analysis:', imageAnalysis);
+      } else {
+        console.error('Vision analysis failed:', await visionResponse.text());
+      }
+    }
+
+    // Step 2: Use Lovable AI to generate ad variants with both text and image analysis
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -72,7 +125,14 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a professional advertising copywriter with STRICT compliance training. Your job is to rewrite user-provided product/service descriptions into high-converting, COMPLIANT, platform-optimized ad copy.
+            content: `You are a professional advertising copywriter with STRICT compliance training and VISION ANALYSIS expertise. Your job is to analyze product images and user descriptions, then create high-converting, COMPLIANT, platform-optimized ad copy.
+
+When an image is provided via vision analysis:
+- Use SPECIFIC visual details from the image (architecture, colors, features, setting)
+- Highlight luxury/premium elements visible in the photo
+- Mention unique design features, materials, or ambiance
+- Create vivid, accurate descriptions based on what's actually shown
+- Combine visual details with user-provided pricing/contact info
 
 CRITICAL COMPLIANCE RULES (NEVER VIOLATE):
 1. HOUSING/REAL ESTATE: NEVER mention or imply race, color, religion, national origin, sex, familial status, disability - Fair Housing Act
@@ -94,23 +154,24 @@ Platform specifications:
 - LinkedIn: Primary text 150 chars max
 
 Your task:
-1. Read the user's description
-2. Extract: product name, key features, price, location, contact info
+1. Read the vision analysis (if provided) AND user's description
+2. Extract: product features from image, name, price, location, contact info from text
 3. Rewrite into compelling BUT COMPLIANT ad copy for each platform
-4. Preserve critical details (prices, phone numbers, locations)
-5. Add persuasive language and urgency WITHOUT violating policies
-6. Include platform-appropriate CTAs
-7. Ensure ZERO discriminatory language
-8. Use inclusive, non-exclusionary language
-9. Return valid JSON only`
+4. Use ACTUAL visual details from the image analysis
+5. Preserve critical details (prices, phone numbers, locations)
+6. Add persuasive language and urgency WITHOUT violating policies
+7. Include platform-appropriate CTAs
+8. Ensure ZERO discriminatory language
+9. Use inclusive, non-exclusionary language
+10. Return valid JSON only`
           },
           {
             role: 'user',
-            content: `Rewrite this product/service description into high-converting ad copy for 4 platforms:
+            content: `${imageAnalysis ? `VISUAL ANALYSIS OF IMAGE:\n${imageAnalysis}\n\n` : ''}USER-PROVIDED DESCRIPTION:\n"${productDescription}"
 
-"${productDescription}"
+Using BOTH the visual analysis above (if provided) and the user's description, create compelling, accurate ad copy that highlights the ACTUAL features visible in the image combined with the user's details.
 
-Extract the key details and create platform-optimized variants. Use the ACTUAL product details from above.
+Extract key details and create platform-optimized variants. Use REAL details from the image analysis and description.
             
 Return JSON:
 {
@@ -118,7 +179,7 @@ Return JSON:
     {
       "platform": "meta",
       "headline": "max 40 chars - compelling headline about their product",
-      "body": "max 125 chars - persuasive copy using their details",
+      "body": "max 125 chars - persuasive copy using their details and image features",
       "cta": "max 20 chars"
     },
     {
