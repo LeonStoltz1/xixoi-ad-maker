@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Campaign {
   id: string;
@@ -48,6 +49,16 @@ interface CampaignPerformance {
   roas: number | null;
 }
 
+interface AdVariant {
+  id: string;
+  headline: string | null;
+  body_copy: string | null;
+  cta_text: string | null;
+  creative_url: string | null;
+  variant_type: string;
+  predicted_roas: number | null;
+}
+
 interface EnhancedCampaignCardProps {
   campaign: Campaign;
   performance: CampaignPerformance;
@@ -64,7 +75,24 @@ export function EnhancedCampaignCard({
   onViewAnalytics,
 }: EnhancedCampaignCardProps) {
   const [loading, setLoading] = useState(false);
+  const [adVariants, setAdVariants] = useState<AdVariant[]>([]);
   const { toast } = useToast();
+
+  useEffect(() => {
+    loadAdVariants();
+  }, [campaign.id]);
+
+  const loadAdVariants = async () => {
+    const { data } = await supabase
+      .from('ad_variants')
+      .select('*')
+      .eq('campaign_id', campaign.id)
+      .limit(3);
+    
+    if (data) {
+      setAdVariants(data);
+    }
+  };
 
   const remainingBudget = campaign.lifetime_budget 
     ? Math.max(0, campaign.lifetime_budget - campaign.total_spent)
@@ -277,6 +305,50 @@ export function EnhancedCampaignCard({
             </p>
           </div>
         </div>
+
+        {/* Ad Creative Previews */}
+        {adVariants.length > 0 && (
+          <div className="border-t pt-3">
+            <p className="text-xs font-semibold text-muted-foreground mb-2">Ad Previews</p>
+            <ScrollArea className="w-full">
+              <div className="flex gap-3 pb-2">
+                {adVariants.map((variant) => (
+                  <div
+                    key={variant.id}
+                    className="flex-shrink-0 w-48 border rounded-lg p-3 space-y-2 bg-card hover:bg-accent/5 transition-colors"
+                  >
+                    {variant.creative_url && (
+                      <div className="aspect-square rounded overflow-hidden bg-muted">
+                        <img 
+                          src={variant.creative_url} 
+                          alt={variant.headline || 'Ad creative'} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    {variant.headline && (
+                      <p className="text-xs font-semibold line-clamp-2">{variant.headline}</p>
+                    )}
+                    {variant.body_copy && (
+                      <p className="text-xs text-muted-foreground line-clamp-2">{variant.body_copy}</p>
+                    )}
+                    {variant.cta_text && (
+                      <div className="text-xs font-medium text-primary">{variant.cta_text}</div>
+                    )}
+                    <div className="flex items-center justify-between text-xs">
+                      <Badge variant="outline" className="text-xs">{variant.variant_type}</Badge>
+                      {variant.predicted_roas && (
+                        <span className="text-xs text-green-600 font-medium">
+                          {variant.predicted_roas.toFixed(1)}x ROAS
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+        )}
 
         {/* Quick Budget Actions */}
         <div className="flex gap-2 border-t pt-3">
