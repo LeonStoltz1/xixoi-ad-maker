@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -9,14 +9,43 @@ import { EmbeddedCheckout } from '@/components/EmbeddedCheckout';
 import { toast } from 'sonner';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { generateSpendPlan } from '@/lib/spendEngine';
+import type { User } from '@supabase/supabase-js';
 
 export default function AddAdBudget() {
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
   const [amount, setAmount] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [clientSecret, setClientSecret] = useState('');
   const [reloadId, setReloadId] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Check authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Please sign in to add ad budget');
+        navigate('/auth');
+        return;
+      }
+      setUser(session.user);
+      setCheckingAuth(false);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate('/auth');
+      } else {
+        setUser(session.user);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const platforms = [
     { id: 'meta', name: 'Meta (Facebook/Instagram)' },
@@ -79,6 +108,17 @@ export default function AddAdBudget() {
     navigate('/dashboard');
   };
 
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (clientSecret) {
     return (
       <div className="min-h-screen bg-background p-6">
@@ -121,7 +161,7 @@ export default function AddAdBudget() {
           <CardHeader>
             <CardTitle className="text-2xl md:text-3xl lg:text-4xl">Add Ad Budget</CardTitle>
             <CardDescription className="text-sm md:text-base">
-              Reload your ad spend in 60 seconds — no code, no logins, no confusion.
+              Reload your ad spend in 60 seconds — simple, fast, and transparent.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
