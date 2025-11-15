@@ -153,19 +153,24 @@ export default function AddAdBudget() {
 
   if (clientSecret) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen bg-background p-4 md:p-6">
         <div className="max-w-2xl mx-auto">
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setClientSecret('');
-              setReloadId('');
-            }}
-            className="mb-6"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
+          <div className="flex items-center justify-between mb-6 p-4 bg-muted rounded-lg">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setClientSecret('');
+                setReloadId('');
+              }}
+              className="gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Cancel Payment
+            </Button>
+            <p className="text-sm text-muted-foreground">
+              You can go back and adjust your budget anytime
+            </p>
+          </div>
           <EmbeddedCheckout
             clientSecret={clientSecret}
             amount={`$${spendPlan?.initialStripeCharge.toFixed(2) || '0.00'}`}
