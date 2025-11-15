@@ -242,7 +242,17 @@ export default function TargetingSetup() {
   };
 
   const handleEditClick = async () => {
+    console.log('Edit button clicked, campaignId:', campaignId);
+    
+    if (!campaignId) {
+      console.error('No campaign ID available');
+      toast.error('Campaign ID not found');
+      return;
+    }
+
     try {
+      console.log('Fetching campaign data...');
+      
       // Always fetch fresh campaign data
       const { data: campaignData, error: campaignError } = await supabase
         .from('campaigns')
@@ -250,18 +260,30 @@ export default function TargetingSetup() {
         .eq('id', campaignId)
         .single();
       
+      console.log('Campaign data:', campaignData);
+      console.log('Campaign error:', campaignError);
+      
       if (campaignError) {
         console.error('Error loading campaign for edit:', campaignError);
         toast.error('Failed to load campaign details');
         return;
       }
 
+      if (!campaignData) {
+        console.error('No campaign data returned');
+        toast.error('Campaign not found');
+        return;
+      }
+
+      console.log('Setting edit fields...');
       setEditName(campaignData.name);
       
       // Get the campaign asset description
       const asset = campaignData.campaign_assets?.[0];
+      console.log('Asset:', asset);
       setEditDescription(asset?.asset_text || '');
       
+      console.log('Opening dialog...');
       setShowEditDialog(true);
     } catch (error) {
       console.error('Error in handleEditClick:', error);
