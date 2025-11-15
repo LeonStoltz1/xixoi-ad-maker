@@ -1216,6 +1216,151 @@ export type Database = {
         }
         Relationships: []
       }
+      political_ads: {
+        Row: {
+          ad_copy: string
+          campaign_id: string | null
+          candidate_id: string | null
+          compliance_checked: boolean | null
+          compliance_issues: Json | null
+          created_at: string | null
+          id: string
+          image_url: string | null
+          platform: string
+          policy_focus: string | null
+          published: boolean | null
+          published_at: string | null
+          signature_base58: string | null
+          tone: string | null
+          updated_at: string | null
+          user_id: string
+          watermark_url: string | null
+        }
+        Insert: {
+          ad_copy: string
+          campaign_id?: string | null
+          candidate_id?: string | null
+          compliance_checked?: boolean | null
+          compliance_issues?: Json | null
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          platform: string
+          policy_focus?: string | null
+          published?: boolean | null
+          published_at?: string | null
+          signature_base58?: string | null
+          tone?: string | null
+          updated_at?: string | null
+          user_id: string
+          watermark_url?: string | null
+        }
+        Update: {
+          ad_copy?: string
+          campaign_id?: string | null
+          candidate_id?: string | null
+          compliance_checked?: boolean | null
+          compliance_issues?: Json | null
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          platform?: string
+          policy_focus?: string | null
+          published?: boolean | null
+          published_at?: string | null
+          signature_base58?: string | null
+          tone?: string | null
+          updated_at?: string | null
+          user_id?: string
+          watermark_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "political_ads_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "admin_watermark_report"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "political_ads_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "political_ads_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "political_candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      political_candidates: {
+        Row: {
+          address: string | null
+          approved: boolean | null
+          approved_at: string | null
+          created_at: string | null
+          election_year: number | null
+          fec_id: string | null
+          full_name: string
+          id: string
+          id_document_back_url: string | null
+          id_document_front_url: string | null
+          office_sought: string | null
+          party: string | null
+          race: string | null
+          selfie_url: string | null
+          updated_at: string | null
+          user_id: string
+          wallet_address: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          approved?: boolean | null
+          approved_at?: string | null
+          created_at?: string | null
+          election_year?: number | null
+          fec_id?: string | null
+          full_name: string
+          id?: string
+          id_document_back_url?: string | null
+          id_document_front_url?: string | null
+          office_sought?: string | null
+          party?: string | null
+          race?: string | null
+          selfie_url?: string | null
+          updated_at?: string | null
+          user_id: string
+          wallet_address?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          approved?: boolean | null
+          approved_at?: string | null
+          created_at?: string | null
+          election_year?: number | null
+          fec_id?: string | null
+          full_name?: string
+          id?: string
+          id_document_back_url?: string | null
+          id_document_front_url?: string | null
+          office_sought?: string | null
+          party?: string | null
+          race?: string | null
+          selfie_url?: string | null
+          updated_at?: string | null
+          user_id?: string
+          wallet_address?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           brokerage_name: string | null
@@ -1227,6 +1372,9 @@ export type Database = {
           is_realtor: boolean | null
           monthly_ad_spend_limit: number | null
           plan: string | null
+          political_ads_limit: number | null
+          political_ads_used: number | null
+          political_tier: boolean | null
           realtor_license_state: string | null
           realtor_name: string | null
           stripe_customer_id: string | null
@@ -1242,6 +1390,9 @@ export type Database = {
           is_realtor?: boolean | null
           monthly_ad_spend_limit?: number | null
           plan?: string | null
+          political_ads_limit?: number | null
+          political_ads_used?: number | null
+          political_tier?: boolean | null
           realtor_license_state?: string | null
           realtor_name?: string | null
           stripe_customer_id?: string | null
@@ -1257,6 +1408,9 @@ export type Database = {
           is_realtor?: boolean | null
           monthly_ad_spend_limit?: number | null
           plan?: string | null
+          political_ads_limit?: number | null
+          political_ads_used?: number | null
+          political_tier?: boolean | null
           realtor_license_state?: string | null
           realtor_name?: string | null
           stripe_customer_id?: string | null
