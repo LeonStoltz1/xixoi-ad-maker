@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
@@ -15,12 +15,14 @@ import { Footer } from "@/components/Footer";
 
 const Index = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Check if user is authenticated and redirect to dashboard
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      // Don't redirect if coming from Header with scrollToPricing state
+      if (session && !location.state?.scrollToPricing) {
         navigate('/dashboard');
       }
     };
@@ -28,13 +30,25 @@ const Index = () => {
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+      if (session && !location.state?.scrollToPricing) {
         navigate('/dashboard');
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, location.state]);
+
+  // Scroll to pricing section if requested
+  useEffect(() => {
+    if (location.state?.scrollToPricing) {
+      setTimeout(() => {
+        const pricingElement = document.getElementById('pricing');
+        if (pricingElement) {
+          pricingElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, [location.state]);
 
   // Capture affiliate referral code from URL
   useEffect(() => {

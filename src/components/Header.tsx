@@ -82,7 +82,9 @@ export const Header = () => {
               </div>
               
               {userPlan === 'free' && (
-                <Button size="sm" onClick={() => navigate('/#pricing')}>
+                <Button size="sm" onClick={() => {
+                  navigate('/', { state: { scrollToPricing: true } });
+                }}>
                   Upgrade
                 </Button>
               )}
