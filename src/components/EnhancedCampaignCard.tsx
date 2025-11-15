@@ -12,7 +12,8 @@ import {
   Pencil, 
   StopCircle,
   AlertTriangle,
-  Zap
+  Zap,
+  X
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -22,6 +23,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -76,6 +83,8 @@ export function EnhancedCampaignCard({
 }: EnhancedCampaignCardProps) {
   const [loading, setLoading] = useState(false);
   const [adVariants, setAdVariants] = useState<AdVariant[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<AdVariant | null>(null);
+  const [showAdModal, setShowAdModal] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -315,7 +324,11 @@ export function EnhancedCampaignCard({
                 {adVariants.map((variant) => (
                   <div
                     key={variant.id}
-                    className="flex-shrink-0 w-48 border rounded-lg p-3 space-y-2 bg-card hover:bg-accent/5 transition-colors"
+                    onClick={() => {
+                      setSelectedVariant(variant);
+                      setShowAdModal(true);
+                    }}
+                    className="flex-shrink-0 w-48 border rounded-lg p-3 space-y-2 bg-card hover:bg-accent/5 hover:border-primary transition-all cursor-pointer"
                   >
                     {variant.creative_url && (
                       <div className="aspect-square rounded overflow-hidden bg-muted">
@@ -401,6 +414,79 @@ export function EnhancedCampaignCard({
           </div>
         )}
       </CardContent>
+
+      {/* Ad Preview Modal */}
+      <Dialog open={showAdModal} onOpenChange={setShowAdModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Ad Preview</span>
+              {selectedVariant && (
+                <Badge variant="outline">{selectedVariant.variant_type}</Badge>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedVariant && (
+            <div className="space-y-4">
+              {/* Ad Creative */}
+              {selectedVariant.creative_url && (
+                <div className="rounded-lg overflow-hidden bg-muted">
+                  <img 
+                    src={selectedVariant.creative_url} 
+                    alt={selectedVariant.headline || 'Ad creative'} 
+                    className="w-full h-auto object-contain max-h-[400px]"
+                  />
+                </div>
+              )}
+              
+              {/* Ad Copy */}
+              <div className="space-y-3">
+                {selectedVariant.headline && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground mb-1">Headline</p>
+                    <p className="text-lg font-bold">{selectedVariant.headline}</p>
+                  </div>
+                )}
+                
+                {selectedVariant.body_copy && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground mb-1">Body Copy</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedVariant.body_copy}</p>
+                  </div>
+                )}
+                
+                {selectedVariant.cta_text && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground mb-1">Call to Action</p>
+                    <Button className="w-full sm:w-auto">
+                      {selectedVariant.cta_text}
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
+              {/* Performance Prediction */}
+              {selectedVariant.predicted_roas && (
+                <div className="border-t pt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground">Predicted ROAS</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        {selectedVariant.predicted_roas.toFixed(1)}x
+                      </p>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      AI-generated prediction based on<br />
+                      historical campaign performance
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
