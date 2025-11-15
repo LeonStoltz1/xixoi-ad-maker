@@ -156,7 +156,7 @@ export default function AddAdBudget() {
                 How much do you want to spend on ads?
               </label>
               <p className="text-xs md:text-sm text-muted-foreground">
-                Enter the amount you want to go <strong>directly into your ad accounts</strong>. We add a <strong>flat $5 xiXoi service fee</strong> on top of each funding or top-up.
+                Enter the amount you want to go <strong>directly into your ad accounts</strong>. We add a <strong>flat $5 xiXoi™ service fee</strong> on top of each funding or top-up.
               </p>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg md:text-xl">$</span>
