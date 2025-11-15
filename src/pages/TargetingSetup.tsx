@@ -367,11 +367,11 @@ export default function TargetingSetup() {
               
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold text-foreground">Content Policy Issue</h2>
-                <p className="text-destructive font-medium">{errorState.message}</p>
+                <p className="text-red-600 dark:text-red-400 font-medium">{errorState.message}</p>
               </div>
               
               <div className="bg-muted/50 rounded-lg p-4 text-left">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-red-600 dark:text-red-400">
                   {errorState.details}
                 </p>
               </div>
@@ -415,7 +415,7 @@ export default function TargetingSetup() {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Edit Campaign</DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-red-600 dark:text-red-400">
                 Update your campaign description to fix content policy issues. Make sure to remove any discriminatory language, illegal content, or misleading claims.
               </DialogDescription>
             </DialogHeader>
