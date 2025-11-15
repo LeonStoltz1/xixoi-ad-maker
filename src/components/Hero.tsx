@@ -29,7 +29,7 @@ export const Hero = () => {
         </div>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-element">
-          <Button size="lg" className="text-base px-8 py-3 w-full sm:w-auto" onClick={() => window.location.href = '/auth'}>
+          <Button size="lg" className="text-base px-8 py-3 w-full sm:w-auto" onClick={() => window.location.href = '/auth?mode=signup'}>
             Start Free
           </Button>
           <Button variant="outline" size="lg" className="text-base px-8 py-3 w-full sm:w-auto border-foreground" onClick={scrollToUpload}>
