@@ -20,6 +20,14 @@ export default function Auth() {
   const [searchParams] = useSearchParams();
   const { createCheckoutSession } = useStripeCheckout();
   const planParam = searchParams.get('plan');
+  const modeParam = searchParams.get('mode');
+
+  // Set isLogin based on mode parameter
+  useEffect(() => {
+    if (modeParam === 'signup') {
+      setIsLogin(false);
+    }
+  }, [modeParam]);
 
   useEffect(() => {
     // Check if user is already logged in

@@ -97,7 +97,7 @@ export const Header = () => {
               <Button variant="ghost" size="sm" className="text-white hover:bg-white/10" onClick={() => navigate('/auth')}>
                 Sign In
               </Button>
-              <Button size="sm" className="bg-white text-black hover:bg-white/90" onClick={() => navigate('/auth')}>
+              <Button size="sm" className="bg-white text-black hover:bg-white/90" onClick={() => navigate('/auth?mode=signup')}>
                 Start Free
               </Button>
             </div>
