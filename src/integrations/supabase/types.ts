@@ -862,6 +862,8 @@ export type Database = {
           paused_reason: string | null
           payment_failures: number | null
           primary_goal: string | null
+          property_details: Json | null
+          real_estate_mode: boolean | null
           start_date: string | null
           status: string | null
           status_reason: string | null
@@ -894,6 +896,8 @@ export type Database = {
           paused_reason?: string | null
           payment_failures?: number | null
           primary_goal?: string | null
+          property_details?: Json | null
+          real_estate_mode?: boolean | null
           start_date?: string | null
           status?: string | null
           status_reason?: string | null
@@ -926,6 +930,8 @@ export type Database = {
           paused_reason?: string | null
           payment_failures?: number | null
           primary_goal?: string | null
+          property_details?: Json | null
+          real_estate_mode?: boolean | null
           start_date?: string | null
           status?: string | null
           status_reason?: string | null
@@ -1212,35 +1218,47 @@ export type Database = {
       }
       profiles: {
         Row: {
+          brokerage_name: string | null
           created_at: string | null
           credits: number | null
           email: string
           full_name: string | null
           id: string
+          is_realtor: boolean | null
           monthly_ad_spend_limit: number | null
           plan: string | null
+          realtor_license_state: string | null
+          realtor_name: string | null
           stripe_customer_id: string | null
           updated_at: string | null
         }
         Insert: {
+          brokerage_name?: string | null
           created_at?: string | null
           credits?: number | null
           email: string
           full_name?: string | null
           id: string
+          is_realtor?: boolean | null
           monthly_ad_spend_limit?: number | null
           plan?: string | null
+          realtor_license_state?: string | null
+          realtor_name?: string | null
           stripe_customer_id?: string | null
           updated_at?: string | null
         }
         Update: {
+          brokerage_name?: string | null
           created_at?: string | null
           credits?: number | null
           email?: string
           full_name?: string | null
           id?: string
+          is_realtor?: boolean | null
           monthly_ad_spend_limit?: number | null
           plan?: string | null
+          realtor_license_state?: string | null
+          realtor_name?: string | null
           stripe_customer_id?: string | null
           updated_at?: string | null
         }

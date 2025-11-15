@@ -110,15 +110,11 @@ export default function Auth() {
 
         toast({
           title: "Account created!",
-          description: "Welcome to xiXoi™. Redirecting...",
+          description: "Welcome to xiXoi™. Let's get started...",
         });
         
-        // Check if user came from pricing page with a plan parameter
-        if (planParam) {
-          await handlePlanRedirect(planParam);
-        } else {
-          navigate("/dashboard");
-        }
+        // Redirect to onboarding to collect realtor info
+        navigate("/onboarding");
       }
     } catch (error: any) {
       toast({

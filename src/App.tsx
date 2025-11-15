@@ -33,6 +33,8 @@ import GoogleConnect from "./pages/connect/GoogleConnect";
 import TikTokConnect from "./pages/connect/TikTokConnect";
 import LinkedInConnect from "./pages/connect/LinkedInConnect";
 import NotFound from "./pages/NotFound";
+import { RealtorIdentification } from "./components/onboarding/RealtorIdentification";
+import { RealtorProvider } from "./contexts/RealtorContext";
 
 const queryClient = new QueryClient();
 
@@ -56,11 +58,13 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <AffiliateTracker />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
+      <RealtorProvider>
+        <BrowserRouter>
+          <AffiliateTracker />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/onboarding" element={<RealtorIdentification />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-campaign" element={<CreateCampaign />} />
           <Route path="/targeting/:campaignId" element={<TargetingSetup />} />
@@ -91,6 +95,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      </RealtorProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
