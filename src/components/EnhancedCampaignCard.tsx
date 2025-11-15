@@ -210,7 +210,8 @@ export function EnhancedCampaignCard({
         body: {
           originalCopy: editedBodyCopy,
           characterLimit,
-          platforms: selectedPlatforms.length > 0 ? selectedPlatforms : ['meta', 'google', 'tiktok', 'linkedin']
+          platforms: selectedPlatforms.length > 0 ? selectedPlatforms : ['meta', 'google', 'tiktok', 'linkedin'],
+          creativeUrl: selectedVariant?.creative_url || null
         }
       });
 
@@ -230,7 +231,9 @@ export function EnhancedCampaignCard({
       
       toast({
         title: "✨ AI copy generated",
-        description: "Review the suggestion and choose which version to use"
+        description: selectedVariant?.creative_url 
+          ? "AI analyzed your image/video and optimized the copy"
+          : "Review the suggestion and choose which version to use"
       });
     } catch (error) {
       console.error('Error generating AI copy:', error);
@@ -930,68 +933,90 @@ export function EnhancedCampaignCard({
                         size="sm"
                         onClick={generateAICopy}
                         disabled={isGeneratingAI || !editedBodyCopy.trim()}
-                        className="h-7 text-xs"
+                        className="h-7 text-xs gap-1"
                       >
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        {isGeneratingAI ? 'Generating...' : 'AI Rewrite'}
+                        <Sparkles className="w-3 h-3" />
+                        {isGeneratingAI ? 'Analyzing...' : 'AI Rewrite'}
                       </Button>
                     )}
                   </div>
                   {isEditingAd ? (
-                    <div className="space-y-2">
-                      <div className="relative">
-                        <Textarea
-                          id="body-copy"
-                          value={editedBodyCopy}
-                          onChange={(e) => setEditedBodyCopy(e.target.value)}
-                          placeholder="Enter body copy"
-                          rows={4}
-                          className="resize-none pr-20"
-                        />
-                        <div className={`absolute bottom-2 right-2 text-xs font-medium px-2 py-1 rounded ${
-                          isOverLimit 
-                            ? 'bg-destructive/10 text-destructive' 
-                            : isNearLimit 
-                              ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-500' 
-                              : 'bg-muted text-muted-foreground'
-                        }`}>
-                          {characterCount}/{characterLimit}
+                    <div className="space-y-3">
+                      {/* Original Copy Input */}
+                      <div className="space-y-2">
+                        <div className="text-xs text-muted-foreground font-medium">Your Copy:</div>
+                        <div className="relative">
+                          <Textarea
+                            id="body-copy"
+                            value={editedBodyCopy}
+                            onChange={(e) => {
+                              setEditedBodyCopy(e.target.value);
+                              setShowAISuggestion(false); // Hide suggestion when user edits
+                            }}
+                            placeholder="Enter body copy"
+                            rows={4}
+                            className="resize-none pr-20"
+                          />
+                          <div className={`absolute bottom-2 right-2 text-xs font-medium px-2 py-1 rounded ${
+                            isOverLimit 
+                              ? 'bg-destructive/10 text-destructive' 
+                              : isNearLimit 
+                                ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-500' 
+                                : 'bg-muted text-muted-foreground'
+                          }`}>
+                            {characterCount}/{characterLimit}
+                          </div>
                         </div>
                       </div>
                       
                       {/* AI Suggestion Display */}
                       {showAISuggestion && aiSuggestedCopy && (
-                        <div className="border border-primary/20 bg-primary/5 rounded-lg p-3 space-y-2">
+                        <div className="border-2 border-primary bg-primary/5 rounded-lg p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <Sparkles className="w-4 h-4 text-primary" />
-                              <span className="text-xs font-semibold text-primary">AI Suggestion</span>
+                              <div className="bg-primary/10 p-1.5 rounded-full">
+                                <Sparkles className="w-4 h-4 text-primary" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-semibold text-foreground">AI-Optimized Copy</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {selectedVariant?.creative_url ? 'Analyzed with image/video' : 'Text optimized'}
+                                </div>
+                              </div>
                             </div>
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
                               onClick={() => setShowAISuggestion(false)}
-                              className="h-6 w-6 p-0"
+                              className="h-7 w-7 p-0"
                             >
-                              <X className="w-3 h-3" />
+                              <X className="w-4 h-4" />
                             </Button>
                           </div>
-                          <p className="text-sm text-foreground whitespace-pre-wrap">{aiSuggestedCopy}</p>
-                          <div className="flex items-center justify-between">
-                            <span className={`text-xs ${
+                          
+                          <div className="bg-background/50 rounded-md p-3">
+                            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{aiSuggestedCopy}</p>
+                          </div>
+                          
+                          <div className="flex items-center justify-between pt-2 border-t border-primary/20">
+                            <span className={`text-xs font-medium ${
                               aiSuggestedCopy.length > characterLimit 
-                                ? 'text-destructive font-medium' 
-                                : 'text-muted-foreground'
+                                ? 'text-destructive' 
+                                : aiSuggestedCopy.length > characterLimit * 0.9
+                                  ? 'text-yellow-600 dark:text-yellow-500'
+                                  : 'text-muted-foreground'
                             }`}>
                               {aiSuggestedCopy.length}/{characterLimit} characters
+                              {aiSuggestedCopy.length > characterLimit && ' (exceeds limit)'}
                             </span>
                             <Button
                               type="button"
                               size="sm"
                               onClick={useAICopy}
-                              className="h-7 text-xs"
+                              className="h-8 gap-2"
                             >
+                              <Zap className="w-3 h-3" />
                               Use This Copy
                             </Button>
                           </div>
