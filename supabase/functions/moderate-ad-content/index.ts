@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { campaignId, platforms } = await req.json();
+    const { campaignId, platforms, adContent } = await req.json();
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -28,7 +28,30 @@ serve(async (req) => {
     if (campaignError) throw campaignError;
 
     const productDescription = campaign.campaign_assets[0]?.asset_text || '';
-    const adVariants = campaign.ad_variants || [];
+    
+    // Use provided ad content if available, otherwise use existing variants
+    let adVariants = [];
+    if (adContent) {
+      // Use the edited content for moderation
+      adVariants = [{
+        headline: adContent.headline,
+        body_copy: adContent.body_copy,
+        cta_text: adContent.cta_text,
+      }];
+    } else {
+      // Use existing variants from database
+      adVariants = campaign.ad_variants || [];
+    }
+
+    console.log('Moderating content:', {
+      isEditedContent: !!adContent,
+      variantsCount: adVariants.length,
+      firstVariant: adVariants[0] ? {
+        headline: adVariants[0].headline,
+        body_copy: adVariants[0].body_copy?.substring(0, 50) + '...',
+        cta_text: adVariants[0].cta_text
+      } : null
+    });
 
     // Use Lovable AI to moderate content
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
