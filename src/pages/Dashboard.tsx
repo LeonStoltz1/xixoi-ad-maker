@@ -77,7 +77,11 @@ export default function Dashboard() {
   const loadCampaigns = async (userId: string) => {
     const { data: campaignsData } = await supabase
       .from('campaigns')
-      .select('*, ad_variants(count)')
+      .select(`
+        *, 
+        ad_variants(count),
+        campaign_assets(asset_url, asset_type)
+      `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -271,13 +275,32 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {campaigns.map((campaign) => (
-                <Card key={campaign.id} className="border-2 border-foreground">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg">{campaign.name}</CardTitle>
-                        <div className="flex items-center gap-2 mt-1">
+              {campaigns.map((campaign) => {
+                const thumbnail = campaign.campaign_assets?.[0];
+                return (
+                  <Card key={campaign.id} className="border-2 border-foreground overflow-hidden">
+                    {thumbnail && (
+                      <div className="relative h-48 w-full bg-muted">
+                        {thumbnail.asset_type === 'video' ? (
+                          <video 
+                            src={thumbnail.asset_url} 
+                            className="w-full h-full object-cover"
+                            muted
+                          />
+                        ) : (
+                          <img 
+                            src={thumbnail.asset_url} 
+                            alt={campaign.name}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                    )}
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg">{campaign.name}</CardTitle>
+                          <div className="flex items-center gap-2 mt-1">
                           <span className={`text-xs uppercase font-bold ${
                             campaign.status === 'ready' ? 'text-green-600' : 
                             campaign.status === 'draft' ? 'text-yellow-600' : 
@@ -326,7 +349,15 @@ export default function Dashboard() {
                     </div>
                     
                     <div className="flex gap-2">
-                      {campaign.status === 'ready' && (
+                      {campaign.status === 'draft' ? (
+                        <Button 
+                          size="sm" 
+                          onClick={() => navigate(`/targeting/${campaign.id}`)}
+                          className="w-full"
+                        >
+                          Continue Setup
+                        </Button>
+                      ) : (
                         <>
                           <Button 
                             size="sm" 
@@ -363,7 +394,8 @@ export default function Dashboard() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              );
+            })}
             </div>
           )}
         </div>
