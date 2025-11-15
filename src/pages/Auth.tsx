@@ -26,6 +26,8 @@ export default function Auth() {
   useEffect(() => {
     if (modeParam === 'signup') {
       setIsLogin(false);
+    } else if (modeParam === 'login') {
+      setIsLogin(true);
     }
   }, [modeParam]);
 
