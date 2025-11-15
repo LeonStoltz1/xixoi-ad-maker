@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { EmbeddedCheckout } from '@/components/EmbeddedCheckout';
 import { toast } from 'sonner';
 import { ArrowLeft, Sparkles, AlertCircle } from 'lucide-react';
-import { generateSpendPlan, getPlatformRequirements } from '@/lib/spendEngine';
+import { generateSpendPlan, getPlatformRequirements, getMinimumDailySpend, getMinimumTotalSpend } from '@/lib/spendEngine';
 import type { User } from '@supabase/supabase-js';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -16,6 +16,7 @@ export default function AddAdBudget() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [amount, setAmount] = useState('');
+  const [budgetPeriod, setBudgetPeriod] = useState<'weekly' | 'monthly'>('weekly');
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [clientSecret, setClientSecret] = useState('');
   const [reloadId, setReloadId] = useState('');
@@ -56,6 +57,29 @@ export default function AddAdBudget() {
     { id: 'x', name: 'X (Twitter)' },
   ];
 
+  // Calculate minimum budget based on selected platforms and period
+  const minimumBudget = useMemo(() => {
+    if (selectedPlatforms.length === 0) return null;
+    
+    const daysInPeriod = budgetPeriod === 'weekly' ? 7 : 30;
+    const minDaily = getMinimumDailySpend(selectedPlatforms as any[]);
+    const minTotal = getMinimumTotalSpend(selectedPlatforms as any[], daysInPeriod);
+    
+    return {
+      daily: minDaily,
+      total: minTotal,
+      days: daysInPeriod,
+      requirements: getPlatformRequirements(selectedPlatforms as any[])
+    };
+  }, [selectedPlatforms, budgetPeriod]);
+
+  // Auto-populate amount when platforms change
+  useEffect(() => {
+    if (minimumBudget && (!amount || parseFloat(amount) < minimumBudget.total)) {
+      setAmount(minimumBudget.total.toFixed(2));
+    }
+  }, [minimumBudget]);
+
   const spendPlan = useMemo(() => {
     if (!amount || parseFloat(amount) <= 0 || selectedPlatforms.length === 0) {
       return null;
@@ -68,11 +92,12 @@ export default function AddAdBudget() {
   }, [amount, selectedPlatforms]);
 
   const handlePlatformToggle = (platformId: string) => {
-    setSelectedPlatforms((prev) =>
-      prev.includes(platformId)
+    setSelectedPlatforms((prev) => {
+      const newPlatforms = prev.includes(platformId)
         ? prev.filter((p) => p !== platformId)
-        : [...prev, platformId]
-    );
+        : [...prev, platformId];
+      return newPlatforms;
+    });
   };
 
   const handleContinue = async () => {
@@ -172,9 +197,41 @@ export default function AddAdBudget() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Budget Period Selection */}
+            <div className="space-y-3">
+              <label className="text-sm md:text-base font-semibold">Choose your budget period</label>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  type="button"
+                  variant={budgetPeriod === 'weekly' ? 'default' : 'outline'}
+                  onClick={() => setBudgetPeriod('weekly')}
+                  className="h-auto py-4"
+                >
+                  <div className="text-center">
+                    <div className="font-semibold">Weekly</div>
+                    <div className="text-xs opacity-80">7 days</div>
+                  </div>
+                </Button>
+                <Button
+                  type="button"
+                  variant={budgetPeriod === 'monthly' ? 'default' : 'outline'}
+                  onClick={() => setBudgetPeriod('monthly')}
+                  className="h-auto py-4"
+                >
+                  <div className="text-center">
+                    <div className="font-semibold">Monthly</div>
+                    <div className="text-xs opacity-80">30 days</div>
+                  </div>
+                </Button>
+              </div>
+            </div>
+
             {/* Platform Selection */}
             <div className="space-y-3">
-              <label className="text-sm md:text-base font-semibold">Where will your ads run?</label>
+              <label className="text-sm md:text-base font-semibold">Select ad platforms</label>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                We'll automatically calculate the minimum budget based on platform requirements.
+              </p>
               <div className="space-y-2">
                 {platforms.map((platform) => (
                   <div
@@ -197,29 +254,43 @@ export default function AddAdBudget() {
               </div>
             </div>
 
-            {/* Amount Input */}
-            <div className="space-y-3">
-              <label htmlFor="amount" className="text-sm md:text-base font-semibold">
-                How much do you want to spend on ads?
-              </label>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                Enter the amount you want to go <strong>directly into your ad accounts</strong>. We add a <strong>flat $5 per funding</strong> service fee (separate from Elite tier's 5% ad spend billing).
-              </p>
-              
-              {/* Platform Minimum Requirements */}
-              {selectedPlatforms.length > 0 && (
-                <div className="text-xs md:text-sm text-muted-foreground space-y-1">
-                  <p className="font-semibold">Minimum required based on your selected platforms:</p>
-                  <ul className="list-disc pl-5 space-y-0.5">
-                    {getPlatformRequirements(selectedPlatforms as any[]).map(({ platform, minDaily }) => (
+            {/* Auto-calculated Budget Display */}
+            {minimumBudget && selectedPlatforms.length > 0 && (
+              <div className="border border-primary/30 bg-primary/5 p-4 rounded-lg space-y-3">
+                <h3 className="text-sm md:text-base font-semibold flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  Required Budget for {budgetPeriod === 'weekly' ? 'Weekly' : 'Monthly'} Campaign
+                </h3>
+                <div className="space-y-2 text-xs md:text-sm">
+                  <p className="text-muted-foreground">Based on platform minimums:</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {minimumBudget.requirements.map(({ platform, minDaily }) => (
                       <li key={platform}>
-                        <span className="capitalize">{platform}</span>: ${minDaily}/day
-                        {platform === 'meta' && <span className="text-muted-foreground/70"> (for conversion-optimized ads)</span>}
+                        <span className="capitalize font-medium">{platform}</span>: ${minDaily}/day
+                        {platform === 'meta' && <span className="text-muted-foreground/70"> (conversion-optimized)</span>}
                       </li>
                     ))}
                   </ul>
+                  <div className="pt-2 border-t border-primary/20 mt-3">
+                    <p className="font-semibold text-primary text-base">
+                      Minimum {budgetPeriod} budget: ${minimumBudget.total.toFixed(2)}
+                    </p>
+                    <p className="text-muted-foreground text-xs mt-1">
+                      (${minimumBudget.daily.toFixed(2)}/day × {minimumBudget.days} days)
+                    </p>
+                  </div>
                 </div>
-              )}
+              </div>
+            )}
+
+            {/* Amount Input */}
+            <div className="space-y-3">
+              <label htmlFor="amount" className="text-sm md:text-base font-semibold">
+                Your {budgetPeriod} ad budget
+              </label>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                This amount goes <strong>directly into your ad accounts</strong>. A flat <strong>$5 xiXoi service fee</strong> is added per funding (separate from Elite tier's 5% ad spend billing).
+              </p>
               
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg md:text-xl">$</span>
@@ -230,7 +301,8 @@ export default function AddAdBudget() {
                   step="0.01"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="200"
+                  placeholder={minimumBudget ? minimumBudget.total.toFixed(2) : "Select platforms first"}
+                  disabled={!minimumBudget}
                   className="pl-8 text-lg md:text-xl h-12"
                 />
               </div>
@@ -243,13 +315,6 @@ export default function AddAdBudget() {
                     {spendPlan.validationError}
                   </AlertDescription>
                 </Alert>
-              )}
-              
-              {/* Minimum Total Info */}
-              {spendPlan && selectedPlatforms.length > 0 && (
-                <p className="text-xs md:text-sm font-semibold text-primary">
-                  📌 AI duration: {spendPlan.durationDays} days • Minimum total: ${spendPlan.minimumTotalSpend.toFixed(2)}
-                </p>
               )}
             </div>
 
