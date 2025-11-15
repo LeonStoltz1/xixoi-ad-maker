@@ -5,13 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Upload, Image, Video, FileText, ShieldCheck, AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Upload, Image, Video, FileText, ShieldCheck, AlertCircle, CheckCircle2, Info, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { detectAdCategory, checkHousingCompliance, checkEmploymentCompliance, checkCreditCompliance, getComplianceGuide, type ComplianceIssue } from "@/utils/adCompliance";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useRealtor } from "@/contexts/RealtorContext";
+import { RealEstateDetailsForm } from "@/components/real-estate/RealEstateDetailsForm";
+import { buildRealEstateFeatureSummary, buildHousingFooter } from "@/lib/realEstatePrompt";
+import type { RealEstateDetailsFormValues } from "@/schema/realEstate";
 
 export default function CreateCampaign() {
+  const { realtorProfile, isLoading: realtorLoading } = useRealtor();
   const [user, setUser] = useState<any>(null);
   const [campaignName, setCampaignName] = useState("");
   const [uploadType, setUploadType] = useState<'image' | 'video' | 'text'>('image');
@@ -28,6 +34,10 @@ export default function CreateCampaign() {
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const [showPlatformSelection, setShowPlatformSelection] = useState(false);
   const [mediaRightsConfirmed, setMediaRightsConfirmed] = useState(false);
+  
+  // Real Estate Mode (only available for realtors)
+  const [realEstateMode, setRealEstateMode] = useState(false);
+  const [realEstateDetails, setRealEstateDetails] = useState<RealEstateDetailsFormValues | null>(null);
   const [selectedPlatforms, setSelectedPlatforms] = useState<{
     meta: { selected: boolean; budget: number };
     tiktok: { selected: boolean; budget: number };
@@ -268,15 +278,37 @@ export default function CreateCampaign() {
 
     setLoading(true);
     try {
-      // Create campaign with media rights confirmation
+      // Create campaign with media rights confirmation and optional real estate data
+      const campaignData: any = {
+        user_id: user.id,
+        name: campaignName || 'Untitled Campaign',
+        status: 'draft',
+        media_rights_confirmed_at: new Date().toISOString(),
+      };
+
+      // Add real estate data if in Real Estate Mode
+      if (realEstateMode && realEstateDetails) {
+        campaignData.real_estate_mode = true;
+        campaignData.property_details = {
+          propertyType: realEstateDetails.propertyType,
+          city: realEstateDetails.city,
+          stateOrRegion: realEstateDetails.stateOrRegion,
+          neighborhood: realEstateDetails.neighborhood,
+          price: realEstateDetails.price,
+          bedrooms: realEstateDetails.bedrooms,
+          bathrooms: realEstateDetails.bathrooms,
+          squareFeet: realEstateDetails.squareFeet,
+          keyFeatures: realEstateDetails.keyFeatures,
+          nearbyHighlights: realEstateDetails.nearbyHighlights,
+          realtorName: realEstateDetails.realtorName,
+          brokerageName: realEstateDetails.brokerageName,
+          includeEHO: realEstateDetails.includeEHO,
+        };
+      }
+
       const { data: campaign, error: campaignError } = await supabase
         .from('campaigns')
-        .insert({
-          user_id: user.id,
-          name: campaignName || 'Untitled Campaign',
-          status: 'draft',
-          media_rights_confirmed_at: new Date().toISOString(),
-        })
+        .insert(campaignData)
         .select()
         .single();
 
@@ -438,32 +470,92 @@ export default function CreateCampaign() {
             </div>
 
             {/* Content Input - Always show description */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium uppercase tracking-wide">Product/Service Description *</label>
-              <p className="text-xs text-muted-foreground">
-                Include: What you're selling, key features, price (if applicable), target audience, and how to contact you. AI will optimize this for each platform's character limits.
-              </p>
-              <Textarea
-                value={textContent}
-                onChange={(e) => setTextContent(e.target.value)}
-                placeholder="Sunlit 23sqm studio, $2500/mo. Modern, bright, and steps from Miami cafés + shoreline. Call 555-321-7788. Alex Rivera, Realtor®, OceanGate Realty."
-                className="border-foreground min-h-[120px] placeholder:opacity-40"
-              />
-              <div className="flex justify-between items-center text-xs">
-                <p className="text-muted-foreground">
-                  ✓ Meta: 125 chars • TikTok: 100 chars • Google: 90 chars • LinkedIn: 150 chars
-                </p>
-                <p className={`font-medium ${
-                  isOverLimit 
-                    ? 'text-destructive' 
-                    : isNearLimit 
-                      ? 'text-yellow-600 dark:text-yellow-500' 
-                      : 'text-muted-foreground'
-                }`}>
-                  {characterCount} / {characterLimit}
-                  {isOverLimit && ' ⚠️'}
-                </p>
-              </div>
+            <div className="space-y-4">
+              {/* Real Estate Mode Toggle (only for realtors) */}
+              {realtorProfile?.isRealtor && (
+                <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-card">
+                  <div className="flex items-center gap-3">
+                    <Home className="w-5 h-5 text-primary" />
+                    <div>
+                      <label className="text-sm font-medium">Real Estate Mode</label>
+                      <p className="text-xs text-muted-foreground">
+                        Use structured property details with automatic Fair Housing compliance
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={realEstateMode}
+                    onCheckedChange={setRealEstateMode}
+                  />
+                </div>
+              )}
+
+              {/* Show Real Estate Form or Regular Textarea */}
+              {realEstateMode && realtorProfile?.isRealtor ? (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium uppercase tracking-wide">Property Details</label>
+                  <RealEstateDetailsForm
+                    defaultValues={{
+                      realtorName: realtorProfile.realtorName || '',
+                      brokerageName: realtorProfile.brokerageName || '',
+                      includeEHO: true,
+                      propertyType: '',
+                      city: '',
+                      stateOrRegion: '',
+                    }}
+                    onChange={(values) => {
+                      setRealEstateDetails(values);
+                      // Build summary for AI if we have required fields
+                      if (values.propertyType && values.city && values.stateOrRegion && values.realtorName && values.brokerageName) {
+                        const summary = buildRealEstateFeatureSummary({
+                          propertyType: values.propertyType,
+                          city: values.city,
+                          stateOrRegion: values.stateOrRegion,
+                          neighborhood: values.neighborhood,
+                          price: values.price,
+                          bedrooms: values.bedrooms,
+                          bathrooms: values.bathrooms,
+                          squareFeet: values.squareFeet,
+                          realtorName: values.realtorName,
+                          brokerageName: values.brokerageName,
+                          includeEHO: values.includeEHO,
+                          keyFeatures: values.keyFeatures?.split(',').map(f => f.trim()).filter(Boolean),
+                          nearbyHighlights: values.nearbyHighlights?.split(',').map(h => h.trim()).filter(Boolean),
+                        });
+                        setTextContent(summary);
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium uppercase tracking-wide">Product/Service Description *</label>
+                  <p className="text-xs text-muted-foreground">
+                    Describe what you're advertising: key features, benefits, price, target audience, and contact info. AI will optimize for each platform.
+                  </p>
+                  <Textarea
+                    value={textContent}
+                    onChange={(e) => setTextContent(e.target.value)}
+                    placeholder="Example: Premium noise-canceling headphones with 40hr battery, $299. Perfect for commuters. Shop now at AudioPro.com or call 555-1234."
+                    className="border-foreground min-h-[120px] placeholder:opacity-40"
+                  />
+                  <div className="flex justify-between items-center text-xs">
+                    <p className="text-muted-foreground">
+                      ✓ Meta: 125 chars • TikTok: 100 chars • Google: 90 chars • LinkedIn: 150 chars
+                    </p>
+                    <p className={`font-medium ${
+                      isOverLimit 
+                        ? 'text-destructive' 
+                        : isNearLimit 
+                          ? 'text-yellow-600 dark:text-yellow-500' 
+                          : 'text-muted-foreground'
+                    }`}>
+                      {characterCount} / {characterLimit}
+                      {isOverLimit && ' ⚠️'}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Ad Category & Compliance Alerts */}
               {adCategory !== 'standard' && textContent.trim() && (
