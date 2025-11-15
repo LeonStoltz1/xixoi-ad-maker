@@ -128,7 +128,19 @@ export default function TargetingSetup() {
       }
     } catch (error) {
       console.error('Error generating audience suggestion:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to generate targeting suggestions';
+      
+      // Extract the actual error message from the edge function
+      let errorMessage = 'Failed to generate targeting suggestions';
+      
+      if (error instanceof Error) {
+        // Try to parse the error message to extract the actual error from the edge function
+        const match = error.message.match(/{"error":"([^"]+)"}/);
+        if (match && match[1]) {
+          errorMessage = match[1];
+        } else if (error.message && !error.message.includes('non-2xx')) {
+          errorMessage = error.message;
+        }
+      }
       
       // Check if it's a content policy violation
       const isPolicyViolation = errorMessage.toLowerCase().includes('violates') || 
@@ -242,26 +254,18 @@ export default function TargetingSetup() {
   };
 
   const handleEditClick = async () => {
-    console.log('Edit button clicked, campaignId:', campaignId);
-    
     if (!campaignId) {
-      console.error('No campaign ID available');
       toast.error('Campaign ID not found');
       return;
     }
 
     try {
-      console.log('Fetching campaign data...');
-      
       // Always fetch fresh campaign data
       const { data: campaignData, error: campaignError } = await supabase
         .from('campaigns')
         .select('*, campaign_assets(*)')
         .eq('id', campaignId)
         .single();
-      
-      console.log('Campaign data:', campaignData);
-      console.log('Campaign error:', campaignError);
       
       if (campaignError) {
         console.error('Error loading campaign for edit:', campaignError);
@@ -270,20 +274,16 @@ export default function TargetingSetup() {
       }
 
       if (!campaignData) {
-        console.error('No campaign data returned');
         toast.error('Campaign not found');
         return;
       }
 
-      console.log('Setting edit fields...');
       setEditName(campaignData.name);
       
       // Get the campaign asset description
       const asset = campaignData.campaign_assets?.[0];
-      console.log('Asset:', asset);
       setEditDescription(asset?.asset_text || '');
       
-      console.log('Opening dialog...');
       setShowEditDialog(true);
     } catch (error) {
       console.error('Error in handleEditClick:', error);
@@ -355,59 +355,130 @@ export default function TargetingSetup() {
   // Show error state with option to edit
   if (errorState) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4">
-        <div className="max-w-lg w-full">
-          <div className="text-center space-y-6">
-            <div className="flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-destructive" />
+      <>
+        <div className="min-h-screen flex items-center justify-center bg-background px-4">
+          <div className="max-w-lg w-full">
+            <div className="text-center space-y-6">
+              <div className="flex justify-center">
+                <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <AlertTriangle className="w-8 h-8 text-destructive" />
+                </div>
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-foreground">Content Policy Issue</h2>
-              <p className="text-destructive font-medium">{errorState.message}</p>
-            </div>
-            
-            <div className="bg-muted/50 rounded-lg p-4 text-left">
-              <p className="text-sm text-muted-foreground">
-                {errorState.details}
-              </p>
-            </div>
-
-            <div className="space-y-3 pt-4">
-              <Button
-                onClick={handleEditClick}
-                className="w-full"
-                size="lg"
-              >
-                <Pencil className="w-4 h-4 mr-2" />
-                Edit Campaign Description
-              </Button>
               
-              <Button
-                variant="outline"
-                onClick={() => navigate('/dashboard')}
-                className="w-full"
-                size="lg"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Dashboard
-              </Button>
-            </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-foreground">Content Policy Issue</h2>
+                <p className="text-destructive font-medium">{errorState.message}</p>
+              </div>
+              
+              <div className="bg-muted/50 rounded-lg p-4 text-left">
+                <p className="text-sm text-muted-foreground">
+                  {errorState.details}
+                </p>
+              </div>
 
-            <div className="text-xs text-muted-foreground pt-4">
-              <p>Common issues include:</p>
-              <ul className="list-disc list-inside mt-2 space-y-1 text-left">
-                <li>Discriminatory language based on race, gender, religion, etc.</li>
-                <li>References to illegal products or services</li>
-                <li>Misleading or deceptive claims</li>
-                <li>Prohibited content per advertising policies</li>
-              </ul>
+              <div className="space-y-3 pt-4">
+                <Button
+                  onClick={handleEditClick}
+                  className="w-full"
+                  size="lg"
+                >
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Edit Campaign Description
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/dashboard')}
+                  className="w-full"
+                  size="lg"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+              </div>
+
+              <div className="text-xs text-muted-foreground pt-4">
+                <p>Common issues include:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1 text-left">
+                  <li>Discriminatory language based on race, gender, religion, etc.</li>
+                  <li>References to illegal products or services</li>
+                  <li>Misleading or deceptive claims</li>
+                  <li>Prohibited content per advertising policies</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+
+        {/* Edit Campaign Dialog - Always rendered */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Edit Campaign</DialogTitle>
+              <DialogDescription>
+                Update your campaign description to fix content policy issues. Make sure to remove any discriminatory language, illegal content, or misleading claims.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Campaign Name</Label>
+                <Input
+                  id="edit-name"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Enter campaign name"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">Campaign Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="Describe your product or service"
+                  rows={8}
+                  className="resize-none"
+                />
+                <div className="bg-muted/50 rounded-md p-3 mt-2">
+                  <p className="text-xs text-muted-foreground font-medium mb-2">✅ Good description includes:</p>
+                  <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Clear product/service details</li>
+                    <li>Key features and benefits</li>
+                    <li>Pricing information</li>
+                    <li>Target audience (without discrimination)</li>
+                    <li>Contact information or call-to-action</li>
+                  </ul>
+                  <p className="text-xs text-destructive font-medium mt-3 mb-2">❌ Avoid:</p>
+                  <ul className="text-xs text-destructive space-y-1 list-disc list-inside">
+                    <li>Discriminatory language (race, gender, religion, etc.)</li>
+                    <li>Illegal products or services</li>
+                    <li>Misleading or deceptive claims</li>
+                    <li>Prohibited content</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowEditDialog(false)}
+                disabled={savingEdit}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleEditSave}
+                disabled={savingEdit || !editName.trim() || !editDescription.trim()}
+              >
+                {savingEdit ? 'Saving & Regenerating...' : 'Save & Regenerate Targeting'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
