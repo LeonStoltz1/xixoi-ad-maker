@@ -20,7 +20,8 @@ import {
   X,
   Save,
   Trash2,
-  Rocket
+  Rocket,
+  Sparkles
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -119,6 +120,9 @@ export function EnhancedCampaignCard({
   const [isPublished, setIsPublished] = useState(false);
   const [checkingPublishStatus, setCheckingPublishStatus] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const [aiSuggestedCopy, setAiSuggestedCopy] = useState<string>("");
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [showAISuggestion, setShowAISuggestion] = useState(false);
 
   // Character limits for each platform
   const platformLimits: Record<string, number> = {
@@ -186,6 +190,67 @@ export function EnhancedCampaignCard({
       console.error("Error loading campaign platforms:", error);
       setSelectedPlatforms([]); // Default to empty, will use strictest limit
     }
+  };
+
+  const generateAICopy = async () => {
+    if (!editedBodyCopy.trim()) {
+      toast({
+        variant: "destructive",
+        title: "No copy to rewrite",
+        description: "Please enter some ad copy first"
+      });
+      return;
+    }
+
+    setIsGeneratingAI(true);
+    setShowAISuggestion(false);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('rewrite-ad-copy', {
+        body: {
+          originalCopy: editedBodyCopy,
+          characterLimit,
+          platforms: selectedPlatforms.length > 0 ? selectedPlatforms : ['meta', 'google', 'tiktok', 'linkedin']
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        toast({
+          variant: "destructive",
+          title: "AI generation failed",
+          description: data.error
+        });
+        return;
+      }
+
+      setAiSuggestedCopy(data.rewrittenCopy);
+      setShowAISuggestion(true);
+      
+      toast({
+        title: "✨ AI copy generated",
+        description: "Review the suggestion and choose which version to use"
+      });
+    } catch (error) {
+      console.error('Error generating AI copy:', error);
+      toast({
+        variant: "destructive",
+        title: "Failed to generate AI copy",
+        description: "Please try again"
+      });
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
+  const useAICopy = () => {
+    setEditedBodyCopy(aiSuggestedCopy);
+    setShowAISuggestion(false);
+    toast({
+      title: "AI copy applied",
+      description: "You can continue editing or save the changes"
+    });
   };
 
   const checkIfPublished = async (variantId: string) => {
@@ -854,28 +919,84 @@ export function EnhancedCampaignCard({
                 
                 {/* Body Copy */}
                 <div className="space-y-2">
-                  <Label htmlFor="body-copy" className="text-xs font-semibold text-muted-foreground mb-2 block">
-                    Body Copy
-                  </Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label htmlFor="body-copy" className="text-xs font-semibold text-muted-foreground">
+                      Body Copy
+                    </Label>
+                    {isEditingAd && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={generateAICopy}
+                        disabled={isGeneratingAI || !editedBodyCopy.trim()}
+                        className="h-7 text-xs"
+                      >
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        {isGeneratingAI ? 'Generating...' : 'AI Rewrite'}
+                      </Button>
+                    )}
+                  </div>
                   {isEditingAd ? (
-                    <div className="relative">
-                      <Textarea
-                        id="body-copy"
-                        value={editedBodyCopy}
-                        onChange={(e) => setEditedBodyCopy(e.target.value)}
-                        placeholder="Enter body copy"
-                        rows={4}
-                        className="resize-none pr-20"
-                      />
-                      <div className={`absolute bottom-2 right-2 text-xs font-medium px-2 py-1 rounded ${
-                        isOverLimit 
-                          ? 'bg-destructive/10 text-destructive' 
-                          : isNearLimit 
-                            ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-500' 
-                            : 'bg-muted text-muted-foreground'
-                      }`}>
-                        {characterCount}/{characterLimit}
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <Textarea
+                          id="body-copy"
+                          value={editedBodyCopy}
+                          onChange={(e) => setEditedBodyCopy(e.target.value)}
+                          placeholder="Enter body copy"
+                          rows={4}
+                          className="resize-none pr-20"
+                        />
+                        <div className={`absolute bottom-2 right-2 text-xs font-medium px-2 py-1 rounded ${
+                          isOverLimit 
+                            ? 'bg-destructive/10 text-destructive' 
+                            : isNearLimit 
+                              ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-500' 
+                              : 'bg-muted text-muted-foreground'
+                        }`}>
+                          {characterCount}/{characterLimit}
+                        </div>
                       </div>
+                      
+                      {/* AI Suggestion Display */}
+                      {showAISuggestion && aiSuggestedCopy && (
+                        <div className="border border-primary/20 bg-primary/5 rounded-lg p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Sparkles className="w-4 h-4 text-primary" />
+                              <span className="text-xs font-semibold text-primary">AI Suggestion</span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setShowAISuggestion(false)}
+                              className="h-6 w-6 p-0"
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </div>
+                          <p className="text-sm text-foreground whitespace-pre-wrap">{aiSuggestedCopy}</p>
+                          <div className="flex items-center justify-between">
+                            <span className={`text-xs ${
+                              aiSuggestedCopy.length > characterLimit 
+                                ? 'text-destructive font-medium' 
+                                : 'text-muted-foreground'
+                            }`}>
+                              {aiSuggestedCopy.length}/{characterLimit} characters
+                            </span>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={useAICopy}
+                              className="h-7 text-xs"
+                            >
+                              Use This Copy
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedVariant.body_copy}</p>
