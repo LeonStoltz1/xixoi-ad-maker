@@ -297,8 +297,15 @@ export default function TargetingSetup() {
       return;
     }
 
+    if (!editDescription.trim()) {
+      toast.error('Campaign description is required');
+      return;
+    }
+
     setSavingEdit(true);
     try {
+      console.log('Saving campaign with description:', editDescription);
+      
       // Update campaign name
       const { error: campaignError } = await supabase
         .from('campaigns')
@@ -308,16 +315,28 @@ export default function TargetingSetup() {
         })
         .eq('id', campaign.id);
 
-      if (campaignError) throw campaignError;
+      if (campaignError) {
+        console.error('Campaign update error:', campaignError);
+        throw campaignError;
+      }
 
-      // Update campaign asset description if it exists
-      if (editDescription.trim()) {
-        const { error: assetError } = await supabase
-          .from('campaign_assets')
-          .update({ asset_text: editDescription.trim() })
-          .eq('campaign_id', campaign.id);
+      // Update campaign asset description
+      const { data: updateData, error: assetError } = await supabase
+        .from('campaign_assets')
+        .update({ asset_text: editDescription.trim() })
+        .eq('campaign_id', campaign.id)
+        .select();
 
-        if (assetError) throw assetError;
+      console.log('Asset update result:', { updateData, assetError });
+
+      if (assetError) {
+        console.error('Asset update error:', assetError);
+        throw assetError;
+      }
+
+      if (!updateData || updateData.length === 0) {
+        console.warn('No assets were updated - this might indicate a permission issue');
+        throw new Error('Failed to update campaign description. Please try again.');
       }
 
       toast.success('Campaign updated! Regenerating targeting...');
@@ -330,7 +349,7 @@ export default function TargetingSetup() {
       await loadCampaign();
     } catch (error) {
       console.error('Error updating campaign:', error);
-      toast.error('Failed to update campaign');
+      toast.error(error instanceof Error ? error.message : 'Failed to update campaign');
     } finally {
       setSavingEdit(false);
     }
