@@ -534,6 +534,66 @@ export type Database = {
           },
         ]
       }
+      campaign_budget_events: {
+        Row: {
+          campaign_id: string
+          created_at: string | null
+          created_by: string | null
+          event_type: string
+          id: string
+          new_daily_budget: number | null
+          new_lifetime_budget: number | null
+          new_status: string | null
+          old_daily_budget: number | null
+          old_lifetime_budget: number | null
+          old_status: string | null
+          reason: string | null
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string | null
+          created_by?: string | null
+          event_type: string
+          id?: string
+          new_daily_budget?: number | null
+          new_lifetime_budget?: number | null
+          new_status?: string | null
+          old_daily_budget?: number | null
+          old_lifetime_budget?: number | null
+          old_status?: string | null
+          reason?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          event_type?: string
+          id?: string
+          new_daily_budget?: number | null
+          new_lifetime_budget?: number | null
+          new_status?: string | null
+          old_daily_budget?: number | null
+          old_lifetime_budget?: number | null
+          old_status?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_budget_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "admin_watermark_report"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "campaign_budget_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_channels: {
         Row: {
           campaign_id: string
@@ -696,6 +756,60 @@ export type Database = {
           },
         ]
       }
+      campaign_spend_daily: {
+        Row: {
+          campaign_id: string
+          clicks: number | null
+          conversions: number | null
+          created_at: string | null
+          date: string
+          id: string
+          impressions: number | null
+          platform: string
+          spend: number
+          updated_at: string | null
+        }
+        Insert: {
+          campaign_id: string
+          clicks?: number | null
+          conversions?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          impressions?: number | null
+          platform: string
+          spend?: number
+          updated_at?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          clicks?: number | null
+          conversions?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          impressions?: number | null
+          platform?: string
+          spend?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_spend_daily_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "admin_watermark_report"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "campaign_spend_daily_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_templates: {
         Row: {
           ai_prompt: string
@@ -733,19 +847,24 @@ export type Database = {
           created_at: string | null
           daily_budget: number | null
           detected_product_type: string | null
+          end_date: string | null
           has_watermark: boolean | null
           id: string
           is_active: boolean | null
           last_payment_check: string | null
+          lifetime_budget: number | null
           name: string
           paused_at: string | null
           paused_reason: string | null
           payment_failures: number | null
+          start_date: string | null
           status: string | null
+          status_reason: string | null
           stripe_payment_id: string | null
           suggested_daily_budget: number | null
           target_audience: string | null
           target_location: string | null
+          total_spent: number | null
           updated_at: string | null
           user_id: string
         }
@@ -755,19 +874,24 @@ export type Database = {
           created_at?: string | null
           daily_budget?: number | null
           detected_product_type?: string | null
+          end_date?: string | null
           has_watermark?: boolean | null
           id?: string
           is_active?: boolean | null
           last_payment_check?: string | null
+          lifetime_budget?: number | null
           name: string
           paused_at?: string | null
           paused_reason?: string | null
           payment_failures?: number | null
+          start_date?: string | null
           status?: string | null
+          status_reason?: string | null
           stripe_payment_id?: string | null
           suggested_daily_budget?: number | null
           target_audience?: string | null
           target_location?: string | null
+          total_spent?: number | null
           updated_at?: string | null
           user_id: string
         }
@@ -777,19 +901,24 @@ export type Database = {
           created_at?: string | null
           daily_budget?: number | null
           detected_product_type?: string | null
+          end_date?: string | null
           has_watermark?: boolean | null
           id?: string
           is_active?: boolean | null
           last_payment_check?: string | null
+          lifetime_budget?: number | null
           name?: string
           paused_at?: string | null
           paused_reason?: string | null
           payment_failures?: number | null
+          start_date?: string | null
           status?: string | null
+          status_reason?: string | null
           stripe_payment_id?: string | null
           suggested_daily_budget?: number | null
           target_audience?: string | null
           target_location?: string | null
+          total_spent?: number | null
           updated_at?: string | null
           user_id?: string
         }
