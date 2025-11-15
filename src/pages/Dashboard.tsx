@@ -34,6 +34,9 @@ import { AISupportChat } from "@/components/AISupportChat";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { BudgetManager } from "@/components/BudgetManager";
+import { GlobalSpendOverview } from "@/components/GlobalSpendOverview";
+import { CampaignCard } from "@/components/CampaignCard";
+import { GlobalCampaignActions } from "@/components/GlobalCampaignActions";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -322,6 +325,11 @@ export default function Dashboard() {
               <p className="text-muted-foreground mt-2">Create and manage your ad campaigns</p>
             </div>
             <div className="flex gap-2">
+              <GlobalCampaignActions
+                campaignCount={campaigns.length}
+                activeCampaignCount={campaigns.filter(c => c.status === 'active').length}
+                onUpdate={() => user && loadCampaigns(user.id)}
+              />
               {campaigns.length > 1 && (
                 <BudgetManager 
                   campaigns={campaigns} 
@@ -334,6 +342,9 @@ export default function Dashboard() {
               </Button>
             </div>
           </div>
+
+          {/* Global Spend Overview */}
+          <GlobalSpendOverview />
 
           {/* Add Ad Budget Section */}
           <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-6 text-white">
@@ -354,6 +365,25 @@ export default function Dashboard() {
               </Button>
             </div>
           </div>
+
+          {/* Performance Alerts */}
+          <PerformanceAlerts />
+
+          {/* Campaigns Grid - New Card Design */}
+          {campaigns.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold">Campaign Management</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {campaigns.map((campaign) => (
+                  <CampaignCard
+                    key={campaign.id}
+                    campaign={campaign}
+                    onUpdate={() => user && loadCampaigns(user.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Aggregated Metrics - Show when user has multiple campaigns */}
           {campaigns.length > 1 && aggregatedMetrics && (
@@ -387,6 +417,14 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {/* Real-time ROI Dashboard */}
+          {campaigns.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold">Performance Insights</h3>
+              <RealTimeROIDashboard />
+            </div>
           )}
 
           {/* Campaigns List or Empty State */}
