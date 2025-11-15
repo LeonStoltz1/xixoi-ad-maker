@@ -146,11 +146,14 @@ Return JSON:
     console.log('AI Response content:', content);
     
     // Check if AI refused the request (common with discriminatory or illegal content)
+    // Must check BEFORE attempting to parse JSON
     if (content.toLowerCase().includes('cannot fulfill') || 
         content.toLowerCase().includes('cannot create') ||
+        content.toLowerCase().includes('i cannot') ||
         content.toLowerCase().includes('violates') ||
         content.toLowerCase().includes('discriminatory') ||
-        content.toLowerCase().includes('illegal')) {
+        content.toLowerCase().includes('illegal') ||
+        content.toLowerCase().includes('ethical guidelines')) {
       console.error('AI refused to generate content:', content);
       throw new Error('This campaign contains content that violates advertising policies. Please review your campaign description and remove any discriminatory or illegal content.');
     }
