@@ -118,11 +118,35 @@ export function EnhancedCampaignCard({
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [isPublished, setIsPublished] = useState(false);
   const [checkingPublishStatus, setCheckingPublishStatus] = useState(false);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+
+  // Character limits for each platform
+  const platformLimits: Record<string, number> = {
+    meta: 125,
+    linkedin: 150,
+    tiktok: 100,
+    google: 90
+  };
+
+  // Get the strictest character limit based on selected platforms
+  const getCharacterLimit = () => {
+    if (selectedPlatforms.length === 0) return 90; // Default to Google's strictest limit
+    const limits = selectedPlatforms
+      .map(platform => platformLimits[platform])
+      .filter(limit => limit !== undefined);
+    return limits.length > 0 ? Math.min(...limits) : 90;
+  };
+
+  const characterLimit = getCharacterLimit();
+  const characterCount = editedBodyCopy.length;
+  const isOverLimit = characterCount > characterLimit;
+  const isNearLimit = characterCount > characterLimit * 0.9;
 
   useEffect(() => {
     loadAdVariants();
     loadUserPlanAndWatermark();
     loadWalletBalance();
+    loadCampaignPlatforms();
   }, [campaign.id]);
 
   useEffect(() => {
@@ -145,6 +169,22 @@ export function EnhancedCampaignCard({
       setWalletBalance(wallet?.balance || 0);
     } catch (error) {
       console.error("Error loading wallet balance:", error);
+    }
+  };
+
+  const loadCampaignPlatforms = async () => {
+    try {
+      const { data: channels } = await supabase
+        .from("campaign_channels")
+        .select("channel")
+        .eq("campaign_id", campaign.id);
+
+      if (channels) {
+        setSelectedPlatforms(channels.map(c => c.channel));
+      }
+    } catch (error) {
+      console.error("Error loading campaign platforms:", error);
+      setSelectedPlatforms([]); // Default to empty, will use strictest limit
     }
   };
 
@@ -813,19 +853,30 @@ export function EnhancedCampaignCard({
                 </div>
                 
                 {/* Body Copy */}
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="body-copy" className="text-xs font-semibold text-muted-foreground mb-2 block">
                     Body Copy
                   </Label>
                   {isEditingAd ? (
-                    <Textarea
-                      id="body-copy"
-                      value={editedBodyCopy}
-                      onChange={(e) => setEditedBodyCopy(e.target.value)}
-                      placeholder="Enter body copy"
-                      rows={4}
-                      className="resize-none"
-                    />
+                    <div className="relative">
+                      <Textarea
+                        id="body-copy"
+                        value={editedBodyCopy}
+                        onChange={(e) => setEditedBodyCopy(e.target.value)}
+                        placeholder="Enter body copy"
+                        rows={4}
+                        className="resize-none pr-20"
+                      />
+                      <div className={`absolute bottom-2 right-2 text-xs font-medium px-2 py-1 rounded ${
+                        isOverLimit 
+                          ? 'bg-destructive/10 text-destructive' 
+                          : isNearLimit 
+                            ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-500' 
+                            : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {characterCount}/{characterLimit}
+                      </div>
+                    </div>
                   ) : (
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedVariant.body_copy}</p>
                   )}
