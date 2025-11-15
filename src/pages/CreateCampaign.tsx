@@ -389,18 +389,18 @@ export default function CreateCampaign() {
               <p className="text-xs text-muted-foreground">
                 Include: What you're selling, key features, price (if applicable), target audience, and how to contact you. AI will optimize this for each platform's character limits.
               </p>
-              <Textarea
-                value={textContent}
-                onChange={(e) => setTextContent(e.target.value)}
-                placeholder="Sunlit 23sqm studio, $2500/mo. Modern, bright, and steps from Miami cafés + shoreline. Call 555-321-7788. Alex Rivera, Realtor®, OceanGate Realty."
-                className="border-foreground min-h-[120px] placeholder:opacity-40"
-              />
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  ✓ Meta: 125 chars • TikTok: 100 chars • Google: 90 chars • LinkedIn: 150 chars • X: 280 chars
-                </p>
-                <img src={equalHousingLogo} alt="Equal Housing Opportunity" className="h-8 opacity-70" />
+              <div className="relative">
+                <Textarea
+                  value={textContent}
+                  onChange={(e) => setTextContent(e.target.value)}
+                  placeholder="Sunlit 23sqm studio, $2500/mo. Modern, bright, and steps from Miami cafés + shoreline. Call 555-321-7788. Alex Rivera, Realtor®, OceanGate Realty."
+                  className="border-foreground min-h-[120px] placeholder:opacity-40 pr-12"
+                />
+                <img src={equalHousingLogo} alt="Equal Housing Opportunity" className="absolute bottom-3 right-3 h-6 opacity-50" />
               </div>
+              <p className="text-xs text-muted-foreground">
+                ✓ Meta: 125 chars • TikTok: 100 chars • Google: 90 chars • LinkedIn: 150 chars • X: 280 chars
+              </p>
             </div>
 
             {(uploadType === 'image' || uploadType === 'video') && (
