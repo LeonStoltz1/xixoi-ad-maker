@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { 
   Pause, 
   Play, 
@@ -13,7 +16,8 @@ import {
   StopCircle,
   AlertTriangle,
   Zap,
-  X
+  X,
+  Save
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -85,6 +89,11 @@ export function EnhancedCampaignCard({
   const [adVariants, setAdVariants] = useState<AdVariant[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<AdVariant | null>(null);
   const [showAdModal, setShowAdModal] = useState(false);
+  const [isEditingAd, setIsEditingAd] = useState(false);
+  const [editedHeadline, setEditedHeadline] = useState("");
+  const [editedBodyCopy, setEditedBodyCopy] = useState("");
+  const [editedCtaText, setEditedCtaText] = useState("");
+  const [savingAd, setSavingAd] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -100,6 +109,71 @@ export function EnhancedCampaignCard({
     
     if (data) {
       setAdVariants(data);
+    }
+  };
+
+  const handleEditAd = () => {
+    if (selectedVariant) {
+      setEditedHeadline(selectedVariant.headline || "");
+      setEditedBodyCopy(selectedVariant.body_copy || "");
+      setEditedCtaText(selectedVariant.cta_text || "");
+      setIsEditingAd(true);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingAd(false);
+    setEditedHeadline("");
+    setEditedBodyCopy("");
+    setEditedCtaText("");
+  };
+
+  const handleSaveAd = async () => {
+    if (!selectedVariant) return;
+
+    setSavingAd(true);
+    try {
+      const { error } = await supabase
+        .from('ad_variants')
+        .update({
+          headline: editedHeadline.trim(),
+          body_copy: editedBodyCopy.trim(),
+          cta_text: editedCtaText.trim(),
+        })
+        .eq('id', selectedVariant.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setAdVariants(prev => 
+        prev.map(v => 
+          v.id === selectedVariant.id 
+            ? { ...v, headline: editedHeadline.trim(), body_copy: editedBodyCopy.trim(), cta_text: editedCtaText.trim() }
+            : v
+        )
+      );
+      
+      setSelectedVariant({
+        ...selectedVariant,
+        headline: editedHeadline.trim(),
+        body_copy: editedBodyCopy.trim(),
+        cta_text: editedCtaText.trim(),
+      });
+
+      setIsEditingAd(false);
+      toast({
+        title: "Ad updated successfully",
+        description: "Your ad variant has been saved.",
+      });
+    } catch (error) {
+      console.error('Error saving ad:', error);
+      toast({
+        variant: "destructive",
+        title: "Failed to save ad",
+        description: "Please try again.",
+      });
+    } finally {
+      setSavingAd(false);
     }
   };
 
@@ -416,14 +490,50 @@ export function EnhancedCampaignCard({
       </CardContent>
 
       {/* Ad Preview Modal */}
-      <Dialog open={showAdModal} onOpenChange={setShowAdModal}>
-        <DialogContent className="max-w-2xl">
+      <Dialog open={showAdModal} onOpenChange={(open) => {
+        setShowAdModal(open);
+        if (!open) {
+          setIsEditingAd(false);
+        }
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <span>Ad Preview</span>
-              {selectedVariant && (
-                <Badge variant="outline">{selectedVariant.variant_type}</Badge>
-              )}
+              <div className="flex items-center gap-2">
+                {selectedVariant && (
+                  <Badge variant="outline">{selectedVariant.variant_type}</Badge>
+                )}
+                {!isEditingAd ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleEditAd}
+                  >
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Edit
+                  </Button>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCancelEdit}
+                      disabled={savingAd}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleSaveAd}
+                      disabled={savingAd}
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {savingAd ? "Saving..." : "Save"}
+                    </Button>
+                  </div>
+                )}
+              </div>
             </DialogTitle>
           </DialogHeader>
           
@@ -441,33 +551,66 @@ export function EnhancedCampaignCard({
               )}
               
               {/* Ad Copy */}
-              <div className="space-y-3">
-                {selectedVariant.headline && (
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground mb-1">Headline</p>
+              <div className="space-y-4">
+                {/* Headline */}
+                <div>
+                  <Label htmlFor="headline" className="text-xs font-semibold text-muted-foreground mb-2 block">
+                    Headline
+                  </Label>
+                  {isEditingAd ? (
+                    <Input
+                      id="headline"
+                      value={editedHeadline}
+                      onChange={(e) => setEditedHeadline(e.target.value)}
+                      placeholder="Enter headline"
+                      className="text-lg font-bold"
+                    />
+                  ) : (
                     <p className="text-lg font-bold">{selectedVariant.headline}</p>
-                  </div>
-                )}
+                  )}
+                </div>
                 
-                {selectedVariant.body_copy && (
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground mb-1">Body Copy</p>
+                {/* Body Copy */}
+                <div>
+                  <Label htmlFor="body-copy" className="text-xs font-semibold text-muted-foreground mb-2 block">
+                    Body Copy
+                  </Label>
+                  {isEditingAd ? (
+                    <Textarea
+                      id="body-copy"
+                      value={editedBodyCopy}
+                      onChange={(e) => setEditedBodyCopy(e.target.value)}
+                      placeholder="Enter body copy"
+                      rows={4}
+                      className="resize-none"
+                    />
+                  ) : (
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedVariant.body_copy}</p>
-                  </div>
-                )}
+                  )}
+                </div>
                 
-                {selectedVariant.cta_text && (
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground mb-1">Call to Action</p>
+                {/* CTA */}
+                <div>
+                  <Label htmlFor="cta-text" className="text-xs font-semibold text-muted-foreground mb-2 block">
+                    Call to Action
+                  </Label>
+                  {isEditingAd ? (
+                    <Input
+                      id="cta-text"
+                      value={editedCtaText}
+                      onChange={(e) => setEditedCtaText(e.target.value)}
+                      placeholder="Enter CTA text"
+                    />
+                  ) : (
                     <Button className="w-full sm:w-auto">
                       {selectedVariant.cta_text}
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
               
               {/* Performance Prediction */}
-              {selectedVariant.predicted_roas && (
+              {selectedVariant.predicted_roas && !isEditingAd && (
                 <div className="border-t pt-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -476,7 +619,7 @@ export function EnhancedCampaignCard({
                         {selectedVariant.predicted_roas.toFixed(1)}x
                       </p>
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-muted-foreground text-right">
                       AI-generated prediction based on<br />
                       historical campaign performance
                     </div>
