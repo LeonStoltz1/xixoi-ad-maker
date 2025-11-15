@@ -35,6 +35,8 @@ import LinkedInConnect from "./pages/connect/LinkedInConnect";
 import NotFound from "./pages/NotFound";
 import { RealtorIdentification } from "./components/onboarding/RealtorIdentification";
 import { RealtorProvider } from "./contexts/RealtorContext";
+import { PoliticalProvider } from "./contexts/PoliticalContext";
+import VerifyCandidate from "./pages/political/VerifyCandidate";
 
 const queryClient = new QueryClient();
 
@@ -59,13 +61,15 @@ const App = () => (
       <Toaster />
       <Sonner />
       <RealtorProvider>
-        <BrowserRouter>
-          <AffiliateTracker />
-          <Routes>
+        <PoliticalProvider>
+          <BrowserRouter>
+            <AffiliateTracker />
+            <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<RealtorIdentification />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/political/verify" element={<VerifyCandidate />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-campaign" element={<CreateCampaign />} />
           <Route path="/targeting/:campaignId" element={<TargetingSetup />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
@@ -92,9 +96,10 @@ const App = () => (
           <Route path="/connect/tiktok" element={<TikTokConnect />} />
           <Route path="/connect/linkedin" element={<LinkedInConnect />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+        </PoliticalProvider>
       </RealtorProvider>
     </TooltipProvider>
   </QueryClientProvider>
