@@ -657,7 +657,7 @@ export function EnhancedCampaignCard({
       }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
+            <DialogTitle className="flex items-center justify-between pr-10">
               <span>Ad Preview</span>
               <div className="flex items-center gap-2">
                 {selectedVariant && (
