@@ -210,30 +210,6 @@ export function EnhancedCampaignCard({
       if (!moderationResult.approved) {
         const violations = moderationResult.violations || [];
         setComplianceViolations(violations);
-        
-        const violationsList = violations
-          .map((v: any) => `${v.platform}: ${v.issue}`)
-          .join('\n• ') || 'Content violates platform policies';
-
-        toast({
-          title: "⚠️ Compliance Check Failed",
-          description: (
-            <div className="space-y-3">
-              <p className="font-semibold text-sm">Your ad content violates these platform policies:</p>
-              <div className="text-xs bg-destructive/10 p-3 rounded border border-destructive/20">
-                • {violationsList}
-              </div>
-              {moderationResult.summary && (
-                <p className="text-xs text-muted-foreground italic mt-2">{moderationResult.summary}</p>
-              )}
-              <div className="text-xs font-semibold text-foreground mt-3 pt-3 border-t border-border">
-                💡 Your changes were not saved. Please revise the content above and try saving again.
-              </div>
-            </div>
-          ),
-          variant: "destructive",
-          duration: 20000,
-        });
         setSavingAd(false);
         // Keep edit mode active so user can fix issues
         return;
