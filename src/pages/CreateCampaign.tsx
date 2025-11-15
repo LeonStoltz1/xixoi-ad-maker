@@ -391,7 +391,7 @@ export default function CreateCampaign() {
               <Textarea
                 value={textContent}
                 onChange={(e) => setTextContent(e.target.value)}
-                placeholder="Sunlit 23sqm studio, $2500/mo. Sleek modern finishes and Miami brightness. Steps to cafés, art, music, and shoreline. Call 555-321-7788 Mon–Fri."
+                placeholder="Sunlit 23sqm studio, $2500/mo. Modern, bright, and steps from Miami cafés + shoreline. Call 555-321-7788. Alex Rivera, Realtor®, OceanGate Realty. ⚖️"
                 className="border-foreground min-h-[120px] placeholder:opacity-40"
               />
               <p className="text-xs text-muted-foreground">
