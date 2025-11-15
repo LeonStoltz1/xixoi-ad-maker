@@ -283,6 +283,12 @@ Check for ALL policy violations including discriminatory language, misleading cl
     // Strip markdown if present
     content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
+    // Extract JSON object from response (handle cases where AI adds explanatory text)
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      content = jsonMatch[0];
+    }
+
     let moderationResult;
     try {
       moderationResult = JSON.parse(content);
