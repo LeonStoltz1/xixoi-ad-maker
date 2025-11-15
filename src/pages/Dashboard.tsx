@@ -46,6 +46,7 @@ import { BudgetManager } from "@/components/BudgetManager";
 import { GlobalSpendOverview } from "@/components/GlobalSpendOverview";
 import { CampaignCard } from "@/components/CampaignCard";
 import { GlobalCampaignActions } from "@/components/GlobalCampaignActions";
+import { AIPerformanceAnalysis } from "@/components/AIPerformanceAnalysis";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -379,6 +380,9 @@ export default function Dashboard() {
 
           {/* Performance Alerts */}
           <PerformanceAlerts />
+
+          {/* AI Performance Analysis */}
+          {campaigns.length > 0 && <AIPerformanceAnalysis />}
 
           {/* Real-time ROI Dashboard */}
           {campaigns.length > 0 && (
