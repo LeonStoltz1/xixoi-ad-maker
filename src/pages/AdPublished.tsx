@@ -1,6 +1,6 @@
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -133,8 +133,18 @@ const AdPublished = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-6 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-background px-6 py-12 relative">
       <div className="max-w-2xl mx-auto text-center space-y-12">
+        {/* Back Button */}
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/dashboard')}
+          className="absolute top-4 left-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Dashboard
+        </Button>
+
         {/* Ad Preview Card */}
         <div className="border border-foreground bg-background p-8 mx-auto max-w-md relative">
           {/* Free Preview Badge */}
