@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmbeddedCheckout } from '@/components/EmbeddedCheckout';
 import { toast } from 'sonner';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Sparkles } from 'lucide-react';
+import { generateSpendPlan } from '@/lib/spendEngine';
 
 export default function AddAdBudget() {
   const navigate = useNavigate();
@@ -25,8 +26,16 @@ export default function AddAdBudget() {
     { id: 'x', name: 'X (Twitter)' },
   ];
 
-  const serviceFee = 5.00;
-  const totalAmount = amount ? (parseFloat(amount) + serviceFee).toFixed(2) : '0.00';
+  const spendPlan = useMemo(() => {
+    if (!amount || parseFloat(amount) <= 0 || selectedPlatforms.length === 0) {
+      return null;
+    }
+    return generateSpendPlan({
+      userAdSpend: parseFloat(amount),
+      platforms: selectedPlatforms as any[],
+      aiMode: true,
+    });
+  }, [amount, selectedPlatforms]);
 
   const handlePlatformToggle = (platformId: string) => {
     setSelectedPlatforms((prev) =>
@@ -87,8 +96,8 @@ export default function AddAdBudget() {
           </Button>
           <EmbeddedCheckout
             clientSecret={clientSecret}
-            amount={`$${totalAmount}`}
-            description={`Ad Budget: $${amount} + $${serviceFee.toFixed(2)} service fee`}
+            amount={`$${spendPlan?.initialStripeCharge.toFixed(2) || '0.00'}`}
+            description={`Ad Budget: $${amount} + $${spendPlan?.serviceFeePerFunding.toFixed(2) || '5.00'} service fee`}
             onSuccess={handlePaymentSuccess}
           />
         </div>
@@ -144,8 +153,11 @@ export default function AddAdBudget() {
             {/* Amount Input */}
             <div className="space-y-3">
               <label htmlFor="amount" className="text-sm md:text-base font-semibold">
-                How much do you want to spend?
+                How much do you want to spend on ads?
               </label>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                Enter the amount you want to go <strong>directly into your ad accounts</strong>. We add a <strong>flat $5 xiXoi service fee</strong> on top of each funding or top-up.
+              </p>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg md:text-xl">$</span>
                 <Input
@@ -161,27 +173,59 @@ export default function AddAdBudget() {
               </div>
             </div>
 
-            {/* Breakdown */}
-            {amount && parseFloat(amount) > 0 && (
-              <div className="border border-foreground/20 p-4 md:p-6 rounded-lg space-y-3">
-                <div className="flex justify-between text-sm md:text-base">
-                  <span>Ad Budget:</span>
-                  <span className="font-semibold">${parseFloat(amount).toFixed(2)}</span>
+            {/* AI Spend Plan */}
+            {spendPlan && (
+              <div className="space-y-4">
+                {/* Charge Breakdown */}
+                <div className="border border-foreground/20 p-4 md:p-6 rounded-lg space-y-3">
+                  <h3 className="text-sm md:text-base font-semibold mb-3">You'll be charged ${spendPlan.initialStripeCharge.toFixed(2)} now</h3>
+                  <div className="flex justify-between text-sm md:text-base">
+                    <span>Ad Budget:</span>
+                    <span className="font-semibold">${spendPlan.totalAdSpend.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm md:text-base">
+                    <span>xiXoi Service Fee:</span>
+                    <span className="font-semibold">${spendPlan.serviceFeePerFunding.toFixed(2)}</span>
+                  </div>
+                  <div className="border-t border-foreground/20 pt-3">
+                    <div className="flex justify-between text-base md:text-lg font-bold">
+                      <span>Total Charge:</span>
+                      <span>${spendPlan.initialStripeCharge.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <p className="text-xs md:text-sm text-muted-foreground mt-4">
+                    The $5 service fee covers instant funding, fraud checks, and platform delivery.
+                    100% of your ${spendPlan.totalAdSpend.toFixed(2)} goes to your ads.
+                    <br />
+                    <em>(Each future top-up also includes a flat $5 fee.)</em>
+                  </p>
                 </div>
-                <div className="flex justify-between text-sm md:text-base">
-                  <span>Service Fee:</span>
-                  <span className="font-semibold">${serviceFee.toFixed(2)}</span>
-                </div>
-                <div className="border-t border-foreground/20 pt-3">
-                  <div className="flex justify-between text-base md:text-lg font-bold">
-                    <span>Total:</span>
-                    <span>${totalAmount}</span>
+
+                {/* AI Summary Card */}
+                <div className="border border-primary/30 bg-primary/5 p-4 md:p-6 rounded-lg space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                    <h3 className="text-sm md:text-base font-semibold">AI Spend Plan</h3>
+                  </div>
+                  <div className="space-y-2 text-sm md:text-base">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Budget:</span>
+                      <span className="font-semibold">${spendPlan.totalAdSpend.toFixed(2)} total (${spendPlan.dailyBudget.toFixed(2)}/day for {spendPlan.durationDays} days)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Platforms:</span>
+                      <span className="font-semibold">{spendPlan.perPlatform.map(p => p.platform).join(', ')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Split:</span>
+                      <span className="font-semibold">Even across platforms</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Charge today:</span>
+                      <span className="font-semibold">${spendPlan.initialStripeCharge.toFixed(2)} (${spendPlan.totalAdSpend.toFixed(2)} ads + ${spendPlan.serviceFeePerFunding.toFixed(2)} xiXoi)</span>
+                    </div>
                   </div>
                 </div>
-                <p className="text-xs md:text-sm text-muted-foreground mt-4">
-                  The $5 service fee covers instant funding, fraud checks, and platform delivery.
-                  100% of your ${amount} goes to your ads.
-                </p>
               </div>
             )}
 
@@ -192,7 +236,7 @@ export default function AddAdBudget() {
               onClick={handleContinue}
               disabled={loading || !amount || parseFloat(amount) <= 0 || selectedPlatforms.length === 0}
             >
-              {loading ? 'Processing...' : 'Continue to Payment'}
+              {loading ? 'Processing...' : spendPlan ? `Continue to Payment – Charge $${spendPlan.initialStripeCharge.toFixed(2)}` : 'Continue to Payment'}
             </Button>
 
             <p className="text-xs md:text-sm text-center text-muted-foreground">
