@@ -94,7 +94,7 @@ export const Header = () => {
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" className="text-white hover:bg-white/10" onClick={() => navigate('/auth')}>
+              <Button variant="ghost" size="sm" className="text-white hover:bg-white/10" onClick={() => navigate('/auth?mode=login')}>
                 Sign In
               </Button>
               <Button size="sm" className="bg-white text-black hover:bg-white/90" onClick={() => navigate('/auth?mode=signup')}>
