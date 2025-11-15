@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Upload, Image, Video, FileText } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowLeft, Upload, Image, Video, FileText, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UpgradeModal } from "@/components/UpgradeModal";
 
@@ -24,6 +25,7 @@ export default function CreateCampaign() {
   const [uploadedAssetUrl, setUploadedAssetUrl] = useState<string | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const [showPlatformSelection, setShowPlatformSelection] = useState(false);
+  const [mediaRightsConfirmed, setMediaRightsConfirmed] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState<{
     meta: { selected: boolean; budget: number };
     tiktok: { selected: boolean; budget: number };
@@ -179,13 +181,14 @@ export default function CreateCampaign() {
 
     setLoading(true);
     try {
-      // Create campaign
+      // Create campaign with media rights confirmation
       const { data: campaign, error: campaignError } = await supabase
         .from('campaigns')
         .insert({
           user_id: user.id,
           name: campaignName || 'Untitled Campaign',
           status: 'draft',
+          media_rights_confirmed_at: new Date().toISOString(),
         })
         .select()
         .single();
@@ -431,20 +434,47 @@ export default function CreateCampaign() {
               </div>
             )}
 
+            {/* Media Rights Confirmation */}
+            <div className="border-t pt-6 space-y-4">
+              <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg border">
+                <ShieldCheck className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-start gap-2">
+                    <Checkbox 
+                      id="media-rights" 
+                      checked={mediaRightsConfirmed}
+                      onCheckedChange={(checked) => setMediaRightsConfirmed(checked as boolean)}
+                      className="mt-1"
+                    />
+                    <label 
+                      htmlFor="media-rights" 
+                      className="text-sm leading-relaxed cursor-pointer"
+                    >
+                      <span className="font-semibold">I confirm that I own or have full legal rights to use this content for advertising purposes.</span>
+                      <span className="block mt-1 text-muted-foreground">
+                        By checking this box, I certify that all media, text, logos, and other content I'm uploading does not infringe on any copyright, trademark, or intellectual property rights. I understand that I am solely responsible for any legal claims arising from unauthorized use of content.
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <Button 
               size="lg" 
               className="w-full" 
               onClick={handleCreateCampaign}
-              disabled={loading || !textContent || ((uploadType === 'image' || uploadType === 'video') && !uploadedFile)}
+              disabled={loading || !textContent || !mediaRightsConfirmed || ((uploadType === 'image' || uploadType === 'video') && !uploadedFile)}
             >
-              {loading ? "Generating..." : !textContent ? "Fill description to continue" : ((uploadType === 'image' || uploadType === 'video') && !uploadedFile) ? `Upload ${uploadType} to continue` : "Let me see..."}
+              {loading ? "Generating..." : !mediaRightsConfirmed ? "Confirm content rights to continue" : !textContent ? "Fill description to continue" : ((uploadType === 'image' || uploadType === 'video') && !uploadedFile) ? `Upload ${uploadType} to continue` : "Let me see..."}
             </Button>
             
             {/* Helper text */}
-            {(!textContent || ((uploadType === 'image' || uploadType === 'video') && !uploadedFile)) && (
+            {(!textContent || !mediaRightsConfirmed || ((uploadType === 'image' || uploadType === 'video') && !uploadedFile)) && (
               <p className="text-xs text-center text-muted-foreground mt-2">
-                {!textContent && "⚠️ Product description required"}
-                {textContent && ((uploadType === 'image' || uploadType === 'video') && !uploadedFile) && `⚠️ ${uploadType.charAt(0).toUpperCase() + uploadType.slice(1)} upload required`}
+                {!mediaRightsConfirmed && "⚠️ Please confirm you own the rights to this content"}
+                {mediaRightsConfirmed && !textContent && "⚠️ Product description required"}
+                {mediaRightsConfirmed && textContent && ((uploadType === 'image' || uploadType === 'video') && !uploadedFile) && `⚠️ ${uploadType.charAt(0).toUpperCase() + uploadType.slice(1)} upload required`}
               </p>
             )}
           </div>
