@@ -7,9 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmbeddedCheckout } from '@/components/EmbeddedCheckout';
 import { toast } from 'sonner';
-import { ArrowLeft, Sparkles } from 'lucide-react';
-import { generateSpendPlan } from '@/lib/spendEngine';
+import { ArrowLeft, Sparkles, AlertCircle } from 'lucide-react';
+import { generateSpendPlan, getPlatformRequirements } from '@/lib/spendEngine';
 import type { User } from '@supabase/supabase-js';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function AddAdBudget() {
   const navigate = useNavigate();
@@ -82,6 +83,12 @@ export default function AddAdBudget() {
 
     if (selectedPlatforms.length === 0) {
       toast.error('Please select at least one platform');
+      return;
+    }
+
+    // Validate minimum spend requirements
+    if (spendPlan && !spendPlan.isValid) {
+      toast.error(spendPlan.validationError || 'Budget does not meet platform minimums');
       return;
     }
 
@@ -198,6 +205,22 @@ export default function AddAdBudget() {
               <p className="text-xs md:text-sm text-muted-foreground">
                 Enter the amount you want to go <strong>directly into your ad accounts</strong>. We add a <strong>flat $5 per funding</strong> service fee (separate from Elite tier's 5% ad spend billing).
               </p>
+              
+              {/* Platform Minimum Requirements */}
+              {selectedPlatforms.length > 0 && (
+                <div className="text-xs md:text-sm text-muted-foreground space-y-1">
+                  <p className="font-semibold">Minimum required based on your selected platforms:</p>
+                  <ul className="list-disc pl-5 space-y-0.5">
+                    {getPlatformRequirements(selectedPlatforms as any[]).map(({ platform, minDaily }) => (
+                      <li key={platform}>
+                        <span className="capitalize">{platform}</span>: ${minDaily}/day
+                        {platform === 'meta' && <span className="text-muted-foreground/70"> (for conversion-optimized ads)</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg md:text-xl">$</span>
                 <Input
@@ -211,10 +234,27 @@ export default function AddAdBudget() {
                   className="pl-8 text-lg md:text-xl h-12"
                 />
               </div>
+              
+              {/* Validation Error */}
+              {spendPlan && !spendPlan.isValid && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="text-xs md:text-sm">
+                    {spendPlan.validationError}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {/* Minimum Total Info */}
+              {spendPlan && selectedPlatforms.length > 0 && (
+                <p className="text-xs md:text-sm font-semibold text-primary">
+                  📌 AI duration: {spendPlan.durationDays} days • Minimum total: ${spendPlan.minimumTotalSpend.toFixed(2)}
+                </p>
+              )}
             </div>
 
             {/* AI Spend Plan */}
-            {spendPlan && (
+            {spendPlan && spendPlan.isValid && (
               <div className="space-y-4">
                 {/* Charge Breakdown */}
                 <div className="border border-foreground/20 p-4 md:p-6 rounded-lg space-y-3">
@@ -274,9 +314,9 @@ export default function AddAdBudget() {
               size="lg"
               className="w-full text-sm md:text-base lg:text-lg py-6"
               onClick={handleContinue}
-              disabled={loading || !amount || parseFloat(amount) <= 0 || selectedPlatforms.length === 0}
+              disabled={loading || !amount || parseFloat(amount) <= 0 || selectedPlatforms.length === 0 || (spendPlan && !spendPlan.isValid)}
             >
-              {loading ? 'Processing...' : spendPlan ? `Continue to Payment – Charge $${spendPlan.initialStripeCharge.toFixed(2)}` : 'Continue to Payment'}
+              {loading ? 'Processing...' : spendPlan && spendPlan.isValid ? `Continue to Payment – Charge $${spendPlan.initialStripeCharge.toFixed(2)}` : 'Continue to Payment'}
             </Button>
 
             <p className="text-xs md:text-sm text-center text-muted-foreground">
