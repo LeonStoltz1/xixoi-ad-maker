@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { originalCopy, characterLimit, platforms } = await req.json();
+    const { originalCopy, characterLimit, platforms, creativeUrl } = await req.json();
     
     if (!originalCopy) {
       return new Response(
@@ -30,7 +30,7 @@ serve(async (req) => {
     }
 
     const platformList = platforms?.join(', ') || 'social media platforms';
-    const prompt = `Rewrite the following ad copy to be more engaging, concise, and action-oriented while keeping the key information (price, contact details, location). The rewritten copy must be ${characterLimit} characters or less to comply with ${platformList} ad requirements.
+    const basePrompt = `Rewrite the following ad copy to be more engaging, concise, and action-oriented while keeping the key information (price, contact details, location). The rewritten copy must be ${characterLimit} characters or less to comply with ${platformList} ad requirements.
 
 Original copy:
 ${originalCopy}
@@ -41,10 +41,24 @@ Requirements:
 - Maximum ${characterLimit} characters
 - Use clear, direct language
 - Create urgency or highlight unique value
+${creativeUrl ? '- Reference the visual content to create cohesive messaging' : ''}
 
 Provide only the rewritten copy, nothing else.`;
 
-    console.log('Sending request to Lovable AI...');
+    // Build message content with optional image
+    const messageContent: any[] = [
+      { type: 'text', text: basePrompt }
+    ];
+
+    // Add image if creative URL is provided
+    if (creativeUrl) {
+      messageContent.push({
+        type: 'image_url',
+        image_url: { url: creativeUrl }
+      });
+    }
+
+    console.log('Sending request to Lovable AI with', creativeUrl ? 'image analysis' : 'text only');
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -56,11 +70,11 @@ Provide only the rewritten copy, nothing else.`;
         messages: [
           {
             role: 'system',
-            content: 'You are an expert ad copywriter specializing in real estate and social media advertising. You write compelling, concise copy that drives engagement and conversions.'
+            content: 'You are an expert ad copywriter specializing in real estate and social media advertising. You analyze visuals and write compelling, concise copy that complements the imagery and drives engagement.'
           },
           {
             role: 'user',
-            content: prompt
+            content: messageContent
           }
         ],
       }),
