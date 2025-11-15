@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut, Crown, Settings, Home, CreditCard, Zap, Wallet, Pause, Play, AlertTriangle, Trash2, Pencil, StopCircle, DollarSign } from "lucide-react";
+import { Plus, LogOut, Crown, Settings, Home, CreditCard, Zap, Wallet, Pause, Play, AlertTriangle, Trash2, Pencil, StopCircle, DollarSign, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -47,6 +48,8 @@ import { GlobalSpendOverview } from "@/components/GlobalSpendOverview";
 import { CampaignCard } from "@/components/CampaignCard";
 import { GlobalCampaignActions } from "@/components/GlobalCampaignActions";
 import { AIPerformanceAnalysis } from "@/components/AIPerformanceAnalysis";
+import { CampaignContactSection } from "@/components/CampaignContactSection";
+import { detectContactInfo, removeContactInfo } from "@/utils/contactDetection";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -60,6 +63,12 @@ export default function Dashboard() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [editPrimaryGoal, setEditPrimaryGoal] = useState<string | null>(null);
+  const [editContactPhone, setEditContactPhone] = useState<string | null>(null);
+  const [editContactEmail, setEditContactEmail] = useState<string | null>(null);
+  const [editLandingUrl, setEditLandingUrl] = useState<string | null>(null);
+  const [detectedContact, setDetectedContact] = useState<{ phone?: string; email?: string } | null>(null);
+  const [showContactDetection, setShowContactDetection] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
   const [aggregatedMetrics, setAggregatedMetrics] = useState<{
     totalSpend: number;
@@ -266,6 +275,10 @@ export default function Dashboard() {
   const handleEditClick = async (campaign: any) => {
     setEditingCampaign(campaign);
     setEditName(campaign.name);
+    setEditPrimaryGoal(campaign.primary_goal || null);
+    setEditContactPhone(campaign.contact_phone || null);
+    setEditContactEmail(campaign.contact_email || null);
+    setEditLandingUrl(campaign.landing_url || null);
     
     // Get the campaign asset description
     const { data: assets } = await supabase
@@ -274,7 +287,18 @@ export default function Dashboard() {
       .eq('campaign_id', campaign.id)
       .single();
     
-    setEditDescription(assets?.asset_text || '');
+    const description = assets?.asset_text || '';
+    setEditDescription(description);
+    
+    // Detect contact info in description
+    if (description) {
+      const detected = detectContactInfo(description);
+      if (detected.phone || detected.email) {
+        setDetectedContact(detected);
+        setShowContactDetection(true);
+      }
+    }
+    
     setShowEditDialog(true);
   };
 
@@ -288,12 +312,44 @@ export default function Dashboard() {
       return;
     }
 
+    // Validate required contact fields based on goal
+    if (editPrimaryGoal === 'website' && !editLandingUrl?.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Landing page URL is required for website goals',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (editPrimaryGoal === 'calls' && !editContactPhone?.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Phone number is required for call goals',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (editPrimaryGoal === 'email' && !editContactEmail?.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Email address is required for email goals',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setSavingEdit(true);
     try {
-      // Update campaign name
+      // Update campaign with contact fields
       const { error: campaignError } = await supabase
         .from('campaigns')
-        .update({ name: editName.trim() })
+        .update({ 
+          name: editName.trim(),
+          primary_goal: editPrimaryGoal,
+          contact_phone: editContactPhone?.trim() || null,
+          contact_email: editContactEmail?.trim() || null,
+          landing_url: editLandingUrl?.trim() || null,
+        })
         .eq('id', editingCampaign.id);
 
       if (campaignError) throw campaignError;
@@ -320,6 +376,8 @@ export default function Dashboard() {
 
       setShowEditDialog(false);
       setEditingCampaign(null);
+      setShowContactDetection(false);
+      setDetectedContact(null);
     } catch (error) {
       console.error('Error updating campaign:', error);
       toast({
@@ -735,7 +793,7 @@ export default function Dashboard() {
       
       {/* Edit Campaign Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Campaign</DialogTitle>
             <DialogDescription>
@@ -767,6 +825,66 @@ export default function Dashboard() {
               <p className="text-xs text-muted-foreground">
                 Be specific about your product, features, pricing, and target audience. Avoid discriminatory or illegal content.
               </p>
+            </div>
+
+            {/* Contact Detection Alert */}
+            {showContactDetection && detectedContact && (
+              <Alert className="border-primary/20 bg-primary/5">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="flex flex-col gap-3">
+                  <div>
+                    <p className="font-semibold">Contact information detected in your description</p>
+                    {detectedContact.phone && (
+                      <p className="text-sm mt-1">Phone: {detectedContact.phone}</p>
+                    )}
+                    {detectedContact.email && (
+                      <p className="text-sm">Email: {detectedContact.email}</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() => {
+                        if (detectedContact.phone) {
+                          setEditContactPhone(detectedContact.phone);
+                          setEditPrimaryGoal('calls');
+                        } else if (detectedContact.email) {
+                          setEditContactEmail(detectedContact.email);
+                          setEditPrimaryGoal('email');
+                        }
+                        // Remove contact info from description
+                        const cleanedDescription = removeContactInfo(editDescription, detectedContact);
+                        setEditDescription(cleanedDescription);
+                        setShowContactDetection(false);
+                      }}
+                    >
+                      Yes, set as {detectedContact.phone ? 'Call Now' : 'Email'} button
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowContactDetection(false)}
+                    >
+                      Keep in text only
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Contact & CTA Section */}
+            <div className="border-t pt-4">
+              <CampaignContactSection
+                primaryGoal={editPrimaryGoal}
+                contactPhone={editContactPhone}
+                contactEmail={editContactEmail}
+                landingUrl={editLandingUrl}
+                onPrimaryGoalChange={setEditPrimaryGoal}
+                onContactPhoneChange={setEditContactPhone}
+                onContactEmailChange={setEditContactEmail}
+                onLandingUrlChange={setEditLandingUrl}
+              />
             </div>
           </div>
           
