@@ -9,9 +9,13 @@ export interface RealtorProfile {
   licenseState: string | null;
 }
 
+export type ViewMode = 'realtor' | 'general';
+
 interface RealtorContextValue {
   realtorProfile: RealtorProfile | null;
   isLoading: boolean;
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
   updateRealtorProfile: (profile: Partial<RealtorProfile>) => Promise<void>;
 }
 
@@ -21,6 +25,10 @@ export function RealtorProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [realtorProfile, setRealtorProfile] = useState<RealtorProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [viewMode, setViewModeState] = useState<ViewMode>(() => {
+    const stored = localStorage.getItem('xiXoi_viewMode');
+    return (stored === 'realtor' || stored === 'general') ? stored : 'general';
+  });
 
   useEffect(() => {
     checkUser();
@@ -68,6 +76,11 @@ export function RealtorProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  function setViewMode(mode: ViewMode) {
+    setViewModeState(mode);
+    localStorage.setItem('xiXoi_viewMode', mode);
+  }
+
   async function updateRealtorProfile(profile: Partial<RealtorProfile>) {
     if (!user) return;
 
@@ -92,7 +105,7 @@ export function RealtorProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <RealtorContext.Provider value={{ realtorProfile, isLoading, updateRealtorProfile }}>
+    <RealtorContext.Provider value={{ realtorProfile, isLoading, viewMode, setViewMode, updateRealtorProfile }}>
       {children}
     </RealtorContext.Provider>
   );
