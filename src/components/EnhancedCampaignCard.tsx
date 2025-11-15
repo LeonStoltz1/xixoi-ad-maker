@@ -192,6 +192,11 @@ export function EnhancedCampaignCard({
           body: {
             campaignId: campaign.id,
             platforms: ['meta', 'tiktok', 'google', 'linkedin', 'x'],
+            adContent: {
+              headline: editedHeadline.trim(),
+              body_copy: editedBodyCopy.trim(),
+              cta_text: editedCtaText.trim(),
+            }
           }
         }
       );
