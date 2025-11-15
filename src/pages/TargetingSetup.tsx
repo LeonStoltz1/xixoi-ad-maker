@@ -56,7 +56,11 @@ export default function TargetingSetup() {
 
       setCampaign(data as any);
       
-      if ((data as any).audience_suggestion) {
+      // If no audience suggestion exists, generate it now
+      if (!(data as any).audience_suggestion) {
+        console.log('No audience suggestion found, generating...');
+        await generateAudienceSuggestion();
+      } else {
         const suggestion = (data as any).audience_suggestion as unknown as AudienceSuggestion;
         setAudienceSuggestion(suggestion);
         setSelectedBudget(suggestion.daily_budget || 35);
@@ -68,6 +72,42 @@ export default function TargetingSetup() {
       navigate('/dashboard');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const generateAudienceSuggestion = async () => {
+    try {
+      setLoading(true);
+      
+      // Call the generate-ad-variants function which also generates audience suggestions
+      const { data, error } = await supabase.functions.invoke('generate-ad-variants', {
+        body: { campaignId }
+      });
+
+      if (error) throw error;
+
+      // Reload the campaign to get the new audience suggestion
+      const { data: updatedCampaign, error: fetchError } = await supabase
+        .from('campaigns')
+        .select('*')
+        .eq('id', campaignId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      if ((updatedCampaign as any).audience_suggestion) {
+        const suggestion = (updatedCampaign as any).audience_suggestion as unknown as AudienceSuggestion;
+        setAudienceSuggestion(suggestion);
+        setSelectedBudget(suggestion.daily_budget || 35);
+        setSelectedPlatforms(suggestion.platforms || ['meta']);
+        setCampaign(updatedCampaign);
+      } else {
+        throw new Error('Failed to generate audience suggestions');
+      }
+    } catch (error) {
+      console.error('Error generating audience suggestion:', error);
+      toast.error('Failed to generate targeting suggestions');
+      navigate('/dashboard');
     }
   };
 
@@ -132,8 +172,16 @@ export default function TargetingSetup() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-foreground">Loading targeting...</div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <div className="animate-pulse text-foreground">
+            <Brain className="w-12 h-12 mx-auto mb-4 text-primary" />
+            <p className="text-lg font-semibold">Analyzing your campaign...</p>
+            <p className="text-sm text-muted-foreground">
+              AI is generating optimal targeting suggestions
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
