@@ -207,6 +207,33 @@ export default function Dashboard() {
     if (!deletingCampaignId) return;
 
     try {
+      // CRITICAL: First, stop the campaign on all ad platforms before deleting
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        console.log('Stopping campaign on all platforms before deletion...');
+        const { error: pauseError } = await supabase.functions.invoke('pause-resume-campaign', {
+          body: {
+            campaignId: deletingCampaignId,
+            action: 'pause',
+            reason: 'Campaign being deleted'
+          },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (pauseError) {
+          console.error('Error stopping campaign on platforms:', pauseError);
+          toast({
+            title: 'Warning',
+            description: 'Campaign may still be running on ad platforms. Please verify manually.',
+            variant: 'destructive',
+          });
+        }
+      }
+
+      // Now delete from database
       const { error } = await supabase
         .from('campaigns')
         .delete()
@@ -216,7 +243,7 @@ export default function Dashboard() {
 
       toast({
         title: 'Campaign deleted',
-        description: 'Your campaign and all associated data have been removed',
+        description: 'Campaign stopped on all platforms and removed from your account',
       });
 
       // Refresh campaigns

@@ -19,27 +19,38 @@ export function AIPerformanceAnalysis() {
     setAnalysis(null);
 
     try {
+      console.log('Starting AI performance analysis...');
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         throw new Error('Not authenticated');
       }
 
+      console.log('Invoking analyze-performance function...');
       const { data, error } = await supabase.functions.invoke('analyze-performance', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
 
+      console.log('Function response:', { data, error });
+
       if (error) {
-        console.error('Function error:', error);
+        console.error('Function invocation error:', error);
         throw error;
       }
 
-      if (data.error) {
+      if (data?.error) {
+        console.error('Function returned error:', data.error);
         throw new Error(data.error);
       }
 
+      if (!data?.analysis) {
+        console.error('No analysis in response:', data);
+        throw new Error('No analysis data received from AI');
+      }
+
+      console.log('Analysis received successfully');
       setAnalysis(data.analysis);
       setPlatformMetrics(data.platformMetrics);
 
@@ -53,10 +64,12 @@ export function AIPerformanceAnalysis() {
       
       let errorMessage = 'Failed to analyze performance. Please try again.';
       
-      if (error.message?.includes('rate limit')) {
+      if (error.message?.includes('rate limit') || error.status === 429) {
         errorMessage = 'AI service is currently rate limited. Please try again in a moment.';
-      } else if (error.message?.includes('credits')) {
+      } else if (error.message?.includes('credits') || error.status === 402) {
         errorMessage = 'AI service credits exhausted. Please contact support.';
+      } else if (error.message) {
+        errorMessage = error.message;
       }
       
       toast({
