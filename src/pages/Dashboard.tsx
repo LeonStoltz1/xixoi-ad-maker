@@ -3,10 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut, Crown, Settings, Home, CreditCard, Zap, Wallet, Pause, Play, AlertTriangle, Trash2, Pencil } from "lucide-react";
+import { Plus, LogOut, Crown, Settings, Home, CreditCard, Zap, Wallet, Pause, Play, AlertTriangle, Trash2, Pencil, StopCircle, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -369,19 +378,11 @@ export default function Dashboard() {
           {/* Performance Alerts */}
           <PerformanceAlerts />
 
-          {/* Campaigns Grid - New Card Design */}
+          {/* Real-time ROI Dashboard */}
           {campaigns.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold">Campaign Management</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {campaigns.map((campaign) => (
-                  <CampaignCard
-                    key={campaign.id}
-                    campaign={campaign}
-                    onUpdate={() => user && loadCampaigns(user.id)}
-                  />
-                ))}
-              </div>
+              <h3 className="text-xl font-semibold">Performance Insights</h3>
+              <RealTimeROIDashboard />
             </div>
           )}
 
@@ -417,14 +418,6 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
-          )}
-
-          {/* Real-time ROI Dashboard */}
-          {campaigns.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold">Performance Insights</h3>
-              <RealTimeROIDashboard />
-            </div>
           )}
 
           {/* Campaigns List or Empty State */}
@@ -468,116 +461,193 @@ export default function Dashboard() {
                         <div className="flex-1">
                           <CardTitle className="text-lg">{campaign.name}</CardTitle>
                           <div className="flex items-center gap-2 mt-1">
-                          <span className={`text-xs uppercase font-bold ${
-                            campaign.status === 'ready' ? 'text-green-600' : 
-                            campaign.status === 'draft' ? 'text-yellow-600' : 
-                            'text-muted-foreground'
-                          }`}>
-                            {campaign.status}
-                          </span>
-                          {campaign.status === 'ready' && (
-                            <span className={`text-xs uppercase font-bold flex items-center gap-1 ${
-                              campaign.is_active ? 'text-blue-600' : 'text-orange-600'
-                            }`}>
-                              {campaign.is_active ? (
-                                <>
-                                  <Play className="w-3 h-3" />
-                                  Active
-                                </>
-                              ) : (
-                                <>
-                                  <Pause className="w-3 h-3" />
-                                  Paused
-                                </>
-                              )}
-                            </span>
-                          )}
+                            <Badge className={
+                              campaign.status === 'active' ? 'bg-green-500' :
+                              campaign.status === 'paused' ? 'bg-yellow-500' :
+                              campaign.status === 'completed' ? 'bg-gray-500' :
+                              campaign.status === 'draft' ? 'bg-blue-500' :
+                              'bg-gray-400'
+                            }>
+                              {campaign.status?.charAt(0).toUpperCase() + campaign.status?.slice(1) || 'Draft'}
+                            </Badge>
+                            {campaign.status_reason && (
+                              <span className="text-xs text-muted-foreground">
+                                ({campaign.status_reason.replace(/_/g, ' ')})
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleEditClick(campaign)}
-                          className="text-muted-foreground hover:text-foreground hover:bg-muted"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDeleteClick(campaign.id)}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <div>Created: {new Date(campaign.created_at).toLocaleDateString()}</div>
-                      {campaign.target_location && (
-                        <div>Location: {campaign.target_location}</div>
-                      )}
-                      {campaign.daily_budget ? (
-                        <div className="font-semibold text-foreground">Budget: ${campaign.daily_budget}/day</div>
-                      ) : (
-                        <div className="text-orange-600">No budget set</div>
-                      )}
-                      {!campaign.is_active && campaign.paused_reason && (
-                        <div className="text-orange-600 flex items-start gap-1 mt-2">
-                          <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
-                          <span className="text-xs">{campaign.paused_reason}</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      {campaign.status === 'draft' ? (
-                        <Button 
-                          size="sm" 
-                          onClick={() => navigate(`/targeting/${campaign.id}`)}
-                          className="w-full"
-                        >
-                          Continue Setup
-                        </Button>
-                      ) : (
-                        <>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => navigate(`/ad-published/${campaign.id}?paid=${!campaign.has_watermark}`)}
-                            className="flex-1"
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleEditClick(campaign)}
+                            className="text-muted-foreground hover:text-foreground hover:bg-muted"
                           >
-                            View Ad
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => navigate(`/analytics/${campaign.id}`)}
-                            className="flex-1"
-                          >
-                            Analytics
+                            <Pencil className="w-4 h-4" />
                           </Button>
                           <Button
                             size="sm"
-                            variant={campaign.is_active ? "destructive" : "default"}
-                            onClick={() => handlePauseResumeCampaign(campaign.id, campaign.is_active)}
-                            disabled={pausingCampaigns.has(campaign.id)}
+                            variant="ghost"
+                            onClick={() => handleDeleteClick(campaign.id)}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           >
-                            {pausingCampaigns.has(campaign.id) ? (
-                              '...'
-                            ) : campaign.is_active ? (
-                              <Pause className="w-4 h-4" />
-                            ) : (
-                              <Play className="w-4 h-4" />
-                            )}
+                            <Trash2 className="w-4 h-4" />
                           </Button>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Budget Display */}
+                      <div className="grid grid-cols-2 gap-4 p-3 bg-muted/50 rounded">
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Daily Budget</p>
+                          <p className="text-lg font-bold">${campaign.daily_budget?.toFixed(2) || '0.00'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Total Spent</p>
+                          <p className="text-lg font-bold">${campaign.total_spent?.toFixed(2) || '0.00'}</p>
+                        </div>
+                      </div>
+
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div>Created: {new Date(campaign.created_at).toLocaleDateString()}</div>
+                        {campaign.target_location && (
+                          <div>Location: {campaign.target_location}</div>
+                        )}
+                        {!campaign.is_active && campaign.paused_reason && (
+                          <div className="text-orange-600 flex items-start gap-1 mt-2">
+                            <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
+                            <span className="text-xs">{campaign.paused_reason}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        {campaign.status === 'draft' ? (
+                          <Button 
+                            size="sm" 
+                            onClick={() => navigate(`/targeting/${campaign.id}`)}
+                            className="w-full"
+                          >
+                            Continue Setup
+                          </Button>
+                        ) : (
+                          <>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => navigate(`/ad-published/${campaign.id}?paid=${!campaign.has_watermark}`)}
+                              className="flex-1"
+                            >
+                              View Ad
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => navigate(`/analytics/${campaign.id}`)}
+                              className="flex-1"
+                            >
+                              Analytics
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant={campaign.is_active ? "destructive" : "default"}
+                              onClick={() => handlePauseResumeCampaign(campaign.id, campaign.is_active)}
+                              disabled={pausingCampaigns.has(campaign.id)}
+                            >
+                              {pausingCampaigns.has(campaign.id) ? (
+                                '...'
+                              ) : campaign.is_active ? (
+                                <Pause className="w-4 h-4" />
+                              ) : (
+                                <Play className="w-4 h-4" />
+                              )}
+                            </Button>
+                            
+                            {/* Budget Controls Dropdown */}
+                            {campaign.daily_budget && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button size="sm" variant="outline">
+                                    <DollarSign className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Adjust Budget</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={async () => {
+                                    const newBudget = campaign.daily_budget * 2;
+                                    const { error } = await supabase
+                                      .from('campaigns')
+                                      .update({ daily_budget: newBudget, updated_at: new Date().toISOString() })
+                                      .eq('id', campaign.id);
+                                    if (!error) {
+                                      toast({ title: `Budget doubled to $${newBudget.toFixed(2)}` });
+                                      user && loadCampaigns(user.id);
+                                    }
+                                  }}>
+                                    Double Budget
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={async () => {
+                                    const newBudget = campaign.daily_budget * 1.2;
+                                    const { error } = await supabase
+                                      .from('campaigns')
+                                      .update({ daily_budget: newBudget, updated_at: new Date().toISOString() })
+                                      .eq('id', campaign.id);
+                                    if (!error) {
+                                      toast({ title: `Budget increased to $${newBudget.toFixed(2)}` });
+                                      user && loadCampaigns(user.id);
+                                    }
+                                  }}>
+                                    +20% Budget
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={async () => {
+                                    const newBudget = campaign.daily_budget * 0.8;
+                                    const { error } = await supabase
+                                      .from('campaigns')
+                                      .update({ daily_budget: newBudget, updated_at: new Date().toISOString() })
+                                      .eq('id', campaign.id);
+                                    if (!error) {
+                                      toast({ title: `Budget reduced to $${newBudget.toFixed(2)}` });
+                                      user && loadCampaigns(user.id);
+                                    }
+                                  }}>
+                                    -20% Budget
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+
+                            {/* Stop Campaign Button */}
+                            {campaign.status !== 'completed' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-red-500 hover:text-red-600"
+                                onClick={async () => {
+                                  const { error } = await supabase
+                                    .from('campaigns')
+                                    .update({ 
+                                      status: 'completed',
+                                      status_reason: 'user_stopped',
+                                      end_date: new Date().toISOString(),
+                                      updated_at: new Date().toISOString()
+                                    })
+                                    .eq('id', campaign.id);
+                                  if (!error) {
+                                    toast({ title: 'Campaign stopped' });
+                                    user && loadCampaigns(user.id);
+                                  }
+                                }}
+                              >
+                                <StopCircle className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </CardContent>
                 </Card>
               );
             })}
