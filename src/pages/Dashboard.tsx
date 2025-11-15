@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut, Crown, Settings, Home, CreditCard, Zap, Wallet, Pause, Play, AlertTriangle, Trash2 } from "lucide-react";
+import { Plus, LogOut, Crown, Settings, Home, CreditCard, Zap, Wallet, Pause, Play, AlertTriangle, Trash2, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { RealTimeROIDashboard } from "@/components/RealTimeROIDashboard";
 import { PerformanceAlerts } from "@/components/PerformanceAlerts";
 import { AISupportChat } from "@/components/AISupportChat";
@@ -32,6 +43,11 @@ export default function Dashboard() {
   const [pausingCampaigns, setPausingCampaigns] = useState<Set<string>>(new Set());
   const [deletingCampaignId, setDeletingCampaignId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState<any | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
   const [aggregatedMetrics, setAggregatedMetrics] = useState<{
     totalSpend: number;
     totalImpressions: number;
@@ -207,6 +223,75 @@ export default function Dashboard() {
     }
   };
 
+  const handleEditClick = async (campaign: any) => {
+    setEditingCampaign(campaign);
+    setEditName(campaign.name);
+    
+    // Get the campaign asset description
+    const { data: assets } = await supabase
+      .from('campaign_assets')
+      .select('asset_text')
+      .eq('campaign_id', campaign.id)
+      .single();
+    
+    setEditDescription(assets?.asset_text || '');
+    setShowEditDialog(true);
+  };
+
+  const handleEditSave = async () => {
+    if (!editingCampaign || !editName.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Campaign name is required',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSavingEdit(true);
+    try {
+      // Update campaign name
+      const { error: campaignError } = await supabase
+        .from('campaigns')
+        .update({ name: editName.trim() })
+        .eq('id', editingCampaign.id);
+
+      if (campaignError) throw campaignError;
+
+      // Update campaign asset description if it exists
+      if (editDescription.trim()) {
+        const { error: assetError } = await supabase
+          .from('campaign_assets')
+          .update({ asset_text: editDescription.trim() })
+          .eq('campaign_id', editingCampaign.id);
+
+        if (assetError) throw assetError;
+      }
+
+      toast({
+        title: 'Campaign updated',
+        description: 'Your campaign has been updated successfully',
+      });
+
+      // Refresh campaigns
+      if (user) {
+        await loadCampaigns(user.id);
+      }
+
+      setShowEditDialog(false);
+      setEditingCampaign(null);
+    } catch (error) {
+      console.error('Error updating campaign:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update campaign',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast({
@@ -371,14 +456,24 @@ export default function Dashboard() {
                           )}
                         </div>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleDeleteClick(campaign.id)}
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditClick(campaign)}
+                          className="text-muted-foreground hover:text-foreground hover:bg-muted"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteClick(campaign.id)}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -481,6 +576,61 @@ export default function Dashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Edit Campaign Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Campaign</DialogTitle>
+            <DialogDescription>
+              Update your campaign name and description. Note: Changing the description will require regenerating targeting suggestions.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Campaign Name</Label>
+              <Input
+                id="edit-name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Enter campaign name"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Campaign Description</Label>
+              <Textarea
+                id="edit-description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Enter your product/service description"
+                rows={6}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                Be specific about your product, features, pricing, and target audience. Avoid discriminatory or illegal content.
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowEditDialog(false)}
+              disabled={savingEdit}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleEditSave}
+              disabled={savingEdit || !editName.trim()}
+            >
+              {savingEdit ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       <Footer />
     </div>
