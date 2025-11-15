@@ -17,7 +17,7 @@ import { buildRealEstateFeatureSummary, buildHousingFooter } from "@/lib/realEst
 import type { RealEstateDetailsFormValues } from "@/schema/realEstate";
 
 export default function CreateCampaign() {
-  const { realtorProfile, isLoading: realtorLoading } = useRealtor();
+  const { realtorProfile, isLoading: realtorLoading, viewMode } = useRealtor();
   const [user, setUser] = useState<any>(null);
   const [campaignName, setCampaignName] = useState("");
   const [uploadType, setUploadType] = useState<'image' | 'video' | 'text'>('image');
@@ -471,8 +471,8 @@ export default function CreateCampaign() {
 
             {/* Content Input - Always show description */}
             <div className="space-y-4">
-              {/* Real Estate Mode Toggle (only for realtors) */}
-              {realtorProfile?.isRealtor && (
+              {/* Real Estate Mode Toggle (only for realtors in realtor view mode) */}
+              {realtorProfile?.isRealtor && viewMode === 'realtor' && (
                 <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-card">
                   <div className="flex items-center gap-3">
                     <Home className="w-5 h-5 text-primary" />
@@ -491,7 +491,7 @@ export default function CreateCampaign() {
               )}
 
               {/* Show Real Estate Form or Regular Textarea */}
-              {realEstateMode && realtorProfile?.isRealtor ? (
+              {realEstateMode && realtorProfile?.isRealtor && viewMode === 'realtor' ? (
                 <div className="space-y-2">
                   <label className="text-sm font-medium uppercase tracking-wide">Property Details</label>
                   <RealEstateDetailsForm

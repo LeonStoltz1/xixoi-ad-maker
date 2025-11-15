@@ -3,11 +3,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LogOut, Crown, Settings } from "lucide-react";
+import { useRealtor } from "@/contexts/RealtorContext";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export const Header = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userPlan, setUserPlan] = useState<string>('free');
   const navigate = useNavigate();
+  const { realtorProfile, viewMode, setViewMode } = useRealtor();
 
   useEffect(() => {
     // Check initial auth state
@@ -69,6 +73,24 @@ export const Header = () => {
           
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
+              {/* Realtor Mode Toggle - Only shown for realtors */}
+              {realtorProfile?.isRealtor && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/20">
+                  <Label htmlFor="view-mode" className="text-xs text-white/70 cursor-pointer">
+                    General
+                  </Label>
+                  <Switch
+                    id="view-mode"
+                    checked={viewMode === 'realtor'}
+                    onCheckedChange={(checked) => setViewMode(checked ? 'realtor' : 'general')}
+                    className="data-[state=checked]:bg-white"
+                  />
+                  <Label htmlFor="view-mode" className="text-xs text-white/70 cursor-pointer">
+                    Realtor
+                  </Label>
+                </div>
+              )}
+              
               {/* Plan Badge */}
               <div className={`px-3 py-1.5 rounded-full border text-xs md:text-sm ${
                 userPlan !== 'free'
