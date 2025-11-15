@@ -391,7 +391,7 @@ export default function CreateCampaign() {
               <Textarea
                 value={textContent}
                 onChange={(e) => setTextContent(e.target.value)}
-                placeholder="Example: Studio apartment, 23sqm, $2500/mo. Modern finishes, downtown location. Contact +1404.775.1998 Mon-Fri. Perfect for young professionals."
+                placeholder="Sunlit 23sqm studio, $2500/mo. Sleek modern finishes and Miami brightness. Steps to cafés, art, music, and shoreline. Call 555-321-7788 Mon–Fri."
                 className="border-foreground min-h-[120px] placeholder:opacity-40"
               />
               <p className="text-xs text-muted-foreground">
