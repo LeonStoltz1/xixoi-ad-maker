@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut, Crown, Settings, Home, CreditCard, Zap, Wallet, Pause, Play, AlertTriangle, Trash2, Pencil, StopCircle, DollarSign } from "lucide-react";
+import { Plus, LogOut, Crown, Settings, Home, CreditCard, Zap, Wallet, Pause, Play, AlertTriangle, Trash2, Pencil, StopCircle, DollarSign, CheckSquare, Square } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,8 +53,8 @@ export default function Dashboard() {
   const [userPlan, setUserPlan] = useState<string>('free');
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [pausingCampaigns, setPausingCampaigns] = useState<Set<string>>(new Set());
-  const [deletingCampaignId, setDeletingCampaignId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedCampaigns, setSelectedCampaigns] = useState<Set<string>>(new Set());
   const [editingCampaign, setEditingCampaign] = useState<any | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editName, setEditName] = useState("");
@@ -198,39 +198,66 @@ export default function Dashboard() {
   };
 
   const handleDeleteClick = (campaignId: string) => {
-    setDeletingCampaignId(campaignId);
+    setSelectedCampaigns(new Set([campaignId]));
     setShowDeleteDialog(true);
   };
 
+  const handleBulkDelete = () => {
+    if (selectedCampaigns.size > 0) {
+      setShowDeleteDialog(true);
+    }
+  };
+
+  const toggleCampaignSelection = (campaignId: string) => {
+    const newSelected = new Set(selectedCampaigns);
+    if (newSelected.has(campaignId)) {
+      newSelected.delete(campaignId);
+    } else {
+      newSelected.add(campaignId);
+    }
+    setSelectedCampaigns(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedCampaigns.size === campaigns.length) {
+      setSelectedCampaigns(new Set());
+    } else {
+      setSelectedCampaigns(new Set(campaigns.map(c => c.id)));
+    }
+  };
+
   const handleDeleteConfirm = async () => {
-    if (!deletingCampaignId) return;
+    if (selectedCampaigns.size === 0) return;
 
     try {
       const { error } = await supabase
         .from('campaigns')
         .delete()
-        .eq('id', deletingCampaignId);
+        .in('id', Array.from(selectedCampaigns));
 
       if (error) throw error;
 
       toast({
-        title: 'Campaign deleted',
-        description: 'Your campaign and all associated data have been removed',
+        title: selectedCampaigns.size > 1 ? 'Campaigns deleted' : 'Campaign deleted',
+        description: selectedCampaigns.size > 1 
+          ? `${selectedCampaigns.size} campaigns and all associated data have been removed`
+          : 'Your campaign and all associated data have been removed',
       });
 
       // Refresh campaigns
       if (user) {
         await loadCampaigns(user.id);
       }
+      
+      setSelectedCampaigns(new Set());
     } catch (error) {
       console.error('Error deleting campaign:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete campaign',
+        description: 'Failed to delete campaign(s)',
         variant: 'destructive',
       });
     } finally {
-      setDeletingCampaignId(null);
       setShowDeleteDialog(false);
     }
   };
@@ -329,11 +356,43 @@ export default function Dashboard() {
       <main className="container mx-auto px-6 py-12 mt-32">
         <div className="max-w-6xl mx-auto space-y-8">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold">Your Campaigns</h2>
-              <p className="text-muted-foreground mt-2">Create and manage your ad campaigns</p>
+            <div className="flex items-center gap-4">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold">Your Campaigns</h2>
+                <p className="text-muted-foreground mt-2">Create and manage your ad campaigns</p>
+              </div>
+              {campaigns.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleSelectAll}
+                  className="ml-4"
+                >
+                  {selectedCampaigns.size === campaigns.length ? (
+                    <>
+                      <CheckSquare className="mr-2 h-4 w-4" />
+                      Deselect All
+                    </>
+                  ) : (
+                    <>
+                      <Square className="mr-2 h-4 w-4" />
+                      Select All
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
             <div className="flex gap-2">
+              {selectedCampaigns.size > 0 && (
+                <Button
+                  variant="destructive"
+                  size="lg"
+                  onClick={handleBulkDelete}
+                >
+                  <Trash2 className="w-5 h-5 mr-2" />
+                  Delete Selected ({selectedCampaigns.size})
+                </Button>
+              )}
               <GlobalCampaignActions
                 campaignCount={campaigns.length}
                 activeCampaignCount={campaigns.filter(c => c.status === 'active').length}
@@ -437,8 +496,14 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {campaigns.map((campaign) => {
                 const thumbnail = campaign.campaign_assets?.[0];
+                const isSelected = selectedCampaigns.has(campaign.id);
                 return (
-                  <Card key={campaign.id} className="border-2 border-foreground overflow-hidden">
+                  <Card 
+                    key={campaign.id} 
+                    className={`border-2 overflow-hidden transition-all ${
+                      isSelected ? 'border-primary ring-2 ring-primary' : 'border-foreground'
+                    }`}
+                  >
                     {thumbnail && (
                       <div className="relative h-48 w-full bg-muted">
                         {thumbnail.asset_type === 'video' ? (
@@ -454,6 +519,24 @@ export default function Dashboard() {
                             className="w-full h-full object-cover"
                           />
                         )}
+                        {/* Selection Checkbox Overlay */}
+                        <div className="absolute top-2 left-2">
+                          <Button
+                            size="sm"
+                            variant={isSelected ? "default" : "outline"}
+                            className={`h-8 w-8 p-0 ${isSelected ? 'bg-primary' : 'bg-background/80'}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleCampaignSelection(campaign.id);
+                            }}
+                          >
+                            {isSelected ? (
+                              <CheckSquare className="h-4 w-4" />
+                            ) : (
+                              <Square className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     )}
                     <CardHeader>
@@ -660,9 +743,15 @@ export default function Dashboard() {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Campaign?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {selectedCampaigns.size > 1 
+                ? `Delete ${selectedCampaigns.size} Campaigns?` 
+                : 'Delete Campaign?'}
+            </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
-              <p>This action cannot be undone. This will permanently delete your campaign and remove all associated data including:</p>
+              <p>
+                This action cannot be undone. This will permanently delete {selectedCampaigns.size > 1 ? 'these campaigns' : 'your campaign'} and remove all associated data including:
+              </p>
               <ul className="list-disc list-inside space-y-1 text-sm">
                 <li>Campaign assets and ad variants</li>
                 <li>Performance data and analytics history</li>
@@ -679,7 +768,7 @@ export default function Dashboard() {
               onClick={handleDeleteConfirm}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete Campaign
+              Delete {selectedCampaigns.size > 1 ? `${selectedCampaigns.size} Campaigns` : 'Campaign'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
