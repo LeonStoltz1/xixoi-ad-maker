@@ -3,10 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut, Crown, Settings, Home, CreditCard, Zap, Wallet, Pause, Play, AlertTriangle } from "lucide-react";
+import { Plus, LogOut, Crown, Settings, Home, CreditCard, Zap, Wallet, Pause, Play, AlertTriangle, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { RealTimeROIDashboard } from "@/components/RealTimeROIDashboard";
 import { PerformanceAlerts } from "@/components/PerformanceAlerts";
 import { AISupportChat } from "@/components/AISupportChat";
@@ -20,6 +30,8 @@ export default function Dashboard() {
   const [userPlan, setUserPlan] = useState<string>('free');
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [pausingCampaigns, setPausingCampaigns] = useState<Set<string>>(new Set());
+  const [deletingCampaignId, setDeletingCampaignId] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [aggregatedMetrics, setAggregatedMetrics] = useState<{
     totalSpend: number;
     totalImpressions: number;
@@ -138,14 +150,8 @@ export default function Dashboard() {
       });
 
       // Refresh campaigns
-      const { data: campaignsData } = await supabase
-        .from('campaigns')
-        .select('*, ad_variants(count)')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
-
-      if (campaignsData) {
-        setCampaigns(campaignsData);
+      if (user) {
+        await loadCampaigns(user.id);
       }
     } catch (error) {
       console.error('Error pausing/resuming campaign:', error);
@@ -160,6 +166,44 @@ export default function Dashboard() {
         next.delete(campaignId);
         return next;
       });
+    }
+  };
+
+  const handleDeleteClick = (campaignId: string) => {
+    setDeletingCampaignId(campaignId);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingCampaignId) return;
+
+    try {
+      const { error } = await supabase
+        .from('campaigns')
+        .delete()
+        .eq('id', deletingCampaignId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Campaign deleted',
+        description: 'Your campaign and all associated data have been removed',
+      });
+
+      // Refresh campaigns
+      if (user) {
+        await loadCampaigns(user.id);
+      }
+    } catch (error) {
+      console.error('Error deleting campaign:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete campaign',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingCampaignId(null);
+      setShowDeleteDialog(false);
     }
   };
 
@@ -327,6 +371,14 @@ export default function Dashboard() {
                           )}
                         </div>
                       </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDeleteClick(campaign.id)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -400,6 +452,36 @@ export default function Dashboard() {
           )}
         </div>
       </main>
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Campaign?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>This action cannot be undone. This will permanently delete your campaign and remove all associated data including:</p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>Campaign assets and ad variants</li>
+                <li>Performance data and analytics history</li>
+                <li>Campaign channels and platform connections</li>
+              </ul>
+              <p className="font-semibold text-orange-600 mt-4">
+                ⚠️ Warning: Your overall analytics and historical data will be affected.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Campaign
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
       <Footer />
     </div>
   );
