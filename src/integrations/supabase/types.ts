@@ -57,9 +57,12 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          failure_reason: string | null
           id: string
+          last_retry_at: string | null
           payment_status: string
           platforms: string[]
+          retry_count: number | null
           service_fee: number
           stripe_payment_intent_id: string | null
           total_amount: number
@@ -69,9 +72,12 @@ export type Database = {
         Insert: {
           amount: number
           created_at?: string
+          failure_reason?: string | null
           id?: string
+          last_retry_at?: string | null
           payment_status?: string
           platforms: string[]
+          retry_count?: number | null
           service_fee?: number
           stripe_payment_intent_id?: string | null
           total_amount: number
@@ -81,9 +87,12 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          failure_reason?: string | null
           id?: string
+          last_retry_at?: string | null
           payment_status?: string
           platforms?: string[]
+          retry_count?: number | null
           service_fee?: number
           stripe_payment_intent_id?: string | null
           total_amount?: number
@@ -636,6 +645,57 @@ export type Database = {
           },
         ]
       }
+      campaign_platform_status: {
+        Row: {
+          campaign_id: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_sync: string | null
+          platform: string
+          platform_campaign_id: string | null
+          sync_error: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync?: string | null
+          platform: string
+          platform_campaign_id?: string | null
+          sync_error?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync?: string | null
+          platform?: string
+          platform_campaign_id?: string | null
+          sync_error?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_platform_status_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "admin_watermark_report"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "campaign_platform_status_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_templates: {
         Row: {
           ai_prompt: string
@@ -675,7 +735,12 @@ export type Database = {
           detected_product_type: string | null
           has_watermark: boolean | null
           id: string
+          is_active: boolean | null
+          last_payment_check: string | null
           name: string
+          paused_at: string | null
+          paused_reason: string | null
+          payment_failures: number | null
           status: string | null
           stripe_payment_id: string | null
           suggested_daily_budget: number | null
@@ -692,7 +757,12 @@ export type Database = {
           detected_product_type?: string | null
           has_watermark?: boolean | null
           id?: string
+          is_active?: boolean | null
+          last_payment_check?: string | null
           name: string
+          paused_at?: string | null
+          paused_reason?: string | null
+          payment_failures?: number | null
           status?: string | null
           stripe_payment_id?: string | null
           suggested_daily_budget?: number | null
@@ -709,7 +779,12 @@ export type Database = {
           detected_product_type?: string | null
           has_watermark?: boolean | null
           id?: string
+          is_active?: boolean | null
+          last_payment_check?: string | null
           name?: string
+          paused_at?: string | null
+          paused_reason?: string | null
+          payment_failures?: number | null
           status?: string | null
           stripe_payment_id?: string | null
           suggested_daily_budget?: number | null

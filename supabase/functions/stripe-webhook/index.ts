@@ -399,12 +399,37 @@ serve(async (req) => {
 
       case 'payment_intent.payment_failed': {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        console.log('Payment intent failed:', paymentIntent.id);
         
         // Update payment transaction
         await supabase
           .from('payment_transactions')
           .update({ status: 'failed' })
           .eq('stripe_payment_intent_id', paymentIntent.id);
+
+        // Check if this is an ad budget reload
+        const { data: reload } = await supabase
+          .from('ad_budget_reloads')
+          .select('*')
+          .eq('stripe_payment_intent_id', paymentIntent.id)
+          .single();
+
+        if (reload) {
+          console.log('Ad budget reload payment failed, pausing campaigns for user:', reload.user_id);
+          
+          // Call handle-payment-failure function to pause all campaigns
+          try {
+            await supabase.functions.invoke('handle-payment-failure', {
+              body: {
+                userId: reload.user_id,
+                reloadId: reload.id,
+                failureReason: paymentIntent.last_payment_error?.message || 'Payment failed',
+              },
+            });
+          } catch (error) {
+            console.error('Failed to handle payment failure:', error);
+          }
+        }
         break;
       }
 
