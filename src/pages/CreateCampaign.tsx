@@ -457,7 +457,6 @@ export default function CreateCampaign() {
                         controls
                         className="max-h-48 mx-auto rounded-lg"
                       />
-                      <p className="text-foreground text-sm font-medium">{uploadedFile?.name}</p>
                       <p className="text-muted-foreground text-xs">
                         {uploadedFile && `${(uploadedFile.size / 1024 / 1024).toFixed(2)}MB`} • Click or drag to change
                       </p>
