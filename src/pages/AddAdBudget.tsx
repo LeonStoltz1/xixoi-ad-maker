@@ -196,7 +196,7 @@ export default function AddAdBudget() {
                 How much do you want to spend on ads?
               </label>
               <p className="text-xs md:text-sm text-muted-foreground">
-                Enter the amount you want to go <strong>directly into your ad accounts</strong>. We add a <strong>flat $5 xiXoi™ service fee</strong> on top of each funding or top-up.
+                Enter the amount you want to go <strong>directly into your ad accounts</strong>. We add a <strong>flat $5 per funding</strong> service fee (separate from Elite tier's 5% ad spend billing).
               </p>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg md:text-xl">$</span>
@@ -234,10 +234,10 @@ export default function AddAdBudget() {
                     </div>
                   </div>
                   <p className="text-xs md:text-sm text-muted-foreground mt-4">
-                    The $5 service fee covers instant funding, fraud checks, and platform delivery.
+                    The $5 per-funding fee covers instant funding, fraud checks, and platform delivery.
                     100% of your ${spendPlan.totalAdSpend.toFixed(2)} goes to your ads.
                     <br />
-                    <em>(Each future top-up also includes a flat $5 fee.)</em>
+                    <em>(This is separate from Scale Elite's 5% ad spend billing. Each future top-up also includes this flat $5 fee.)</em>
                   </p>
                 </div>
 
