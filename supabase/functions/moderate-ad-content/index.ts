@@ -34,57 +34,116 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     const platformGuidelines = {
-      meta: `Meta (Facebook/Instagram) Policies:
-- No discriminatory content (race, ethnicity, religion, gender, age, sexual orientation, disability)
-- No misleading claims or unrealistic promises
-- No before/after images for health/weight loss without disclaimer
-- No unsafe supplements or weapons
-- No tobacco, drugs, or adult content
-- Accurate representation of product/service
-- Clear pricing without hidden fees
-- No sensational language or clickbait`,
-      
-      tiktok: `TikTok Advertising Policies:
-- No discriminatory targeting or content
-- No misleading information or exaggerated claims
-- No dangerous products or illegal activities
-- No tobacco, alcohol (restrictions apply), or adult content
-- No promotion of eating disorders or unhealthy body image
-- Authentic product representation
-- Age-appropriate content
-- No shocking or sensational content`,
-      
-      google: `Google Ads Policies:
-- No discriminatory practices
-- No misleading claims or deceptive content
-- No dangerous products or services
-- No inappropriate content (adult, violence, etc.)
+      meta: `Meta (Facebook/Instagram) Policies - STRICT ENFORCEMENT:
+
+PROHIBITED CONTENT (AUTO-REJECT):
+- Discrimination: ANY targeting/exclusion based on race, ethnicity, national origin, religion, age, sex, sexual orientation, gender identity, family status, disability, medical condition, genetic information
+- Housing/Employment/Credit: MUST NOT target protected characteristics - use only interest/behavioral targeting
+- Health: No before/after images, no weight loss claims without disclaimers, no unsafe supplements, no misleading medical claims
+- Substances: No tobacco, vaping, drugs, unsafe supplements, recreational drugs
+- Adult Content: No nudity, sexual services, dating with sexual intent
+- Weapons: No firearms, ammunition, explosives
+- Misleading: No false claims, no clickbait, no sensational language, no unrealistic promises
+- Shocking: No violence, gore, disturbing content
+- Personal Attributes: Cannot assert or imply personal characteristics (race, religion, health, financial status, sexual orientation)
+
+REQUIRED ELEMENTS:
+- Clear, honest product representation
+- Transparent pricing (no hidden fees)
 - Accurate business information
-- Clear pricing and billing
-- No prohibited pharmaceuticals or supplements
-- Comply with local laws and regulations`,
+- Professional imagery and text
+- Realistic expectations
+- Proper disclosures for regulated industries
+- Working landing pages that match ad content`,
       
-      linkedin: `LinkedIn Advertising Policies:
-- Professional, business-appropriate content
-- No discriminatory targeting
-- Accurate company/product information
-- No misleading claims about employment
-- No inappropriate or offensive content
-- Comply with professional standards
+      tiktok: `TikTok Advertising Policies - STRICT ENFORCEMENT:
+
+PROHIBITED CONTENT (AUTO-REJECT):
+- Discrimination: No targeting based on protected characteristics (race, ethnicity, religion, gender, age, disability, sexual orientation)
+- Misleading: No exaggerated claims, false information, or deceptive practices
+- Dangerous: No illegal activities, weapons, explosives, dangerous organizations
+- Substances: No tobacco, drugs, alcohol to minors, unsafe supplements
+- Adult: No sexual content, nudity, dating services focused on sexual encounters
+- Body Image: No promotion of eating disorders, unrealistic body standards, dangerous weight loss
+- Minors: No targeting minors for inappropriate products, no exploitative content
+- Shocking: No violence, gore, frightening content, sensationalism
+- Spam: No misleading CTAs, no low-quality content, no manipulative tactics
+
+REQUIRED ELEMENTS:
+- Authentic, accurate product representation
+- Age-appropriate content and targeting
 - Clear, honest messaging
-- No spam or low-quality content`,
+- High-quality creative assets
+- Proper disclosures for regulated products
+- Realistic claims and expectations
+- Professional presentation`,
       
-      x: `X (Twitter) Advertising Policies:
-- No discriminatory content or targeting
-- No misleading or deceptive claims
-- No inappropriate content (violence, adult content, hate speech)
-- No illegal products or services
-- Authentic representation of products/services
-- No manipulation or spam
-- Comply with local regulations
+      google: `Google Ads Policies - STRICT ENFORCEMENT:
+
+PROHIBITED CONTENT (AUTO-REJECT):
+- Discrimination: No content targeting/excluding based on protected classes (race, religion, national origin, disability, age, sex, sexual orientation)
+- Counterfeit: No fake goods, replica products, unauthorized replicas
+- Dangerous: No explosives, weapons, tobacco, recreational drugs, unsafe supplements
+- Dishonest: No phishing, malware, deceptive behavior, misleading claims, get-rich-quick schemes
+- Adult: No sexual content, mail-order brides, international marriage brokers
+- Healthcare: No unapproved pharmaceuticals, unapproved supplements, misleading health claims
+- Gambling: Strict restrictions - must be licensed and follow local laws
+- Political: Proper disclosures required, must follow local election laws
+- Financial: No high-risk financial products without proper licenses
+
+REQUIRED ELEMENTS:
+- Accurate business representation
+- Clear, transparent pricing
+- Working, relevant landing pages
+- Professional content and grammar
+- Proper licensing for regulated industries
+- Realistic, verifiable claims
+- Clear value proposition`,
+      
+      linkedin: `LinkedIn Advertising Policies - STRICT ENFORCEMENT:
+
+PROHIBITED CONTENT (AUTO-REJECT):
+- Discrimination: No targeting/content based on protected characteristics (race, ethnicity, religion, gender, age, disability, sexual orientation, national origin)
+- Misleading Employment: No false job opportunities, no misleading salary claims, no fake company profiles
+- Professional Standards: No offensive language, no inappropriate content, no spam
+- Adult Content: No sexual services, no dating focused on physical encounters
+- Substances: No tobacco, drugs, unsafe supplements
+- Scams: No get-rich-quick schemes, no pyramid schemes, no misleading business opportunities
+- Low Quality: No clickbait, no sensational content, no irrelevant targeting
+
+REQUIRED ELEMENTS:
+- Professional, business-appropriate tone and imagery
+- Accurate company information and credentials
+- Clear, honest value proposition
+- Relevant to professional audience
+- High-quality, professional creative
+- Proper grammar and spelling
+- Legitimate business practices
+- Accurate job/salary information if applicable`,
+      
+      x: `X (Twitter) Advertising Policies - STRICT ENFORCEMENT:
+
+PROHIBITED CONTENT (AUTO-REJECT):
+- Discrimination: No content targeting/based on protected classes (race, ethnicity, religion, national origin, gender, sexual orientation, disability, age)
+- Illegal: No illegal products, services, or activities
+- Adult: No sexual content, escort services, adult entertainment
+- Substances: No illegal drugs, tobacco products (restrictions on alcohol)
+- Weapons: No firearms, ammunition, explosives, weapon accessories
+- Hate: No hateful content, violent organizations, terrorism
+- Misleading: No deceptive claims, false information, manipulative media
+- Violence: No violent or gory content, threats, dangerous organizations
+- Spam: No low-quality content, manipulative engagement tactics
+- Political: Prohibited in many regions, strict disclosure requirements where allowed
+
+REQUIRED ELEMENTS:
+- Clear, accurate product representation
+- Transparent business practices
 - Age-appropriate content
-- No promotion of dangerous organizations or individuals
-- Clear disclosure of sponsored content`
+- Professional, respectful tone
+- Honest claims and realistic expectations
+- Proper disclosures for regulated content
+- Brand safety considerations
+- Clear sponsorship disclosure`
     };
 
     const selectedGuidelines = platforms
@@ -103,28 +162,47 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a social media advertising compliance expert. Your job is to review ad content and determine if it violates any platform policies.
+            content: `You are a STRICT social media advertising compliance expert. Your job is to review ad content with ZERO TOLERANCE for policy violations.
+
+CRITICAL COMPLIANCE RULES:
+1. HOUSING/REAL ESTATE: NEVER allow targeting based on race, color, religion, national origin, sex, familial status, or disability - Fair Housing Act violation = INSTANT REJECTION
+2. EMPLOYMENT: NEVER allow targeting based on protected characteristics - EEOC violation = INSTANT REJECTION
+3. CREDIT/FINANCIAL: NEVER allow discrimination - ECOA violation = INSTANT REJECTION
+4. If content mentions ANY protected class in a targeting context = AUTO-REJECT
+5. If content makes unrealistic promises or misleading claims = REJECT
+6. If content could be seen as discriminatory in ANY way = REJECT
+7. Better to reject borderline content than risk platform rejection
 
 Analyze the content against these platform guidelines:
 
 ${selectedGuidelines}
 
+Check for these specific red flags:
+- ANY mention of race, ethnicity, religion in targeting
+- Protected class characteristics (age, gender, disability, etc.) in targeting  
+- "Before/after" health claims without disclaimers
+- Unrealistic promises ("guaranteed", "instant", "miracle")
+- Clickbait or sensational language
+- Vague or misleading pricing
+- Implied personal characteristics about viewers
+- Any language that could be interpreted as discriminatory
+
 Return a JSON object with:
 {
-  "approved": boolean (true if compliant with ALL selected platforms),
+  "approved": boolean (false if ANY violation detected),
   "violations": [
     {
       "platform": "platform name",
-      "issue": "specific policy violated",
+      "issue": "specific policy violated with exact quote",
       "severity": "high" | "medium" | "low",
-      "recommendation": "how to fix"
+      "recommendation": "specific actionable fix"
     }
   ],
   "overallRisk": "high" | "medium" | "low" | "none",
-  "summary": "brief explanation of approval/rejection"
+  "summary": "detailed explanation of approval/rejection"
 }
 
-Be strict - err on the side of rejection to prevent platform rejections.`
+BE EXTREMELY STRICT - it's better to reject compliant content than approve violating content. When in doubt, REJECT.`
           },
           {
             role: 'user',
