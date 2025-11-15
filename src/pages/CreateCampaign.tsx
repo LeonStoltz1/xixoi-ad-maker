@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Upload, Image, Video, FileText, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Upload, Image, Video, FileText, ShieldCheck, AlertCircle, CheckCircle2, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UpgradeModal } from "@/components/UpgradeModal";
+import { detectAdCategory, checkHousingCompliance, checkEmploymentCompliance, checkCreditCompliance, getComplianceGuide, type ComplianceIssue } from "@/utils/adCompliance";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function CreateCampaign() {
   const [user, setUser] = useState<any>(null);
@@ -62,6 +64,37 @@ export default function CreateCampaign() {
   const characterCount = textContent.length;
   const isOverLimit = characterCount > characterLimit;
   const isNearLimit = characterCount > characterLimit * 0.9;
+
+  // Compliance checking
+  const [complianceIssues, setComplianceIssues] = useState<ComplianceIssue[]>([]);
+  const [adCategory, setAdCategory] = useState<string>('standard');
+
+  // Check compliance whenever text content changes
+  useEffect(() => {
+    if (!textContent.trim()) {
+      setComplianceIssues([]);
+      setAdCategory('standard');
+      return;
+    }
+
+    const category = detectAdCategory(textContent);
+    setAdCategory(category);
+
+    let issues: ComplianceIssue[] = [];
+    
+    if (category === 'housing') {
+      issues = checkHousingCompliance({
+        bodyCopy: textContent,
+        contactInfo: {}
+      });
+    } else if (category === 'employment') {
+      issues = checkEmploymentCompliance({ bodyCopy: textContent });
+    } else if (category === 'credit') {
+      issues = checkCreditCompliance({ bodyCopy: textContent });
+    }
+
+    setComplianceIssues(issues);
+  }, [textContent]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -431,6 +464,79 @@ export default function CreateCampaign() {
                   {isOverLimit && ' ⚠️'}
                 </p>
               </div>
+
+              {/* Ad Category & Compliance Alerts */}
+              {adCategory !== 'standard' && textContent.trim() && (
+                <div className="space-y-2 pt-2 border-t border-border">
+                  <div className="flex items-center gap-2 text-xs">
+                    <ShieldCheck className="w-4 h-4 text-primary" />
+                    <span className="font-semibold text-foreground">
+                      {adCategory === 'housing' && 'Housing/Real Estate Ad Detected'}
+                      {adCategory === 'employment' && 'Employment Ad Detected'}
+                      {adCategory === 'credit' && 'Credit/Financial Ad Detected'}
+                      {adCategory === 'health' && 'Health Ad Detected'}
+                      {adCategory === 'political' && 'Political Ad Detected'}
+                    </span>
+                    <span className="text-muted-foreground">
+                      (Special Category - Extra Review)
+                    </span>
+                  </div>
+
+                  {/* Compliance Issues */}
+                  {complianceIssues.length > 0 && (
+                    <div className="space-y-2">
+                      {complianceIssues.map((issue, idx) => (
+                        <Alert 
+                          key={idx}
+                          variant={issue.severity === 'error' ? 'destructive' : 'default'}
+                          className={
+                            issue.severity === 'error' 
+                              ? 'border-destructive' 
+                              : issue.severity === 'warning'
+                                ? 'border-yellow-500 dark:border-yellow-600'
+                                : 'border-blue-500'
+                          }
+                        >
+                          <div className="flex items-start gap-2">
+                            {issue.severity === 'error' && <AlertCircle className="w-4 h-4 text-destructive mt-0.5" />}
+                            {issue.severity === 'warning' && <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5" />}
+                            {issue.severity === 'info' && <Info className="w-4 h-4 text-blue-600 mt-0.5" />}
+                            <AlertDescription className="text-xs">
+                              <span className="font-semibold">{issue.severity === 'error' ? 'Error' : issue.severity === 'warning' ? 'Warning' : 'Info'}:</span> {issue.message}
+                              <div className="text-xs text-muted-foreground mt-1">
+                                Platforms: {issue.platforms.join(', ')}
+                              </div>
+                            </AlertDescription>
+                          </div>
+                        </Alert>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Compliance passed */}
+                  {complianceIssues.filter(i => i.severity === 'error').length === 0 && (
+                    <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
+                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                      <AlertDescription className="text-xs text-green-800 dark:text-green-300">
+                        <span className="font-semibold">No critical compliance issues detected.</span>
+                        {complianceIssues.filter(i => i.severity === 'warning').length > 0 && ' Review warnings above for optimal results.'}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Compliance Guide */}
+                  <details className="text-xs">
+                    <summary className="cursor-pointer font-medium text-primary hover:underline">
+                      View {adCategory} Ad Requirements
+                    </summary>
+                    <div className="mt-2 space-y-1 pl-4 text-muted-foreground">
+                      {getComplianceGuide(adCategory as any).map((guideline, idx) => (
+                        <div key={idx}>{guideline}</div>
+                      ))}
+                    </div>
+                  </details>
+                </div>
+              )}
             </div>
 
             {(uploadType === 'image' || uploadType === 'video') && (
