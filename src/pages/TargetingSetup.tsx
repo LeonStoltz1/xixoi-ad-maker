@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Brain, Target, Sparkles, AlertTriangle, Pencil, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { useGeolocation } from "@/hooks/useGeolocation";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ interface AudienceSuggestion {
 export default function TargetingSetup() {
   const { campaignId } = useParams();
   const navigate = useNavigate();
+  const geolocation = useGeolocation();
   const [loading, setLoading] = useState(true);
   const [campaign, setCampaign] = useState<any>(null);
   const [audienceSuggestion, setAudienceSuggestion] = useState<AudienceSuggestion | null>(null);
@@ -81,6 +83,16 @@ export default function TargetingSetup() {
         await generateAudienceSuggestion();
       } else {
         const suggestion = (data as any).audience_suggestion as unknown as AudienceSuggestion;
+        
+        // If location is not set or is generic, update with detected location
+        if (!geolocation.loading && geolocation.country && 
+            (!suggestion.locations || suggestion.locations.length === 0 || 
+             suggestion.locations.includes('Global') || suggestion.locations.includes('United States'))) {
+          suggestion.locations = [geolocation.city && geolocation.region 
+            ? `${geolocation.city}, ${geolocation.region}, ${geolocation.country}`
+            : geolocation.country];
+        }
+        
         setAudienceSuggestion(suggestion);
         setSelectedBudget(suggestion.daily_budget || 35);
         setSelectedPlatforms(suggestion.platforms || ['meta']);

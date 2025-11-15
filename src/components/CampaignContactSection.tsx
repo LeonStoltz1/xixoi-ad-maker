@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AlertCircle, Phone, Mail, Globe, MessageSquare, FileText } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useGeolocation } from "@/hooks/useGeolocation";
 
 interface CampaignContactSectionProps {
   primaryGoal: string | null;
@@ -27,6 +28,7 @@ export function CampaignContactSection({
   onLandingUrlChange,
 }: CampaignContactSectionProps) {
   const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const geolocation = useGeolocation();
 
   const handleGoalChange = (value: string) => {
     if ((value === 'calls' || value === 'email') && !showDisclaimer) {
@@ -101,16 +103,24 @@ export function CampaignContactSection({
 
       {primaryGoal === 'calls' && (
         <div className="space-y-2 pl-6 border-l-2 border-primary/20">
-          <Label htmlFor="contact-phone">Phone Number (with country code) *</Label>
-          <Input
-            id="contact-phone"
-            type="tel"
-            value={contactPhone || ''}
-            onChange={(e) => onContactPhoneChange(e.target.value)}
-            placeholder="+1 (555) 123-4567"
-          />
+          <Label htmlFor="contact-phone">Phone Number *</Label>
+          <div className="flex gap-2">
+            <div className="w-20 flex items-center justify-center border rounded-md bg-muted text-sm font-medium">
+              {!geolocation.loading && geolocation.phonePrefix ? geolocation.phonePrefix : '+1'}
+            </div>
+            <Input
+              id="contact-phone"
+              type="tel"
+              value={contactPhone || ''}
+              onChange={(e) => onContactPhoneChange(e.target.value)}
+              placeholder="(555) 123-4567"
+              className="flex-1"
+            />
+          </div>
           <p className="text-xs text-muted-foreground">
-            Include country code for international campaigns
+            {!geolocation.loading && geolocation.country 
+              ? `Detected location: ${geolocation.country}` 
+              : 'Include area code for best results'}
           </p>
         </div>
       )}
