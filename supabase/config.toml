@@ -82,3 +82,6 @@ verify_jwt = false
 
 [functions.publish-linkedin]
 verify_jwt = false
+
+[functions.moderate-ad-content]
+verify_jwt = true

@@ -44,6 +44,9 @@ export default function TargetingSetup() {
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+  const [moderationResult, setModerationResult] = useState<any>(null);
+  const [showModerationDialog, setShowModerationDialog] = useState(false);
+  const [moderating, setModerating] = useState(false);
 
   useEffect(() => {
     loadCampaign();
@@ -167,7 +170,42 @@ export default function TargetingSetup() {
   };
 
   const handlePublish = async () => {
+    if (selectedPlatforms.length === 0) {
+      toast.error('Please select at least one platform');
+      return;
+    }
+
     try {
+      setModerating(true);
+
+      // Step 1: Moderate content before publishing
+      const { data: moderation, error: moderationError } = await supabase.functions.invoke(
+        'moderate-ad-content',
+        {
+          body: {
+            campaignId,
+            platforms: selectedPlatforms
+          }
+        }
+      );
+
+      if (moderationError) {
+        console.error('Moderation error:', moderationError);
+        toast.error('Content moderation check failed. Please try again.');
+        return;
+      }
+
+      console.log('Moderation result:', moderation);
+
+      // Step 2: Check if content is approved
+      if (!moderation.approved) {
+        setModerationResult(moderation);
+        setShowModerationDialog(true);
+        setModerating(false);
+        return;
+      }
+
+      // Step 3: If approved, proceed with publish
       setLoading(true);
 
       // Update campaign with selected targeting
@@ -190,15 +228,16 @@ export default function TargetingSetup() {
         .from('campaign_channels')
         .insert(channelRecords);
 
-      toast.success('Targeting saved!');
+      toast.success('Content approved! Campaign ready to publish.');
       
       // Navigate to dashboard
       navigate(`/dashboard`);
     } catch (error) {
-      console.error('Error saving targeting:', error);
-      toast.error('Failed to save targeting');
+      console.error('Error in publish flow:', error);
+      toast.error('Failed to complete publish process');
     } finally {
       setLoading(false);
+      setModerating(false);
     }
   };
 
@@ -478,9 +517,9 @@ export default function TargetingSetup() {
           <Button
             className="flex-1"
             onClick={handlePublish}
-            disabled={loading || selectedPlatforms.length === 0}
+            disabled={loading || moderating || selectedPlatforms.length === 0}
           >
-            Publish Now
+            {moderating ? 'Checking Content...' : loading ? 'Publishing...' : 'Publish Now'}
           </Button>
         </div>
       </div>
@@ -549,6 +588,97 @@ export default function TargetingSetup() {
               disabled={savingEdit || !editName.trim() || !editDescription.trim()}
             >
               {savingEdit ? 'Saving & Regenerating...' : 'Save & Regenerate Targeting'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Content Moderation Dialog */}
+      <Dialog open={showModerationDialog} onOpenChange={setShowModerationDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="w-5 h-5" />
+              Content Policy Violations Detected
+            </DialogTitle>
+            <DialogDescription>
+              {moderationResult?.summary || 'Your ad content violates platform advertising policies and will likely be rejected.'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {moderationResult?.violations && moderationResult.violations.length > 0 && (
+              <div className="space-y-3">
+                {moderationResult.violations.map((violation: any, index: number) => (
+                  <div 
+                    key={index} 
+                    className={`p-4 rounded-lg border-2 ${
+                      violation.severity === 'high' 
+                        ? 'border-destructive bg-destructive/5' 
+                        : violation.severity === 'medium'
+                        ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/20'
+                        : 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`mt-0.5 font-bold text-xs uppercase px-2 py-1 rounded ${
+                        violation.severity === 'high'
+                          ? 'bg-destructive text-destructive-foreground'
+                          : violation.severity === 'medium'
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-yellow-500 text-white'
+                      }`}>
+                        {violation.severity}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm capitalize">{violation.platform}</span>
+                          <span className="text-xs text-muted-foreground">Platform</span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm mb-1">Issue:</p>
+                          <p className="text-sm text-muted-foreground">{violation.issue}</p>
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm mb-1">How to Fix:</p>
+                          <p className="text-sm text-muted-foreground">{violation.recommendation}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className={`p-4 rounded-lg border ${
+              moderationResult?.overallRisk === 'high'
+                ? 'border-destructive bg-destructive/5'
+                : moderationResult?.overallRisk === 'medium'
+                ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/20'
+                : 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20'
+            }`}>
+              <p className="text-sm font-medium mb-2">Overall Risk: <span className="uppercase">{moderationResult?.overallRisk}</span></p>
+              <p className="text-sm text-muted-foreground">
+                Content that violates platform policies will be rejected, wasting your ad spend and potentially getting your account flagged. Please edit your campaign to fix these issues before publishing.
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowModerationDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setShowModerationDialog(false);
+                handleEditClick();
+              }}
+            >
+              <Pencil className="w-4 h-4 mr-2" />
+              Edit Campaign
             </Button>
           </DialogFooter>
         </DialogContent>
