@@ -61,52 +61,84 @@ export default function CreateCampaign() {
   };
 
   const validateAndSetFile = (file: File) => {
-    // Validate file size
-    const maxSize = uploadType === 'image' ? 5 * 1024 * 1024 : 200 * 1024 * 1024; // 5MB for images, 200MB for videos
+    // Increased limits: 500MB for videos (TikTok max is 287.6MB), 10MB for images
+    const maxSize = uploadType === 'video' ? 500 * 1024 * 1024 : 10 * 1024 * 1024;
+    
     if (file.size > maxSize) {
       toast({
-        variant: "destructive",
         title: "File too large",
-        description: `Maximum file size is ${uploadType === 'image' ? '5MB' : '200MB'}. Please choose a smaller file.`,
+        description: uploadType === 'video' 
+          ? "Video must be under 500MB" 
+          : "Image must be under 10MB",
+        variant: "destructive"
       });
       return;
     }
 
-    // Validate file type
-    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-    const validVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-quicktime'];
+    // Expanded video MIME types to support all iPhone/smartphone formats
+    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
+    const validVideoTypes = [
+      'video/mp4',
+      'video/quicktime',           // Standard MOV
+      'video/x-quicktime',          // Alternative MOV
+      'video/x-m4v',                // iPhone specific
+      'application/octet-stream'    // Fallback for unknown types
+    ];
     
-    if (uploadType === 'image' && !validImageTypes.includes(file.type)) {
+    const isValidMimeType = uploadType === 'image' 
+      ? validImageTypes.includes(file.type)
+      : validVideoTypes.includes(file.type);
+    
+    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+    const validImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    const validVideoExtensions = ['mp4', 'mov', 'm4v'];
+    
+    const isValidExtension = uploadType === 'image'
+      ? validImageExtensions.includes(fileExtension || '')
+      : validVideoExtensions.includes(fileExtension || '');
+
+    // Accept if EITHER MIME type OR extension is valid (more permissive)
+    if (!isValidMimeType && !isValidExtension) {
+      console.log('Rejected file:', { 
+        name: file.name, 
+        type: file.type, 
+        extension: fileExtension,
+        uploadType 
+      });
       toast({
-        variant: "destructive",
         title: "Invalid file type",
-        description: "Please upload a JPG, JPEG, or PNG image.",
+        description: uploadType === 'video'
+          ? "Please upload MP4 or MOV video files"
+          : "Please upload JPG, PNG, GIF, or WebP images",
+        variant: "destructive"
       });
       return;
     }
 
-    // For videos, also check file extension as MIME type can vary by system
-    if (uploadType === 'video') {
-      const fileExtension = file.name.split('.').pop()?.toLowerCase();
-      const isValidMimeType = validVideoTypes.includes(file.type);
-      const isValidExtension = fileExtension === 'mp4' || fileExtension === 'mov';
-      
-      if (!isValidMimeType && !isValidExtension) {
-        toast({
-          variant: "destructive",
-          title: "Invalid file type",
-          description: "Please upload an MP4 or MOV video.",
-        });
-        return;
-      }
+    // Warn if video is larger than TikTok's limit
+    if (uploadType === 'video' && file.size > 287.6 * 1024 * 1024) {
+      toast({
+        title: "Large video file",
+        description: "This video is larger than TikTok's 287MB limit. It may not work on all platforms.",
+        variant: "default"
+      });
     }
+
+    console.log('Accepted file:', { 
+      name: file.name, 
+      type: file.type, 
+      extension: fileExtension,
+      size: `${(file.size / 1024 / 1024).toFixed(2)}MB`
+    });
 
     setUploadedFile(file);
     
-    // Create preview URL for images
     if (uploadType === 'image') {
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
+    } else if (uploadType === 'video') {
+      const videoUrl = URL.createObjectURL(file);
+      setPreviewUrl(videoUrl);
     }
   };
 
@@ -380,10 +412,10 @@ export default function CreateCampaign() {
                 {uploadType === 'video' && (
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">
-                      Formats: MP4, MOV • Max size: 200MB
+                      Formats: MP4, MOV (iPhone videos supported) • Max size: 500MB
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Recommended: 9:16 (vertical), 1:1 (square), or 16:9 (landscape) • Min 720p resolution
+                      Recommended: 9:16 (vertical), 1:1 (square), or 16:9 (landscape) • Min 720p • Under 287MB for TikTok
                     </p>
                   </div>
                 )}
@@ -414,7 +446,21 @@ export default function CreateCampaign() {
                         className="max-h-48 mx-auto object-contain"
                       />
                       <p className="text-foreground text-sm font-medium">{uploadedFile?.name}</p>
-                      <p className="text-muted-foreground text-xs">Click or drag to change image</p>
+                      <p className="text-muted-foreground text-xs">
+                        {uploadedFile && `${(uploadedFile.size / 1024 / 1024).toFixed(2)}MB`} • Click or drag to change
+                      </p>
+                    </div>
+                  ) : previewUrl && uploadType === 'video' ? (
+                    <div className="space-y-2">
+                      <video 
+                        src={previewUrl} 
+                        controls
+                        className="max-h-48 mx-auto rounded-lg"
+                      />
+                      <p className="text-foreground text-sm font-medium">{uploadedFile?.name}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {uploadedFile && `${(uploadedFile.size / 1024 / 1024).toFixed(2)}MB`} • Click or drag to change
+                      </p>
                     </div>
                   ) : uploadedFile ? (
                     <div className="space-y-2">

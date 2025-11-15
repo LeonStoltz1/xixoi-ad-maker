@@ -54,15 +54,19 @@ serve(async (req) => {
     const asset = campaign.campaign_assets[0];
     const productDescription = asset?.asset_text || 'Product description';
     const imageAsset = campaign.campaign_assets.find((a: any) => a.asset_type === 'image');
+    const videoAsset = campaign.campaign_assets.find((a: any) => a.asset_type === 'video');
     const imageUrl = imageAsset?.asset_url || null;
+    const videoUrl = videoAsset?.asset_url || null;
     
     console.log('Campaign data:', JSON.stringify(campaign, null, 2));
     console.log('Asset found:', asset);
     console.log('Image URL:', imageUrl);
+    console.log('Video URL:', videoUrl);
     console.log('Product description to use:', productDescription);
 
-    // Step 1: If there's an image, analyze it first with vision AI
-    let imageAnalysis = '';
+    // Step 1: Analyze visual content (image or video) with AI
+    let visualAnalysis = '';
+    
     if (imageUrl) {
       console.log('Analyzing image with vision AI...');
       const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -104,11 +108,20 @@ Be specific and detailed. Focus on features that would make compelling ad copy.`
 
       if (visionResponse.ok) {
         const visionData = await visionResponse.json();
-        imageAnalysis = visionData.choices[0]?.message?.content || '';
-        console.log('Image analysis:', imageAnalysis);
+        visualAnalysis = visionData.choices[0]?.message?.content || '';
+        console.log('Image analysis:', visualAnalysis);
       } else {
         console.error('Vision analysis failed:', await visionResponse.text());
       }
+    } else if (videoUrl) {
+      console.log('Video detected, generating analysis based on video URL...');
+      // For videos, we'll provide context to the AI about the video
+      // Gemini Flash can potentially analyze video frames, but for now we'll
+      // provide video metadata and let the AI know it's a video ad
+      visualAnalysis = `This is a video advertisement. Video URL: ${videoUrl}. 
+The video showcases the product/service in motion, providing dynamic visual content that captures attention. 
+Video ads typically perform well on platforms like TikTok, Instagram Stories, and Facebook Feed due to their engaging nature.`;
+      console.log('Video analysis context:', visualAnalysis);
     }
 
     // Step 2: Use Lovable AI to generate ad variants with both text and image analysis
@@ -167,11 +180,11 @@ Your task:
           },
           {
             role: 'user',
-            content: `${imageAnalysis ? `VISUAL ANALYSIS OF IMAGE:\n${imageAnalysis}\n\n` : ''}USER-PROVIDED DESCRIPTION:\n"${productDescription}"
+            content: `${visualAnalysis ? `VISUAL ANALYSIS:\n${visualAnalysis}\n\n` : ''}USER-PROVIDED DESCRIPTION:\n"${productDescription}"
 
-Using BOTH the visual analysis above (if provided) and the user's description, create compelling, accurate ad copy that highlights the ACTUAL features visible in the image combined with the user's details.
+Using BOTH the visual analysis above (if provided) and the user's description, create compelling, accurate ad copy that highlights the ACTUAL features visible in the image/video combined with the user's details.
 
-Extract key details and create platform-optimized variants. Use REAL details from the image analysis and description.
+Extract key details and create platform-optimized variants. Use REAL details from the visual analysis and description.
             
 Return JSON:
 {
