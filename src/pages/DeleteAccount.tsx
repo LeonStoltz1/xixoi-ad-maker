@@ -60,7 +60,7 @@ const DeleteAccount = () => {
             <ul className="list-disc pl-6 space-y-2">
               <li><strong>Immediate deletion:</strong> Your xiXoi™ account will be permanently deleted</li>
               <li><strong>Data removal:</strong> All campaigns, ad variants, uploads, and user data will be permanently erased within 30 days</li>
-              <li><strong>OAuth disconnection:</strong> All connected ad platform tokens (Meta, TikTok, Google Ads, LinkedIn) will be revoked</li>
+              <li><strong>OAuth disconnection:</strong> All connected ad platform tokens (Meta, TikTok, Google Ads, LinkedIn, X) will be revoked</li>
               <li><strong>Subscription cancellation:</strong> Active subscriptions will be canceled (no refunds for partial periods)</li>
               <li><strong>No recovery:</strong> This action cannot be undone</li>
             </ul>
@@ -69,7 +69,7 @@ const DeleteAccount = () => {
           <div>
             <h2 className="text-2xl font-semibold mb-4">What is NOT deleted?</h2>
             <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Published ads:</strong> Ads already published to Meta/TikTok/Google/LinkedIn will remain active until you manually pause them in those platforms</li>
+              <li><strong>Published ads:</strong> Ads already published to Meta/TikTok/Google/LinkedIn/X will remain active until you manually pause them in those platforms</li>
               <li><strong>Ad spend records:</strong> Retained for 7 years for tax/accounting compliance (Elite/Agency tiers only)</li>
               <li><strong>Payment history:</strong> Stripe transaction records retained per their data retention policy</li>
             </ul>

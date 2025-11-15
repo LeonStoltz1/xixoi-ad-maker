@@ -14,7 +14,7 @@ const Privacy = () => {
             <h2 className="text-xl md:text-2xl font-semibold mb-4">1. Information We Collect</h2>
             <p className="mb-4">xiXoi™ collects the following types of information:</p>
             <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Account Information:</strong> Email address, full name, OAuth tokens from connected ad platforms (Meta, TikTok, Google Ads, LinkedIn)</li>
+              <li><strong>Account Information:</strong> Email address, full name, OAuth tokens from connected ad platforms (Meta, TikTok, Google Ads, LinkedIn, X)</li>
               <li><strong>Campaign Data:</strong> Uploaded content (images, videos, text), generated ad variants, targeting preferences, daily budget settings</li>
               <li><strong>Payment Information:</strong> Processed securely via Stripe (we do not store credit card details)</li>
               <li><strong>Ad Spend Data:</strong> Total spend per platform, billing period, currency, campaign performance metrics</li>
@@ -38,7 +38,7 @@ const Privacy = () => {
             <h2 className="text-xl md:text-2xl font-semibold mb-4">3. Data Sharing & Third Parties</h2>
             <p className="mb-4">We share data with the following third parties:</p>
             <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Ad Platforms:</strong> Meta, TikTok, Google Ads, LinkedIn (campaign data, targeting settings, creative assets)</li>
+              <li><strong>Ad Platforms:</strong> Meta, TikTok, Google Ads, LinkedIn, X (campaign data, targeting settings, creative assets)</li>
               <li><strong>Payment Processor:</strong> Stripe (payment information, subscription status)</li>
               <li><strong>AI Providers:</strong> Lovable AI (content analysis for ad generation)</li>
               <li><strong>Cloud Infrastructure:</strong> Supabase (data storage, authentication)</li>

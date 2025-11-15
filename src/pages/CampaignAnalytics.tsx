@@ -76,7 +76,7 @@ export default function CampaignAnalytics() {
   const generateDemoData = async (campaignId: string) => {
     // Generate 7 days of demo performance data
     const demoData = [];
-    const platforms = ["meta", "tiktok", "google", "linkedin"];
+    const platforms = ["meta", "tiktok", "google", "linkedin", "x"];
     
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
@@ -222,7 +222,7 @@ export default function CampaignAnalytics() {
                 <h3 className="font-bold text-lg">Demo Mode - Simulated Data</h3>
                 <p className="text-sm">
                   This dashboard displays simulated performance metrics for demonstration purposes. 
-                  To view real campaign data, connect your Meta, TikTok, Google, and LinkedIn accounts 
+                  To view real campaign data, connect your Meta, TikTok, Google, LinkedIn, and X accounts 
                   in Settings and publish your campaign to these platforms.
                 </p>
               </div>
