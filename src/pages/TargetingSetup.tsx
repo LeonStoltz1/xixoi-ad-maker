@@ -569,8 +569,58 @@ export default function TargetingSetup() {
   const estimatedReach = Math.floor(selectedBudget * 35);
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-background">
+      {/* Header with Navigation */}
+      <header className="border-b border-foreground/20 bg-black sticky top-0 z-10">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate('/dashboard')} 
+            className="text-white hover:text-white hover:bg-white/10"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <div className="flex items-center gap-2">
+            <video 
+              src="/xiXoiLogo.mp4" 
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+              className="w-10 h-10 object-contain"
+            />
+            <h1 className="text-lg md:text-xl font-bold text-white">xiXoi™</h1>
+          </div>
+          <div className="w-24"></div> {/* Spacer for centering */}
+        </div>
+      </header>
+
+      {/* Progress Steps */}
+      <div className="bg-muted/30 border-b">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">✓</div>
+              <span>Create Campaign</span>
+            </div>
+            <div className="w-8 h-px bg-primary"></div>
+            <div className="flex items-center gap-2 text-foreground font-semibold">
+              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</div>
+              <span>Review Targeting</span>
+            </div>
+            <div className="w-8 h-px bg-border"></div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="w-6 h-6 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold">3</div>
+              <span>Publish</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="py-12 px-4">
+        <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -676,23 +726,32 @@ export default function TargetingSetup() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-4 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={() => navigate('/dashboard')}
-          >
-            Edit More
-          </Button>
-          <Button
-            className="flex-1"
-            onClick={handlePublish}
-            disabled={loading || moderating || selectedPlatforms.length === 0}
-          >
-            {moderating ? 'Checking Content...' : loading ? 'Publishing...' : 'Publish Now'}
-          </Button>
+        <div className="space-y-3 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+          <div className="flex gap-4">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={handleEditClick}
+            >
+              <Pencil className="w-4 h-4 mr-2" />
+              Edit Campaign
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={handlePublish}
+              disabled={loading || moderating || selectedPlatforms.length === 0}
+            >
+              {moderating ? 'Checking Content...' : loading ? 'Publishing...' : 'Publish Now'}
+            </Button>
+          </div>
+          {selectedPlatforms.length === 0 && (
+            <p className="text-xs text-center text-destructive">
+              ⚠️ Please select at least one platform to continue
+            </p>
+          )}
         </div>
       </div>
+    </div>
 
       {/* Edit Campaign Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
