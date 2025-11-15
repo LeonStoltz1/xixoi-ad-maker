@@ -229,19 +229,31 @@ Return JSON:
 Product Description: "${productDescription}"
 ${assetUrl ? `Image URL: ${assetUrl}` : ''}
 
+CRITICAL COMPLIANCE REQUIREMENTS:
+- For housing/real estate: NEVER target or exclude based on race, color, religion, national origin, sex, familial status, disability, or any protected class
+- For employment: NEVER target based on protected characteristics
+- For credit/financial services: Follow Equal Credit Opportunity Act guidelines
+- Focus on legitimate interest-based and behavioral targeting only
+
 Return ONLY valid JSON with this exact structure:
 {
   "product_type": "descriptive product category",
   "audience": {
     "age_range": "25-45",
-    "gender": "women/men/all",
-    "interests": ["interest1", "interest2", "interest3"]
+    "gender": "all",
+    "interests": ["behavioral interest 1", "interest-based 2", "contextual interest 3"]
   },
   "locations": ["US", "UK", "CA"],
   "daily_budget": 35,
   "platforms": ["meta", "tiktok"],
-  "reasoning": "brief explanation of targeting strategy"
-}`;
+  "reasoning": "brief explanation of targeting strategy focused on interests and behaviors, not demographics"
+}
+
+Interests must be:
+- Behavioral (e.g., "apartment hunters", "first-time renters")
+- Contextual (e.g., "urban living", "NYC real estate")
+- Interest-based (e.g., "home decor", "city guides")
+NEVER include race, ethnicity, religion, or other protected class identifiers.`;
 
     let audienceSuggestion = null;
     try {
@@ -256,7 +268,20 @@ Return ONLY valid JSON with this exact structure:
           messages: [
             {
               role: 'system',
-              content: 'You are an expert digital advertising strategist. Analyze products and suggest optimal ad targeting. Return ONLY valid JSON, no markdown formatting.'
+              content: `You are an expert digital advertising strategist with deep knowledge of advertising compliance laws.
+
+CRITICAL: You MUST follow all advertising compliance regulations:
+- Fair Housing Act: NO targeting based on race, color, religion, national origin, sex, familial status, or disability
+- Equal Credit Opportunity Act: NO discrimination in credit advertising
+- Employment regulations: NO targeting based on protected characteristics
+
+When suggesting audience targeting:
+1. Use ONLY behavioral, interest-based, and contextual targeting
+2. NEVER suggest demographic targeting based on protected classes
+3. Focus on what people DO and what they're INTERESTED IN, not who they ARE
+4. For housing/real estate, ensure 100% inclusive targeting
+
+Return ONLY valid JSON, no markdown formatting.`
             },
             {
               role: 'user',
