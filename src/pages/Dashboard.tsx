@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut, Crown, Settings, Home, CreditCard, Zap, Wallet } from "lucide-react";
+import { Plus, LogOut, Crown, Settings, Home, CreditCard, Zap, Wallet, Pause, Play, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [userPlan, setUserPlan] = useState<string>('free');
   const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [pausingCampaigns, setPausingCampaigns] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
   const { toast } = useToast();
   const { createCheckoutSession, openCustomerPortal, loading: stripeLoading } = useStripeCheckout();
@@ -72,6 +73,51 @@ export default function Dashboard() {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const handlePauseResumeCampaign = async (campaignId: string, currentlyActive: boolean) => {
+    setPausingCampaigns(prev => new Set(prev).add(campaignId));
+
+    try {
+      const { data, error } = await supabase.functions.invoke('pause-resume-campaign', {
+        body: {
+          campaignId,
+          action: currentlyActive ? 'pause' : 'resume',
+          reason: currentlyActive ? 'Manually paused by user' : undefined,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: currentlyActive ? 'Campaign paused' : 'Campaign resumed',
+        description: `Campaign has been ${currentlyActive ? 'paused' : 'resumed'} successfully`,
+      });
+
+      // Refresh campaigns
+      const { data: campaignsData } = await supabase
+        .from('campaigns')
+        .select('*, ad_variants(count)')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (campaignsData) {
+        setCampaigns(campaignsData);
+      }
+    } catch (error) {
+      console.error('Error pausing/resuming campaign:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update campaign status',
+        variant: 'destructive',
+      });
+    } finally {
+      setPausingCampaigns(prev => {
+        const next = new Set(prev);
+        next.delete(campaignId);
+        return next;
+      });
+    }
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -146,16 +192,37 @@ export default function Dashboard() {
               {campaigns.map((campaign) => (
                 <Card key={campaign.id} className="border-2 border-foreground">
                   <CardHeader>
-                    <CardTitle className="text-lg">{campaign.name}</CardTitle>
-                    <CardDescription>
-                      <span className={`text-xs uppercase font-bold ${
-                        campaign.status === 'ready' ? 'text-green-600' : 
-                        campaign.status === 'draft' ? 'text-yellow-600' : 
-                        'text-muted-foreground'
-                      }`}>
-                        {campaign.status}
-                      </span>
-                    </CardDescription>
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg">{campaign.name}</CardTitle>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`text-xs uppercase font-bold ${
+                            campaign.status === 'ready' ? 'text-green-600' : 
+                            campaign.status === 'draft' ? 'text-yellow-600' : 
+                            'text-muted-foreground'
+                          }`}>
+                            {campaign.status}
+                          </span>
+                          {campaign.status === 'ready' && (
+                            <span className={`text-xs uppercase font-bold flex items-center gap-1 ${
+                              campaign.is_active ? 'text-blue-600' : 'text-orange-600'
+                            }`}>
+                              {campaign.is_active ? (
+                                <>
+                                  <Play className="w-3 h-3" />
+                                  Active
+                                </>
+                              ) : (
+                                <>
+                                  <Pause className="w-3 h-3" />
+                                  Paused
+                                </>
+                              )}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="text-sm text-muted-foreground space-y-1">
@@ -165,6 +232,12 @@ export default function Dashboard() {
                       )}
                       {campaign.daily_budget && (
                         <div>Budget: ${campaign.daily_budget}/day</div>
+                      )}
+                      {!campaign.is_active && campaign.paused_reason && (
+                        <div className="text-orange-600 flex items-start gap-1 mt-2">
+                          <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
+                          <span className="text-xs">{campaign.paused_reason}</span>
+                        </div>
                       )}
                     </div>
                     
@@ -181,10 +254,25 @@ export default function Dashboard() {
                           </Button>
                           <Button 
                             size="sm" 
+                            variant="outline"
                             onClick={() => navigate(`/analytics/${campaign.id}`)}
                             className="flex-1"
                           >
                             Analytics
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={campaign.is_active ? "destructive" : "default"}
+                            onClick={() => handlePauseResumeCampaign(campaign.id, campaign.is_active)}
+                            disabled={pausingCampaigns.has(campaign.id)}
+                          >
+                            {pausingCampaigns.has(campaign.id) ? (
+                              '...'
+                            ) : campaign.is_active ? (
+                              <Pause className="w-4 h-4" />
+                            ) : (
+                              <Play className="w-4 h-4" />
+                            )}
                           </Button>
                         </>
                       )}
