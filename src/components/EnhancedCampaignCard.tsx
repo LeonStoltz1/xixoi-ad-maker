@@ -115,11 +115,59 @@ export function EnhancedCampaignCard({
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [adToDelete, setAdToDelete] = useState<AdVariant | null>(null);
   const [complianceViolations, setComplianceViolations] = useState<Array<{platform: string, issue: string}>>([]);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [isPublished, setIsPublished] = useState(false);
+  const [checkingPublishStatus, setCheckingPublishStatus] = useState(false);
 
   useEffect(() => {
     loadAdVariants();
     loadUserPlanAndWatermark();
+    loadWalletBalance();
   }, [campaign.id]);
+
+  useEffect(() => {
+    if (selectedVariant) {
+      checkIfPublished(selectedVariant.id);
+    }
+  }, [selectedVariant]);
+
+  const loadWalletBalance = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: wallet } = await supabase
+        .from("ad_wallets")
+        .select("balance")
+        .eq("user_id", user.id)
+        .single();
+
+      setWalletBalance(wallet?.balance || 0);
+    } catch (error) {
+      console.error("Error loading wallet balance:", error);
+    }
+  };
+
+  const checkIfPublished = async (variantId: string) => {
+    setCheckingPublishStatus(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: freeAd } = await supabase
+        .from("free_ads")
+        .select("id, published_at")
+        .eq("ad_variant_id", variantId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      setIsPublished(!!freeAd?.published_at);
+    } catch (error) {
+      setIsPublished(false);
+    } finally {
+      setCheckingPublishStatus(false);
+    }
+  };
 
   const loadAdVariants = async () => {
     const { data } = await supabase
@@ -248,9 +296,10 @@ export function EnhancedCampaignCard({
 
       setIsEditingAd(false);
       setComplianceViolations([]);
+      setIsPublished(false); // Reset publish status after edit
       toast({
         title: "✅ Ad updated successfully",
-        description: "Your ad passed platform compliance checks and has been saved.",
+        description: "Your ad passed compliance checks. You can now publish it to platforms.",
       });
     } catch (error) {
       console.error('Error saving ad:', error);
@@ -818,15 +867,50 @@ export function EnhancedCampaignCard({
                     </div>
                   </div>
                   
-                  {/* Publish Button */}
-                  <Button 
-                    onClick={() => navigate(`/campaign-publish?id=${campaign.id}`)}
-                    className="w-full"
-                    size="lg"
-                  >
-                    <Rocket className="w-4 h-4 mr-2" />
-                    Publish Ad to Platforms
-                  </Button>
+                  {/* Wallet Balance & Publish Section */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <span className="text-sm font-medium">Wallet Balance</span>
+                      <span className={`text-sm font-bold ${walletBalance < 50 ? 'text-destructive' : 'text-primary'}`}>
+                        ${walletBalance.toFixed(2)}
+                      </span>
+                    </div>
+                    
+                    {walletBalance < 50 && (
+                      <div className="text-xs text-destructive bg-destructive/10 p-2 rounded">
+                        ⚠️ Low balance. Add funds to ensure uninterrupted ad delivery.
+                      </div>
+                    )}
+
+                    {isPublished ? (
+                      <div className="p-3 bg-primary/10 rounded-lg text-center">
+                        <p className="text-sm font-medium text-primary">✓ Ad Already Published</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          This ad variant has been published to platforms
+                        </p>
+                      </div>
+                    ) : (
+                      <Button 
+                        onClick={() => {
+                          if (walletBalance < 10) {
+                            toast({
+                              title: "Insufficient Funds",
+                              description: "Please add funds to your wallet before publishing ads.",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          navigate(`/campaign-publish?id=${campaign.id}`);
+                        }}
+                        className="w-full"
+                        size="lg"
+                        disabled={checkingPublishStatus || walletBalance < 10}
+                      >
+                        <Rocket className="w-4 h-4 mr-2" />
+                        Publish Ad to Platforms
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
