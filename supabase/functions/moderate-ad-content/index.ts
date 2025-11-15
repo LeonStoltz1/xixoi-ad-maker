@@ -72,7 +72,19 @@ serve(async (req) => {
 - No inappropriate or offensive content
 - Comply with professional standards
 - Clear, honest messaging
-- No spam or low-quality content`
+- No spam or low-quality content`,
+      
+      x: `X (Twitter) Advertising Policies:
+- No discriminatory content or targeting
+- No misleading or deceptive claims
+- No inappropriate content (violence, adult content, hate speech)
+- No illegal products or services
+- Authentic representation of products/services
+- No manipulation or spam
+- Comply with local regulations
+- Age-appropriate content
+- No promotion of dangerous organizations or individuals
+- Clear disclosure of sponsored content`
     };
 
     const selectedGuidelines = platforms
