@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { AISupportChat } from "@/components/AISupportChat";
+import { usePolitical } from "@/contexts/PoliticalContext";
 import { GlobalSpendSummary } from "@/components/GlobalSpendSummary";
 import { EnhancedCampaignCard } from "@/components/EnhancedCampaignCard";
 import { CampaignAIRecommendations } from "@/components/CampaignAIRecommendations";
@@ -65,6 +66,7 @@ export default function Dashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { politicalProfile } = usePolitical();
 
   useEffect(() => {
     checkUser();
@@ -240,6 +242,28 @@ export default function Dashboard() {
 
           {/* SECTION 1: Global Spend Summary */}
           <GlobalSpendSummary key={refreshKey} />
+
+          {/* Political Dashboard Widget */}
+          {politicalProfile?.hasPoliticalTier && (
+            <div className="p-6 border-2 border-primary rounded-lg bg-primary/5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">Political Ad System</h3>
+                  <p className="text-muted-foreground mb-4">
+                    {politicalProfile.adsUsed} of {politicalProfile.adsLimit} political ads generated this month
+                  </p>
+                  {politicalProfile.candidate && (
+                    <p className="text-sm text-muted-foreground mb-4">
+                      <strong>{politicalProfile.candidate.fullName}</strong> • {politicalProfile.candidate.race}
+                    </p>
+                  )}
+                </div>
+                <Button onClick={() => navigate('/political/dashboard')}>
+                  View Political Dashboard
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* SECTION 2: Campaign Cards */}
           <div>
