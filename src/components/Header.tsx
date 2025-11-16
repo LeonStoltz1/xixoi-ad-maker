@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LogOut, Crown, Settings } from "lucide-react";
 import { useRealtor } from "@/contexts/RealtorContext";
+import { usePolitical } from "@/contexts/PoliticalContext";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
@@ -12,6 +13,7 @@ export const Header = () => {
   const [userPlan, setUserPlan] = useState<string>('free');
   const navigate = useNavigate();
   const { realtorProfile, viewMode, setViewMode } = useRealtor();
+  const { politicalProfile } = usePolitical();
 
   useEffect(() => {
     // Check initial auth state
@@ -89,6 +91,18 @@ export const Header = () => {
                     Realtor
                   </Label>
                 </div>
+              )}
+              
+              {/* Political Dashboard Link - Only shown for political tier users */}
+              {politicalProfile?.hasPoliticalTier && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/10"
+                  onClick={() => navigate('/political/dashboard')}
+                >
+                  Political Dashboard
+                </Button>
               )}
               
               {/* Plan Badge */}
