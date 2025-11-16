@@ -88,3 +88,9 @@ verify_jwt = true
 
 [functions.rewrite-ad-copy]
 verify_jwt = true
+
+[functions.generate-political-ad]
+verify_jwt = true
+
+[functions.sign-political-ad]
+verify_jwt = true
