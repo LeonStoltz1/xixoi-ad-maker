@@ -32,6 +32,8 @@ export default function GeneratePoliticalAd() {
   const [disclaimer, setDisclaimer] = useState<string>("");
   const [selectedVariant, setSelectedVariant] = useState<'short' | 'medium' | 'long' | null>(null);
   const [complianceIssues, setComplianceIssues] = useState<ComplianceIssue[]>([]);
+  const [watermarkUrl, setWatermarkUrl] = useState<string>("");
+  const [signature, setSignature] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<PoliticalAdGenerationFormValues>({
@@ -139,6 +141,31 @@ export default function GeneratePoliticalAd() {
       setGeneratedVariants(functionData.variants);
       setDisclaimer(functionData.disclaimer);
       
+      // Generate watermark if image uploaded
+      if (uploadedFile && previewUrl) {
+        try {
+          const { data: watermarkData, error: watermarkError } = await supabase.functions.invoke('sign-political-ad', {
+            body: {
+              imageUrl: previewUrl,
+              candidateName: politicalProfile.candidate!.fullName,
+              race: politicalProfile.candidate!.race || "Unknown",
+              electionYear: politicalProfile.candidate!.electionYear || new Date().getFullYear(),
+              adCopy: functionData.variants.medium
+            }
+          });
+
+          if (watermarkError) {
+            console.error('Watermark generation error:', watermarkError);
+          } else if (watermarkData) {
+            setWatermarkUrl(watermarkData.watermarkUrl);
+            setSignature(watermarkData.signatureBase58);
+          }
+        } catch (watermarkError) {
+          console.error('Watermark generation error:', watermarkError);
+          // Don't fail the whole process if watermarking fails
+        }
+      }
+      
       // Check compliance on all variants
       const allIssues: ComplianceIssue[] = [];
       Object.values(functionData.variants).forEach((variant: string) => {
@@ -209,6 +236,8 @@ export default function GeneratePoliticalAd() {
           platform: form.getValues('platform'),
           policy_focus: form.getValues('policyFocus'),
           tone: form.getValues('tone'),
+          watermark_url: watermarkUrl || null,
+          signature_base58: signature || null,
           compliance_checked: complianceIssues.filter(i => i.severity === 'error').length === 0,
           compliance_issues: JSON.stringify(complianceIssues),
         }] as any);
@@ -417,6 +446,33 @@ export default function GeneratePoliticalAd() {
           <div className="space-y-6">
             {generatedVariants && (
               <>
+                {/* Watermarked Preview */}
+                {watermarkUrl && (
+                  <Card className="p-6">
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      Watermarked Preview
+                    </h3>
+                    <div className="space-y-4">
+                      <img 
+                        src={watermarkUrl} 
+                        alt="Watermarked ad preview" 
+                        className="w-full rounded border border-border"
+                      />
+                      {signature && (
+                        <div className="p-3 bg-muted rounded">
+                          <p className="text-xs text-muted-foreground font-mono break-all">
+                            <strong>Digital Signature:</strong> {signature.substring(0, 32)}...
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            This signature verifies the authenticity of your political ad.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                )}
+
                 {/* Compliance Status */}
                 {complianceIssues.length > 0 && (
                   <Alert variant={errorCount > 0 ? "destructive" : "default"}>
