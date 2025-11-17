@@ -342,6 +342,7 @@ export type Database = {
           payout_email: string | null
           payout_method: string | null
           stripe_account_id: string | null
+          stripe_account_status: string | null
           stripe_onboarding_complete: boolean | null
           total_earned: number | null
           total_paid: number | null
@@ -355,6 +356,7 @@ export type Database = {
           payout_email?: string | null
           payout_method?: string | null
           stripe_account_id?: string | null
+          stripe_account_status?: string | null
           stripe_onboarding_complete?: boolean | null
           total_earned?: number | null
           total_paid?: number | null
@@ -368,6 +370,7 @@ export type Database = {
           payout_email?: string | null
           payout_method?: string | null
           stripe_account_id?: string | null
+          stripe_account_status?: string | null
           stripe_onboarding_complete?: boolean | null
           total_earned?: number | null
           total_paid?: number | null

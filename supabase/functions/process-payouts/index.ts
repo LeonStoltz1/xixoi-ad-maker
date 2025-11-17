@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
           affiliate_id, 
           total_revenue, 
           affiliate_earnings, 
-          affiliates!inner(stripe_account_id, is_blocked)
+          affiliates!inner(stripe_account_id, is_blocked, stripe_account_status)
         `)
         .eq('referred_user_id', sub.user_id)
         .maybeSingle();
@@ -67,12 +67,14 @@ Deno.serve(async (req) => {
       totalAffiliatePayout += affiliatePayout;
       totalAgencyBonus += agencyBonus;
 
-      // Transfer to Affiliate if exists and not blocked
+      // Transfer to Affiliate if exists and verified
       if (referral && Array.isArray(referral.affiliates) && referral.affiliates[0]?.stripe_account_id) {
         const affiliate = referral.affiliates[0];
         
         if (affiliate.is_blocked) {
           console.log(`Affiliate is blocked, skipping transfer for subscription: ${sub.id}`);
+        } else if ((affiliate as any).stripe_account_status !== 'verified') {
+          console.log(`Affiliate account not verified (status: ${(affiliate as any).stripe_account_status}), skipping transfer for subscription: ${sub.id}`);
         } else {
           console.log(`Transferring $${affiliatePayout} to affiliate`);
           transfers.push(

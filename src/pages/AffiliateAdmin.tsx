@@ -237,7 +237,20 @@ export default function AffiliateAdmin() {
                           <Badge variant="destructive">Blocked</Badge>
                         )}
                         {affiliate.stripe_onboarding_complete ? (
-                          <Badge className="bg-green-500">Stripe Connected</Badge>
+                          <>
+                            {(affiliate as any).stripe_account_status === 'verified' && (
+                              <Badge className="bg-green-500">✓ Verified</Badge>
+                            )}
+                            {(affiliate as any).stripe_account_status === 'pending' && (
+                              <Badge className="bg-blue-500">⏳ Pending</Badge>
+                            )}
+                            {(affiliate as any).stripe_account_status === 'restricted' && (
+                              <Badge className="bg-orange-500">⚠️ Restricted</Badge>
+                            )}
+                            {(affiliate as any).stripe_account_status === 'rejected' && (
+                              <Badge variant="destructive">❌ Rejected</Badge>
+                            )}
+                          </>
                         ) : (
                           <Badge variant="secondary">No Stripe</Badge>
                         )}
