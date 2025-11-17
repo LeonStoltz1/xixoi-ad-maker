@@ -35,6 +35,7 @@ import VerifyCandidate from "./pages/political/VerifyCandidate";
 import GeneratePoliticalAd from "./pages/political/GeneratePoliticalAd";
 import PoliticalDashboard from "./pages/political/PoliticalDashboard";
 import VerifyAd from "./pages/political/VerifyAd";
+import PlatformCredentialsAdmin from "./pages/admin/PlatformCredentialsAdmin";
 
 const queryClient = new QueryClient();
 
@@ -94,6 +95,7 @@ const App = () => (
           <Route path="/payouts" element={<PayoutDashboard />} />
           <Route path="/payout-settings" element={<PayoutSettings />} />
           <Route path="/campaign-publish" element={<CampaignPublish />} />
+          <Route path="/xi-admin/platform-credentials" element={<PlatformCredentialsAdmin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
