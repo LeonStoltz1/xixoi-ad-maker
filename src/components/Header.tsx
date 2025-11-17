@@ -57,7 +57,7 @@ export const Header = () => {
     <header className="fixed top-0 left-0 right-0 z-50 h-32 bg-black border-b border-white/20">
       <div className="mx-auto px-6 h-full flex items-center justify-between">
         {/* Logo - Left Side */}
-        <Link to={logoDestination} className="text-lg md:text-xl font-bold font-heading flex items-center text-white">
+        <Link to={logoDestination} className="flex items-center gap-3 text-white group">
           <video 
             src="/xiXoiLogo.mp4" 
             autoPlay 
@@ -66,6 +66,14 @@ export const Header = () => {
             playsInline
             className="w-32 h-32 object-contain"
           />
+          <div className="hidden md:flex flex-col justify-center border-l border-white/20 pl-3">
+            <span className="text-xs text-white/40 uppercase tracking-wider font-mono">
+              Pronounced
+            </span>
+            <span className="text-sm text-white/60 font-mono tracking-wide">
+              ZEE-ZOY
+            </span>
+          </div>
         </Link>
         
         {/* User Controls - Right Side */}
