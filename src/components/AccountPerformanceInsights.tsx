@@ -160,7 +160,7 @@ export function AccountPerformanceInsights() {
               <Award className="w-4 h-4 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">Overall ROAS</p>
             </div>
-            <p className={`text-2xl font-bold ${insights.overallROAS >= 2 ? 'text-green-600' : insights.overallROAS >= 1 ? 'text-orange-600' : 'text-red-600'}`}>
+            <p className="text-2xl font-bold">
               {insights.overallROAS.toFixed(2)}x
             </p>
           </div>
@@ -169,14 +169,14 @@ export function AccountPerformanceInsights() {
         {/* Best and Worst Performers */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {insights.bestPerformingCampaign && (
-            <div className="border rounded-lg p-4 bg-green-50/50">
+            <div className="border p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Award className="w-5 h-5 text-green-600" />
-                <p className="font-semibold text-green-900">Best Performer</p>
+                <Award className="w-5 h-5" />
+                <p className="font-semibold">Best Performer</p>
               </div>
               <p className="text-sm font-medium">{insights.bestPerformingCampaign.name}</p>
               <div className="flex items-center gap-2 mt-1">
-                <Badge className="bg-green-600">
+                <Badge className="bg-foreground text-background">
                   {insights.bestPerformingCampaign.roas.toFixed(2)}x ROAS
                 </Badge>
               </div>
@@ -184,14 +184,14 @@ export function AccountPerformanceInsights() {
           )}
 
           {insights.worstPerformingCampaign && (
-            <div className="border rounded-lg p-4 bg-orange-50/50">
+            <div className="border p-4">
               <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="w-5 h-5 text-orange-600" />
-                <p className="font-semibold text-orange-900">Needs Attention</p>
+                <AlertTriangle className="w-5 h-5" />
+                <p className="font-semibold">Needs Attention</p>
               </div>
               <p className="text-sm font-medium">{insights.worstPerformingCampaign.name}</p>
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline" className="border-orange-600 text-orange-600">
+                <Badge variant="outline" className="border-foreground text-foreground">
                   {insights.worstPerformingCampaign.roas.toFixed(2)}x ROAS
                 </Badge>
               </div>

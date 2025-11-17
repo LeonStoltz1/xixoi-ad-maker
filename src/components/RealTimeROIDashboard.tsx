@@ -103,7 +103,7 @@ export const RealTimeROIDashboard = ({ campaignId }: { campaignId?: string }) =>
       <Card className="border-primary/20">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-          <TrendingUp className="h-4 w-4 text-green-500" />
+          <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">${metrics.revenue.toFixed(2)}</div>
@@ -117,7 +117,7 @@ export const RealTimeROIDashboard = ({ campaignId }: { campaignId?: string }) =>
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className={`text-2xl font-bold ${metrics.roas >= 2 ? 'text-green-500' : metrics.roas >= 1 ? 'text-yellow-500' : 'text-red-500'}`}>
+          <div className="text-2xl font-bold">
             {metrics.roas.toFixed(2)}x
           </div>
           <p className="text-xs text-muted-foreground">Return on ad spend</p>

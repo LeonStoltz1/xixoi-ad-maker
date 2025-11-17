@@ -105,11 +105,11 @@ export default function AffiliateLeaderboard() {
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Trophy className="w-8 h-8 text-yellow-500" />;
+        return <Trophy className="w-8 h-8" />;
       case 2:
-        return <Medal className="w-8 h-8 text-gray-400" />;
+        return <Medal className="w-8 h-8 text-muted-foreground" />;
       case 3:
-        return <Award className="w-8 h-8 text-amber-600" />;
+        return <Award className="w-8 h-8 text-muted-foreground" />;
       default:
         return <div className="w-8 h-8 flex items-center justify-center font-bold text-muted-foreground">#{rank}</div>;
     }
@@ -118,11 +118,11 @@ export default function AffiliateLeaderboard() {
   const getRankBadge = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Badge className="bg-yellow-500 text-black">🏆 Champion</Badge>;
+        return <Badge className="bg-foreground text-background">🏆 Champion</Badge>;
       case 2:
-        return <Badge className="bg-gray-400 text-white">🥈 Runner-up</Badge>;
+        return <Badge className="bg-background text-foreground border border-foreground">🥈 Runner-up</Badge>;
       case 3:
-        return <Badge className="bg-amber-600 text-white">🥉 Bronze</Badge>;
+        return <Badge className="bg-background text-foreground border border-foreground">🥉 Bronze</Badge>;
       default:
         return <Badge variant="secondary">Top 10</Badge>;
     }
@@ -200,10 +200,10 @@ export default function AffiliateLeaderboard() {
         {leaderboard.length >= 3 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Second Place */}
-            <Card className="border-2 border-gray-400 md:mt-8">
+            <Card className="border-2 md:mt-8">
               <CardHeader className="text-center pb-4">
                 <div className="flex justify-center mb-2">
-                  <Medal className="w-16 h-16 text-gray-400" />
+                  <Medal className="w-16 h-16 text-muted-foreground" />
                 </div>
                 <CardTitle className="text-2xl">#{2}</CardTitle>
                 <CardDescription className="font-mono text-lg">{leaderboard[1].code}</CardDescription>
@@ -222,10 +222,10 @@ export default function AffiliateLeaderboard() {
             </Card>
 
             {/* First Place */}
-            <Card className="border-2 border-yellow-500 shadow-lg">
+            <Card className="border-2 shadow-lg">
               <CardHeader className="text-center pb-4">
                 <div className="flex justify-center mb-2">
-                  <Trophy className="w-20 h-20 text-yellow-500 animate-pulse" />
+                  <Trophy className="w-20 h-20 animate-pulse" />
                 </div>
                 <CardTitle className="text-3xl">👑 #1</CardTitle>
                 <CardDescription className="font-mono text-lg">{leaderboard[0].code}</CardDescription>
@@ -236,7 +236,7 @@ export default function AffiliateLeaderboard() {
                 </div>
                 <div className="text-sm text-muted-foreground">Total Earned</div>
                 <div className="pt-2">
-                  <Badge className="bg-yellow-500 text-black">
+                  <Badge className="bg-foreground text-background">
                     {leaderboard[0].referral_count} Referrals
                   </Badge>
                 </div>
@@ -244,10 +244,10 @@ export default function AffiliateLeaderboard() {
             </Card>
 
             {/* Third Place */}
-            <Card className="border-2 border-amber-600 md:mt-8">
+            <Card className="border-2 md:mt-8">
               <CardHeader className="text-center pb-4">
                 <div className="flex justify-center mb-2">
-                  <Award className="w-16 h-16 text-amber-600" />
+                  <Award className="w-16 h-16 text-muted-foreground" />
                 </div>
                 <CardTitle className="text-2xl">#{3}</CardTitle>
                 <CardDescription className="font-mono text-lg">{leaderboard[2].code}</CardDescription>

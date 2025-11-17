@@ -140,7 +140,7 @@ export const GlobalSpendOverview = () => {
       <Card className="p-6 border-primary/20 hover:border-primary/40 transition-colors">
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-medium text-muted-foreground">Active Campaigns</p>
-          <PlayCircle className="h-4 w-4 text-green-500" />
+          <PlayCircle className="h-4 w-4 text-muted-foreground" />
         </div>
         <div className="text-3xl font-bold">{overview.activeCampaigns}</div>
         <p className="text-xs text-muted-foreground mt-1">{overview.pausedCampaigns} paused</p>
@@ -155,7 +155,7 @@ export const GlobalSpendOverview = () => {
           {overview.walletBalance !== undefined ? `$${overview.walletBalance.toFixed(2)}` : 'N/A'}
         </div>
         {overview.walletBalance !== undefined && overview.walletBalance < 50 && (
-          <p className="text-xs text-orange-500 mt-1">Low balance - top up soon</p>
+          <p className="text-xs text-muted-foreground mt-1 border-t border-foreground/20 pt-1">Low balance - top up soon</p>
         )}
       </Card>
     </div>

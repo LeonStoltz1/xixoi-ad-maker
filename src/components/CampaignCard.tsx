@@ -43,11 +43,11 @@ export const CampaignCard = ({ campaign, onUpdate }: CampaignCardProps) => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-500';
-      case 'paused': return 'bg-yellow-500';
-      case 'completed': return 'bg-gray-500';
-      case 'scheduled': return 'bg-blue-500';
-      default: return 'bg-gray-400';
+      case 'active': return 'bg-foreground text-background';
+      case 'paused': return 'bg-background text-foreground border border-foreground';
+      case 'completed': return 'bg-muted text-muted-foreground';
+      case 'scheduled': return 'bg-background text-foreground border border-foreground';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
