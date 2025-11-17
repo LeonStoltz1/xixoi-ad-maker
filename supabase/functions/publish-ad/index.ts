@@ -13,6 +13,14 @@ serve(async (req) => {
 
   try {
     const { variantId } = await req.json();
+    
+    if (!variantId) {
+      return new Response(
+        JSON.stringify({ error: 'Variant ID is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
     console.log('Publishing ad variant:', variantId);
 
     // Get authenticated user
