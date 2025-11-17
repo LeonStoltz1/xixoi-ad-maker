@@ -4,7 +4,7 @@
 -- Run this in: Supabase SQL Editor
 -- ============================================================
 
--- STEP 1: Insert system credential placeholders for all 4 platforms
+-- STEP 1: Insert system credential placeholders for all 5 platforms
 -- These will be updated with real encrypted tokens via the admin UI
 
 INSERT INTO public.platform_credentials (
@@ -20,8 +20,9 @@ INSERT INTO public.platform_credentials (
   ('meta', 'SYSTEM_META_ACCOUNT', 'PLACEHOLDER_TOKEN_TO_BE_REPLACED', NULL, 'system', NULL, 'pending', NULL),
   ('tiktok', 'SYSTEM_TIKTOK_ACCOUNT', 'PLACEHOLDER_TOKEN_TO_BE_REPLACED', NULL, 'system', NULL, 'pending', NULL),
   ('google', 'SYSTEM_GOOGLE_ACCOUNT', 'PLACEHOLDER_TOKEN_TO_BE_REPLACED', NULL, 'system', NULL, 'pending', NULL),
-  ('linkedin', 'SYSTEM_LINKEDIN_ACCOUNT', 'PLACEHOLDER_TOKEN_TO_BE_REPLACED', NULL, 'system', NULL, 'pending', NULL)
-ON CONFLICT (platform, owner_type, owner_id) 
+  ('linkedin', 'SYSTEM_LINKEDIN_ACCOUNT', 'PLACEHOLDER_TOKEN_TO_BE_REPLACED', NULL, 'system', NULL, 'pending', NULL),
+  ('x', 'SYSTEM_X_ACCOUNT', 'PLACEHOLDER_TOKEN_TO_BE_REPLACED', NULL, 'system', NULL, 'pending', NULL)
+ON CONFLICT (platform, owner_type) 
 DO UPDATE SET 
   status = 'pending',
   updated_at = NOW();

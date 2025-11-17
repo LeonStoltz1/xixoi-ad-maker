@@ -8,7 +8,7 @@ export function NoAdAccountsBanner() {
       <AlertTitle>No Setup Required</AlertTitle>
       <AlertDescription>
         xiXoi™ handles all ad platform accounts for you. You don't need to connect Meta, TikTok, 
-        Google, or LinkedIn accounts. We run your campaigns through our verified partner accounts 
+        Google, LinkedIn, or X accounts. We run your campaigns through our verified partner accounts 
         - just upload your ad and we'll publish it across all platforms you select.
       </AlertDescription>
     </Alert>

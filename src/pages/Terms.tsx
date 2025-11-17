@@ -20,7 +20,7 @@ const Terms = () => {
             <p className="mb-4">xiXoi™ is an AI-powered advertising platform that enables users to:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Upload content (images, videos, text descriptions)</li>
-              <li>Generate AI-optimized ad variants for Meta, TikTok, Google Ads, and LinkedIn</li>
+              <li>Generate AI-optimized ad variants for Meta, TikTok, Google Ads, LinkedIn, and X</li>
               <li>Publish campaigns through xiXoi™'s verified partner ad accounts</li>
               <li>Track ad spend and performance (Elite/Agency tiers)</li>
             </ul>
