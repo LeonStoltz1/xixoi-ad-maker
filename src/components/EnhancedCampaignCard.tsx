@@ -486,9 +486,9 @@ export function EnhancedCampaignCard({
       return <Badge variant="destructive" className="flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Needs Budget</Badge>;
     }
     if (spendVelocity === 'high') {
-      return <Badge className="bg-orange-500 flex items-center gap-1"><Zap className="w-3 h-3" /> High Spend Today</Badge>;
+      return <Badge className="bg-background text-foreground border border-foreground flex items-center gap-1"><Zap className="w-3 h-3" /> High Spend Today</Badge>;
     }
-    return <Badge variant="default" className="flex items-center gap-1 bg-green-600">🟢 Active</Badge>;
+    return <Badge variant="default" className="flex items-center gap-1 bg-foreground text-background">🟢 Active</Badge>;
   };
 
   const handlePauseResume = async () => {
@@ -613,10 +613,10 @@ export function EnhancedCampaignCard({
     <Card className="relative overflow-hidden">
       {/* Status indicator bar */}
       <div className={`absolute top-0 left-0 right-0 h-1 ${
-        !campaign.is_active ? 'bg-gray-400' :
-        budgetStatus === 'low' ? 'bg-red-500' :
-        spendVelocity === 'high' ? 'bg-orange-500' :
-        'bg-green-500'
+        !campaign.is_active ? 'bg-muted' :
+        budgetStatus === 'low' ? 'bg-foreground' :
+        spendVelocity === 'high' ? 'bg-foreground' :
+        'bg-foreground'
       }`} />
 
       <CardHeader className="pb-3">
@@ -659,7 +659,7 @@ export function EnhancedCampaignCard({
                   Duplicate
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
+                <DropdownMenuItem className="text-foreground font-medium">
                   <StopCircle className="w-4 h-4 mr-2" />
                   Stop Campaign
                 </DropdownMenuItem>
@@ -686,7 +686,7 @@ export function EnhancedCampaignCard({
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-xs text-muted-foreground">Remaining Budget</span>
-            <span className={`text-lg font-bold ${budgetStatus === 'low' ? 'text-red-600' : ''}`}>
+            <span className="text-lg font-bold">
               {remainingBudget !== null ? `$${remainingBudget.toFixed(2)}` : 'Unlimited'}
             </span>
           </div>
