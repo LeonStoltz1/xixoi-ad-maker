@@ -88,6 +88,58 @@ serve(async (req) => {
             .eq('id', userId);
         }
 
+        // AFFILIATE TRACKING: Create affiliate referral if ref code exists
+        const affiliateRef = session.metadata?.affiliate_ref;
+        if (affiliateRef && session.customer) {
+          console.log('Processing affiliate referral:', { affiliateRef, userId, customerId: session.customer });
+
+          // Find affiliate by code
+          const { data: affiliate, error: affiliateError } = await supabase
+            .from('affiliates')
+            .select('id, is_blocked')
+            .eq('code', affiliateRef)
+            .maybeSingle();
+
+          if (affiliate && !affiliate.is_blocked) {
+            // Check if referral already exists
+            const { data: existingReferral } = await supabase
+              .from('affiliate_referrals')
+              .select('id')
+              .eq('referred_user_id', userId)
+              .maybeSingle();
+
+            if (!existingReferral) {
+              // Create affiliate referral
+              const { error: insertError } = await supabase
+                .from('affiliate_referrals')
+                .insert({
+                  affiliate_id: affiliate.id,
+                  referred_user_id: userId,
+                  stripe_customer_id: session.customer as string,
+                });
+
+              if (insertError) {
+                console.error('Error creating affiliate referral:', insertError);
+              } else {
+                console.log('Successfully created affiliate referral for user:', userId);
+              }
+            } else {
+              // Update existing referral with stripe_customer_id if missing
+              await supabase
+                .from('affiliate_referrals')
+                .update({ stripe_customer_id: session.customer as string })
+                .eq('id', existingReferral.id)
+                .is('stripe_customer_id', null);
+              
+              console.log('Updated existing referral with stripe_customer_id');
+            }
+          } else if (affiliate?.is_blocked) {
+            console.log('Affiliate is blocked, skipping referral creation');
+          } else if (affiliateError) {
+            console.error('Error finding affiliate:', affiliateError);
+          }
+        }
+
         if (priceType === 'branding_removal' && campaignId) {
           // Handle one-time branding removal payment
           await supabase
@@ -310,51 +362,67 @@ serve(async (req) => {
             
             console.log('Updated user plan after payment:', planType);
 
-            // AFFILIATE TRACKING: Update affiliate earnings (20% commission)
-            if (invoice.customer && invoice.amount_paid) {
-              const stripeCustomerId = String(invoice.customer);
-              const amount = invoice.amount_paid / 100; // cents to dollars
+              // AFFILIATE TRACKING: Update affiliate earnings (20% commission)
+              if (invoice.customer && invoice.amount_paid) {
+                const stripeCustomerId = String(invoice.customer);
+                const amount = invoice.amount_paid / 100; // cents to dollars
 
-              // Find referral by stripe_customer_id
-              const { data: referral, error: refError } = await supabase
-                .from('affiliate_referrals')
-                .select('*')
-                .eq('stripe_customer_id', stripeCustomerId)
-                .maybeSingle();
-
-              if (referral && !refError) {
-                const commissionRate = 0.2; // 20% commission
-                const commission = amount * commissionRate;
-
-                // Update referral
-                await supabase
+                // Find referral by stripe_customer_id
+                const { data: referral, error: refError } = await supabase
                   .from('affiliate_referrals')
-                  .update({
-                    total_revenue: (referral.total_revenue ?? 0) + amount,
-                    affiliate_earnings: (referral.affiliate_earnings ?? 0) + commission,
-                    first_payment_at: referral.first_payment_at ?? new Date().toISOString(),
-                  })
-                  .eq('id', referral.id);
+                  .select(`
+                    *,
+                    affiliates!inner(id, is_blocked, stripe_account_id)
+                  `)
+                  .eq('stripe_customer_id', stripeCustomerId)
+                  .maybeSingle();
 
-                // Update affiliate totals
-                const { data: currentAffiliate } = await supabase
-                  .from('affiliates')
-                  .select('total_earned')
-                  .eq('id', referral.affiliate_id)
-                  .single();
+                if (referral && !refError) {
+                  // Check if affiliate is blocked
+                  const affiliate = Array.isArray(referral.affiliates) 
+                    ? referral.affiliates[0] 
+                    : referral.affiliates;
 
-                if (currentAffiliate) {
-                  await supabase
-                    .from('affiliates')
-                    .update({
-                      total_earned: (currentAffiliate.total_earned ?? 0) + commission,
-                    })
-                    .eq('id', referral.affiliate_id);
-                  
-                  console.log('Updated affiliate earnings:', { affiliateId: referral.affiliate_id, commission });
+                  if (affiliate?.is_blocked) {
+                    console.log('Affiliate is blocked, skipping commission for referral:', referral.id);
+                  } else {
+                    const commissionRate = 0.2; // 20% lifetime recurring commission
+                    const commission = amount * commissionRate;
+
+                    // Update referral totals
+                    await supabase
+                      .from('affiliate_referrals')
+                      .update({
+                        total_revenue: (referral.total_revenue ?? 0) + amount,
+                        affiliate_earnings: (referral.affiliate_earnings ?? 0) + commission,
+                        first_payment_at: referral.first_payment_at ?? new Date().toISOString(),
+                      })
+                      .eq('id', referral.id);
+
+                    // Update affiliate total_earned
+                    const { data: currentAffiliate } = await supabase
+                      .from('affiliates')
+                      .select('total_earned')
+                      .eq('id', referral.affiliate_id)
+                      .single();
+
+                    if (currentAffiliate) {
+                      await supabase
+                        .from('affiliates')
+                        .update({
+                          total_earned: (currentAffiliate.total_earned ?? 0) + commission,
+                        })
+                        .eq('id', referral.affiliate_id);
+                      
+                      console.log('Updated affiliate earnings:', {
+                        affiliateId: referral.affiliate_id,
+                        commission,
+                        newTotal: (currentAffiliate.total_earned ?? 0) + commission,
+                      });
+                    }
+                  }
                 }
               }
-            }
           }
         }
         break;

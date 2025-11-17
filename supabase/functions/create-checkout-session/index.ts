@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { priceType, campaignId, useEmbedded } = await req.json();
+    const { priceType, campaignId, useEmbedded, affiliateRef } = await req.json();
     
     if (!priceType) {
       return new Response(
@@ -22,7 +22,7 @@ serve(async (req) => {
       );
     }
     
-    console.log('Creating checkout session:', { priceType, campaignId, useEmbedded });
+    console.log('Creating checkout session:', { priceType, campaignId, useEmbedded, affiliateRef });
 
     // Initialize Stripe
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
@@ -121,11 +121,12 @@ serve(async (req) => {
         amount: mode === 'payment' ? 500 : 9900, // $5 or $99 based on type
         currency: 'usd',
         customer: customer.id,
-        metadata: {
-          priceType,
-          campaignId: campaignId || '',
-          userId: user.id,
-        },
+      metadata: {
+        priceType,
+        campaignId: campaignId || '',
+        userId: user.id,
+        affiliateRef: affiliateRef || '',
+      },
         automatic_payment_methods: {
           enabled: true,
         },
@@ -160,6 +161,7 @@ serve(async (req) => {
         user_id: user.id,
         campaign_id: campaignId || '',
         price_type: priceType,
+        affiliate_ref: affiliateRef || '',
       },
     });
 
