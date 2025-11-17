@@ -147,7 +147,7 @@ export default function CampaignAnalytics() {
               after your ads start running on the selected platforms.
             </p>
             <p className="text-sm text-muted-foreground">
-              You can track real-time performance directly in your Meta, TikTok, Google, or LinkedIn ad accounts
+              You can track real-time performance directly in your Meta, TikTok, Google, LinkedIn, or X ad accounts
               while xiXoi™ collects data.
             </p>
             <Button onClick={() => navigate("/dashboard")} className="mt-4">

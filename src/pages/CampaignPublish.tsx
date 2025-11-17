@@ -22,7 +22,8 @@ export default function CampaignPublish() {
     { id: "meta", name: "Meta (Facebook)" },
     { id: "google", name: "Google Ads" },
     { id: "tiktok", name: "TikTok Ads" },
-    { id: "linkedin", name: "LinkedIn Ads" }
+    { id: "linkedin", name: "LinkedIn Ads" },
+    { id: "x", name: "X (Twitter)" }
   ];
 
   return (
