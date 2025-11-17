@@ -152,13 +152,6 @@ export type Database = {
             foreignKeyName: "ad_spend_tracking_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
-            referencedRelation: "admin_watermark_report"
-            referencedColumns: ["campaign_id"]
-          },
-          {
-            foreignKeyName: "ad_spend_tracking_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -202,13 +195,6 @@ export type Database = {
           variant_type?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "ad_variants_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "admin_watermark_report"
-            referencedColumns: ["campaign_id"]
-          },
           {
             foreignKeyName: "ad_variants_campaign_id_fkey"
             columns: ["campaign_id"]
@@ -486,13 +472,6 @@ export type Database = {
             foreignKeyName: "batch_funding_queue_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
-            referencedRelation: "admin_watermark_report"
-            referencedColumns: ["campaign_id"]
-          },
-          {
-            foreignKeyName: "batch_funding_queue_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -524,13 +503,6 @@ export type Database = {
           id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "campaign_assets_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "admin_watermark_report"
-            referencedColumns: ["campaign_id"]
-          },
           {
             foreignKeyName: "campaign_assets_campaign_id_fkey"
             columns: ["campaign_id"]
@@ -588,13 +560,6 @@ export type Database = {
             foreignKeyName: "campaign_budget_events_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
-            referencedRelation: "admin_watermark_report"
-            referencedColumns: ["campaign_id"]
-          },
-          {
-            foreignKeyName: "campaign_budget_events_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -626,13 +591,6 @@ export type Database = {
           is_connected?: boolean | null
         }
         Relationships: [
-          {
-            foreignKeyName: "campaign_channels_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "admin_watermark_report"
-            referencedColumns: ["campaign_id"]
-          },
           {
             foreignKeyName: "campaign_channels_campaign_id_fkey"
             columns: ["campaign_id"]
@@ -699,13 +657,6 @@ export type Database = {
             foreignKeyName: "campaign_performance_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
-            referencedRelation: "admin_watermark_report"
-            referencedColumns: ["campaign_id"]
-          },
-          {
-            foreignKeyName: "campaign_performance_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -746,13 +697,6 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "campaign_platform_status_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "admin_watermark_report"
-            referencedColumns: ["campaign_id"]
-          },
           {
             foreignKeyName: "campaign_platform_status_campaign_id_fkey"
             columns: ["campaign_id"]
@@ -800,13 +744,6 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "campaign_spend_daily_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "admin_watermark_report"
-            referencedColumns: ["campaign_id"]
-          },
           {
             foreignKeyName: "campaign_spend_daily_campaign_id_fkey"
             columns: ["campaign_id"]
@@ -1075,13 +1012,6 @@ export type Database = {
             foreignKeyName: "payment_transactions_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
-            referencedRelation: "admin_watermark_report"
-            referencedColumns: ["campaign_id"]
-          },
-          {
-            foreignKeyName: "payment_transactions_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -1180,13 +1110,6 @@ export type Database = {
             foreignKeyName: "performance_alerts_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
-            referencedRelation: "admin_watermark_report"
-            referencedColumns: ["campaign_id"]
-          },
-          {
-            foreignKeyName: "performance_alerts_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -1281,13 +1204,6 @@ export type Database = {
           watermark_url?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "political_ads_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "admin_watermark_report"
-            referencedColumns: ["campaign_id"]
-          },
           {
             foreignKeyName: "political_ads_campaign_id_fkey"
             columns: ["campaign_id"]
@@ -1602,13 +1518,6 @@ export type Database = {
             foreignKeyName: "wallet_transactions_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
-            referencedRelation: "admin_watermark_report"
-            referencedColumns: ["campaign_id"]
-          },
-          {
-            foreignKeyName: "wallet_transactions_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -1642,6 +1551,13 @@ export type Database = {
           user_id: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "ad_variants_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "free_ads_ad_variant_id_fkey"
             columns: ["ad_variant_id"]
