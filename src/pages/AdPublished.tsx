@@ -73,7 +73,13 @@ const AdPublished = () => {
       });
 
       if (error) {
-        // Check if it's a payment required error (402)
+        // Handle rate limit errors
+        if (error.message?.includes('429') || error.message?.includes('rate limit')) {
+          toast.error('Service temporarily unavailable. Please try again in a moment.');
+          return;
+        }
+        
+        // Check if it's a payment required error (402) or credits exhausted
         if (error.message?.includes('requiresPayment') || data?.requiresPayment) {
           // Redirect to Stripe checkout
           if (data?.checkoutUrl) {
@@ -81,6 +87,8 @@ const AdPublished = () => {
           } else {
             toast.error('Payment required but no checkout URL provided');
           }
+        } else if (error.message?.includes('402') || error.message?.includes('credits exhausted')) {
+          toast.error('AI service credits exhausted. Please contact support at support@xixoi.com');
         } else {
           throw error;
         }

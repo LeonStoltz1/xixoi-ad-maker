@@ -118,11 +118,26 @@ export default function GeneratePoliticalAd() {
       );
 
       if (usageError || usageData?.error) {
-        toast({
-          title: "Usage Limit Reached",
-          description: usageData?.message || "Failed to check usage quota",
-          variant: "destructive",
-        });
+        // Handle rate limit and credits exhausted errors
+        if (usageError?.message?.includes('429') || usageError?.message?.includes('rate limit')) {
+          toast({
+            title: "Service Unavailable",
+            description: "Service temporarily unavailable. Please try again in a moment.",
+            variant: "destructive",
+          });
+        } else if (usageError?.message?.includes('402') || usageError?.message?.includes('credits exhausted')) {
+          toast({
+            title: "Credits Exhausted",
+            description: "AI service credits exhausted. Please contact support at support@xixoi.com",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Usage Limit Reached",
+            description: usageData?.message || "Failed to check usage quota",
+            variant: "destructive",
+          });
+        }
         setLoading(false);
         return;
       }
@@ -147,7 +162,27 @@ export default function GeneratePoliticalAd() {
         }
       });
 
-      if (functionError) throw functionError;
+      if (functionError) {
+        // Handle rate limit and credits exhausted errors
+        if (functionError.message?.includes('429') || functionError.message?.includes('rate limit')) {
+          toast({
+            title: "Rate Limit Reached",
+            description: "AI service temporarily unavailable. Please try again in a moment.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        } else if (functionError.message?.includes('402') || functionError.message?.includes('credits exhausted')) {
+          toast({
+            title: "Credits Exhausted",
+            description: "AI service credits exhausted. Please contact support at support@xixoi.com",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+        throw functionError;
+      }
 
       setGeneratedVariants(functionData.variants);
       setDisclaimer(functionData.disclaimer);

@@ -30,7 +30,16 @@ export const useStripeCheckout = () => {
       }
     } catch (error: any) {
       console.error('Error creating checkout session:', error);
-      toast.error(error.message || 'Failed to create checkout session');
+      
+      // Handle rate limit and credits exhausted errors
+      if (error.message?.includes('429') || error.message?.includes('rate limit')) {
+        toast.error('Payment service temporarily unavailable. Please try again in a moment.');
+      } else if (error.message?.includes('402') || error.message?.includes('credits exhausted')) {
+        toast.error('Service credits exhausted. Please contact support at support@xixoi.com');
+      } else {
+        toast.error(error.message || 'Failed to create checkout session');
+      }
+      
       setLoading(false);
       throw error;
     }

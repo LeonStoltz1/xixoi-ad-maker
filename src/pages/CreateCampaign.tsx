@@ -357,6 +357,24 @@ export default function CreateCampaign() {
 
       if (generateError) {
         console.error('AI generation error:', generateError);
+        
+        // Handle rate limit and credits exhausted errors
+        if (generateError.message?.includes('429') || generateError.message?.includes('rate limit')) {
+          toast({
+            variant: "destructive",
+            title: "Rate limit reached",
+            description: "AI service temporarily unavailable. Please try again in a moment."
+          });
+          return;
+        } else if (generateError.message?.includes('402') || generateError.message?.includes('credits exhausted')) {
+          toast({
+            variant: "destructive",
+            title: "Credits exhausted",
+            description: "AI service credits exhausted. Please contact support at support@xixoi.com"
+          });
+          return;
+        }
+        
         throw generateError;
       }
 
