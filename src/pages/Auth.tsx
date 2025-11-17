@@ -148,7 +148,7 @@ export default function Auth() {
       <div className="flex items-center justify-center px-6 py-12 mt-32">
         <div className="w-full max-w-md space-y-8">
         {planDetails && (
-          <div className="border-2 border-primary bg-primary/5 rounded-xl p-4 text-center space-y-1">
+          <div className="border-2 border-primary bg-primary/5 p-4 text-center space-y-1">
             <p className="text-sm uppercase tracking-wide font-medium text-muted-foreground">
               Selected Plan
             </p>
@@ -164,7 +164,7 @@ export default function Auth() {
           </p>
         </div>
 
-        <form onSubmit={handleAuth} className="space-y-6 border border-foreground rounded-2xl p-8">
+        <form onSubmit={handleAuth} className="space-y-6 border border-foreground p-8">
           {!isLogin && (
             <div className="space-y-2">
               <label className="text-sm font-medium uppercase tracking-wide">Full Name</label>
