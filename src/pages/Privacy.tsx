@@ -14,7 +14,7 @@ const Privacy = () => {
             <h2 className="text-xl md:text-2xl font-semibold mb-4">1. Information We Collect</h2>
             <p className="mb-4">xiXoi™ collects the following types of information:</p>
             <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Account Information:</strong> Email address, full name, OAuth tokens from connected ad platforms (Meta, TikTok, Google Ads, LinkedIn, X)</li>
+              <li><strong>Account Information:</strong> Email address, full name</li>
               <li><strong>Campaign Data:</strong> Uploaded content (images, videos, text), generated ad variants, targeting preferences, daily budget settings</li>
               <li><strong>Payment Information:</strong> Processed securely via Stripe (we do not store credit card details)</li>
               <li><strong>Ad Spend Data:</strong> Total spend per platform, billing period, currency, campaign performance metrics</li>
@@ -52,7 +52,6 @@ const Privacy = () => {
               <li><strong>Active Users:</strong> Data retained for duration of account activity</li>
               <li><strong>Deleted Accounts:</strong> All user data permanently deleted within 30 days of account deletion request</li>
               <li><strong>Ad Spend Records:</strong> Retained for 7 years for tax/accounting compliance</li>
-              <li><strong>OAuth Tokens:</strong> Deleted immediately upon platform disconnection or account deletion</li>
             </ul>
           </div>
 
@@ -60,7 +59,7 @@ const Privacy = () => {
             <h2 className="text-2xl font-semibold mb-4">5. Data Security</h2>
             <p>xiXoi™ implements industry-standard security measures:</p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>OAuth tokens encrypted at rest using AES-256</li>
+              <li>All sensitive data encrypted at rest using AES-256</li>
               <li>HTTPS/TLS encryption for all data in transit</li>
               <li>Row-Level Security (RLS) policies on all database tables</li>
               <li>Regular security audits and vulnerability scanning</li>

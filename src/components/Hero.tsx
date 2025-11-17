@@ -24,7 +24,7 @@ export const Hero = () => {
             Your Ad.<br />Already Done.
           </h1>
           <p className="text-lg md:text-xl pt-tight">
-            Upload once. xiXoi™ handles the rest.
+            No accounts. No setup. Run ads in 60 seconds.
           </p>
         </div>
         
