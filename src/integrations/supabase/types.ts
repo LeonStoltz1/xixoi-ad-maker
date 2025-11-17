@@ -174,6 +174,7 @@ export type Database = {
           headline: string | null
           id: string
           predicted_roas: number | null
+          variant_set: string | null
           variant_type: string
         }
         Insert: {
@@ -185,6 +186,7 @@ export type Database = {
           headline?: string | null
           id?: string
           predicted_roas?: number | null
+          variant_set?: string | null
           variant_type: string
         }
         Update: {
@@ -196,6 +198,7 @@ export type Database = {
           headline?: string | null
           id?: string
           predicted_roas?: number | null
+          variant_set?: string | null
           variant_type?: string
         }
         Relationships: [
