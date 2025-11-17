@@ -611,13 +611,6 @@ export function EnhancedCampaignCard({
 
   return (
     <Card className="relative overflow-hidden">
-      {/* Status indicator bar */}
-      <div className={`absolute top-0 left-0 right-0 h-1 ${
-        !campaign.is_active ? 'bg-muted' :
-        budgetStatus === 'low' ? 'bg-foreground' :
-        spendVelocity === 'high' ? 'bg-foreground' :
-        'bg-foreground'
-      }`} />
 
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
