@@ -24,6 +24,10 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
+    // Generate unique ad ID for verification URL
+    const adId = crypto.randomUUID();
+    const verifyUrl = `https://xixoi.com/verify/ad/${adId}`;
+
     // Generate signature hash for the ad
     const payload = `${candidateName}|${race}|${electionYear}|${adCopy}|${Date.now()}`;
     const encoder = new TextEncoder();
@@ -33,14 +37,22 @@ serve(async (req) => {
     const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
     console.log('Generated signature:', signature.substring(0, 16) + '...');
+    console.log('Verification URL:', verifyUrl);
 
-    // Create visible watermark using AI image editing
-    const watermarkPrompt = `Add a subtle, semi-transparent watermark badge to the bottom-right corner of this image. The badge should include:
-- Text: "xiXoi Verified Political Ad"
-- Candidate: ${candidateName}
-- Election: ${electionYear}
-- Small QR code placeholder
-Make it professional, minimal, and not too intrusive (60% opacity, black background with white text).`;
+    // Create visible watermark with QR code using AI image editing
+    const watermarkPrompt = `Add a professional political ad verification watermark to this image with two elements:
+
+1. BOTTOM-RIGHT CORNER: A semi-transparent badge (60% opacity, black background with white text) containing:
+   - "xiXoi™ Verified Political Ad"
+   - "Candidate: ${candidateName}"
+   - "Election ${electionYear}"
+
+2. BOTTOM-LEFT CORNER: A small, scannable QR code (approximately 80x80 pixels) with:
+   - White background, black QR code pattern
+   - The QR code should encode this URL: ${verifyUrl}
+   - Make sure the QR code is clear and scannable
+
+Make both elements professional and minimal, not too intrusive. The watermark should indicate this is a verified political advertisement.`;
 
     console.log('Calling Lovable AI for watermark generation...');
 
@@ -115,6 +127,7 @@ Make it professional, minimal, and not too intrusive (60% opacity, black backgro
       JSON.stringify({
         watermarkUrl: publicUrl,
         signatureBase58: signature,
+        verifyUrl: verifyUrl,
         timestamp: Date.now()
       }),
       { 
