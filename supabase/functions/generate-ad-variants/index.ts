@@ -166,6 +166,7 @@ Platform specifications:
 - TikTok: Text 100 chars max  
 - Google Ads: Description 90 chars max, Headline 30 chars max
 - LinkedIn: Primary text 150 chars max
+- X (Twitter): Text 280 chars max
 
 ${enableABTesting ? 'A/B TESTING MODE: Generate TWO DISTINCT sets of ad copy with different approaches (Set A: feature-focused, Set B: benefit-focused). Each set should have 4 variants (one per platform).' : ''}
 
@@ -215,6 +216,12 @@ Return JSON:
       "headline": "max 40 chars",
       "body": "max 150 chars",
       "cta": "max 20 chars"${enableABTesting ? ',\n      "set": "A"' : ''}
+    },
+    {
+      "platform": "x",
+      "headline": "max 40 chars",
+      "body": "max 280 chars - full tweet with compelling copy",
+      "cta": "max 20 chars"${enableABTesting ? ',\n      "set": "A"' : ''}
     }${enableABTesting ? `,
     {
       "platform": "meta",
@@ -241,6 +248,13 @@ Return JSON:
       "platform": "linkedin",
       "headline": "max 40 chars - DIFFERENT from Set A",
       "body": "max 150 chars - DIFFERENT from Set A",
+      "cta": "max 20 chars",
+      "set": "B"
+    },
+    {
+      "platform": "x",
+      "headline": "max 40 chars - DIFFERENT from Set A",
+      "body": "max 280 chars - DIFFERENT tweet approach from Set A",
       "cta": "max 20 chars",
       "set": "B"
     }` : ''}

@@ -94,3 +94,6 @@ verify_jwt = false
 
 [functions.encrypt-master-token]
 verify_jwt = false
+
+[functions.publish-x]
+verify_jwt = false

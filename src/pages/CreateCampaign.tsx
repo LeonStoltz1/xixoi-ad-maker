@@ -66,7 +66,7 @@ export default function CreateCampaign() {
     linkedin: 150,
     tiktok: 100,
     google: 90,
-    x: 140
+    x: 280
   };
 
   // Get the strictest character limit based on selected platforms
