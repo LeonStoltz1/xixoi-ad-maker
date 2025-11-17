@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { PublishModal } from "@/components/PublishModal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Header } from "@/components/Header";
 
 export default function CampaignPublish() {
   const [searchParams] = useSearchParams();
@@ -25,7 +26,8 @@ export default function CampaignPublish() {
   ];
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 pt-40">
+      <Header />
       <h1 className="text-3xl md:text-4xl font-bold mb-2">Publish Campaign</h1>
       <p className="text-muted-foreground mb-8">
         Choose which platforms to publish your campaign to

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import { Header } from "@/components/Header";
 
 const AdPublished = () => {
   const navigate = useNavigate();
@@ -170,7 +171,8 @@ const AdPublished = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-6 py-12 relative">
+    <div className="min-h-screen flex items-center justify-center bg-background px-6 py-12 relative pt-40">
+      <Header />
       <div className="max-w-2xl mx-auto text-center space-y-12">
         {/* Back Button */}
         <Button

@@ -16,6 +16,7 @@ import { RealEstateDetailsForm } from "@/components/real-estate/RealEstateDetail
 import { buildRealEstateFeatureSummary, buildHousingFooter } from "@/lib/realEstatePrompt";
 import type { RealEstateDetailsFormValues } from "@/schema/realEstate";
 import { invokeWithRetry } from "@/lib/retryWithBackoff";
+import { Header } from "@/components/Header";
 
 export default function CreateCampaign() {
   const { realtorProfile, isLoading: realtorLoading, viewMode } = useRealtor();
@@ -457,28 +458,10 @@ export default function CreateCampaign() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-foreground/20 bg-black">
-        <div className="container mx-auto px-6 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="text-white hover:text-white hover:bg-white/10">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <video 
-              src="/xiXoiLogo.mp4" 
-              autoPlay 
-              loop 
-              muted 
-              playsInline
-              className="w-12 h-12 object-contain"
-            />
-            <h1 className="text-xl md:text-2xl font-bold text-white">xiXoi™</h1>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-12">
+      <main className="container mx-auto px-6 py-12 pt-40">
         <div className="max-w-2xl mx-auto space-y-8">
           <div className="text-center space-y-2">
             <h2 className="text-2xl md:text-3xl font-bold">Create New Campaign</h2>

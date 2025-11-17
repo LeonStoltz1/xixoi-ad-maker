@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { LogOut, Crown, Settings } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { useRealtor } from "@/contexts/RealtorContext";
-import { usePolitical } from "@/contexts/PoliticalContext";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
@@ -13,7 +11,6 @@ export const Header = () => {
   const [userPlan, setUserPlan] = useState<string>('free');
   const navigate = useNavigate();
   const { realtorProfile, viewMode, setViewMode } = useRealtor();
-  const { politicalProfile } = usePolitical();
 
   useEffect(() => {
     // Check initial auth state
@@ -73,7 +70,7 @@ export const Header = () => {
         
         {/* User Controls - Right Side */}
         {isAuthenticated ? (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
               {/* Realtor Mode Toggle - Only shown for realtors */}
               {realtorProfile?.isRealtor && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/20">
@@ -84,7 +81,6 @@ export const Header = () => {
                     id="view-mode"
                     checked={viewMode === 'realtor'}
                     onCheckedChange={(checked) => setViewMode(checked ? 'realtor' : 'general')}
-                    className="data-[state=checked]:bg-white"
                   />
                   <Label htmlFor="view-mode" className="text-xs text-white/70 cursor-pointer">
                     Realtor
@@ -92,51 +88,46 @@ export const Header = () => {
                 </div>
               )}
               
-              {/* POLITICAL MODE HIDDEN - Re-enable later */}
-              {/* {politicalProfile?.hasPoliticalTier && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/10"
-                  onClick={() => navigate('/political/dashboard')}
-                >
-                  Political Dashboard
-                </Button>
-              )} */}
-              
               {/* Plan Badge */}
-              <div className={`px-3 py-1.5 border text-xs md:text-sm ${
-                userPlan !== 'free'
-                  ? 'bg-white/10 border-white/30 text-white' 
-                  : 'bg-white/5 border-white/20 text-white/70'
-              } flex items-center gap-2`}>
-                {userPlan !== 'free' && <Crown className="w-3 h-3 md:w-4 md:h-4" />}
-                <span className="font-medium uppercase">
-                  {userPlan === 'pro' ? 'Pro' : userPlan === 'elite' ? 'Elite' : userPlan === 'agency' ? 'Agency' : 'Free'}
+              <div className="px-3 py-1.5 border border-white/20 text-sm">
+                <span className="text-white uppercase tracking-wide">
+                  {userPlan === 'pro' ? 'PRO' : userPlan === 'elite' ? 'ELITE' : userPlan === 'agency' ? 'AGENCY' : 'FREE'}
                 </span>
               </div>
               
-              {userPlan === 'free' && (
-                <Button size="sm" onClick={() => {
-                  navigate('/', { state: { scrollToPricing: true } });
-                }}>
-                  Upgrade
-                </Button>
-              )}
+              {/* Upgrade Link */}
+              <button 
+                onClick={() => navigate('/', { state: { scrollToPricing: true } })}
+                className="text-white hover:text-white/80 transition-colors text-sm"
+              >
+                Upgrade
+              </button>
               
-              <Button variant="ghost" size="sm" className="text-white hover:bg-white/10" onClick={handleSignOut}>
-                <LogOut className="w-4 h-4 mr-2" />
+              {/* External Link Icon */}
+              <ExternalLink className="w-5 h-5 text-white" />
+              
+              {/* Sign Out */}
+              <button 
+                onClick={handleSignOut}
+                className="text-white hover:text-white/80 transition-colors text-sm"
+              >
                 Sign Out
-              </Button>
+              </button>
           </div>
         ) : (
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10" onClick={() => navigate('/auth?mode=login')}>
+            <button 
+              onClick={() => navigate('/auth?mode=login')}
+              className="text-white hover:text-white/80 transition-colors text-sm px-3 py-1.5"
+            >
               Sign In
-            </Button>
-            <Button size="sm" className="bg-white text-black hover:bg-white/90" onClick={() => navigate('/auth?mode=signup')}>
+            </button>
+            <button 
+              onClick={() => navigate('/auth?mode=signup')}
+              className="bg-white text-black hover:bg-white/90 transition-colors text-sm px-4 py-2 border border-black"
+            >
               Start Free
-            </Button>
+            </button>
           </div>
         )}
       </div>

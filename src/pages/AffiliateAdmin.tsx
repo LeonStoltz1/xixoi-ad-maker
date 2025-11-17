@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { PlayCircle, Ban, Mail } from "lucide-react";
+import { Header } from "@/components/Header";
 
 interface Affiliate {
   id: string;
@@ -137,7 +138,8 @@ export default function AffiliateAdmin() {
   const totalPending = totalEarnings - totalPaid;
 
   return (
-    <div className="min-h-screen bg-background py-12 px-6">
+    <div className="min-h-screen bg-background py-12 px-6 pt-40">
+      <Header />
       <div className="container mx-auto max-w-6xl">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">

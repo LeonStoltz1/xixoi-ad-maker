@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, DollarSign, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Header } from '@/components/Header';
 
 interface WatermarkAd {
   id: string;
@@ -132,7 +133,8 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-8 pt-40">
+      <Header />
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">

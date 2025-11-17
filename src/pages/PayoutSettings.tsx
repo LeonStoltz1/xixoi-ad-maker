@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Zap, DollarSign, Settings } from "lucide-react";
 import { toast } from "sonner";
+import { Header } from "@/components/Header";
 
 export default function PayoutSettings() {
   const navigate = useNavigate();
@@ -80,7 +81,8 @@ export default function PayoutSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12 px-6">
+    <div className="min-h-screen bg-background py-12 px-6 pt-40">
+      <Header />
       <div className="container mx-auto max-w-4xl">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
