@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { campaignId } = await req.json();
+    const { campaignId, enableABTesting = false } = await req.json();
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -39,16 +39,17 @@ serve(async (req) => {
     const userPlan = profile?.plan || 'free';
     const isFreeUser = userPlan === 'free';
     
-    // Variant limits by tier
+    // Variant limits by tier (multiply by 2 if A/B testing enabled)
     const variantCount: Record<string, number> = {
       free: 1,
       pro: 4,
       elite: 8,
       agency: 16
     };
-    const maxVariants = variantCount[userPlan] || 1;
+    const baseVariantCount = variantCount[userPlan] || 1;
+    const maxVariants = enableABTesting ? baseVariantCount * 2 : baseVariantCount;
     
-    console.log('User plan:', userPlan, 'Is free user:', isFreeUser, 'Max variants:', maxVariants);
+    console.log('User plan:', userPlan, 'Is free user:', isFreeUser, 'Base variants:', baseVariantCount, 'A/B Testing:', enableABTesting, 'Total variants:', maxVariants);
 
     // Get the text content from assets (all asset types now have description)
     const asset = campaign.campaign_assets[0];
@@ -166,6 +167,8 @@ Platform specifications:
 - Google Ads: Description 90 chars max, Headline 30 chars max
 - LinkedIn: Primary text 150 chars max
 
+${enableABTesting ? 'A/B TESTING MODE: Generate TWO DISTINCT sets of ad copy with different approaches (Set A: feature-focused, Set B: benefit-focused). Each set should have 4 variants (one per platform).' : ''}
+
 Your task:
 1. Read the vision analysis (if provided) AND user's description
 2. Extract: product features from image, name, price, location, contact info from text
@@ -193,26 +196,54 @@ Return JSON:
       "platform": "meta",
       "headline": "max 40 chars - compelling headline about their product",
       "body": "max 125 chars - persuasive copy using their details and image features",
-      "cta": "max 20 chars"
+      "cta": "max 20 chars"${enableABTesting ? ',\n      "set": "A"' : ''}
     },
     {
       "platform": "tiktok",
       "headline": "max 30 chars",
       "body": "max 100 chars",
-      "cta": "max 20 chars"
+      "cta": "max 20 chars"${enableABTesting ? ',\n      "set": "A"' : ''}
     },
     {
       "platform": "google",
       "headline": "max 30 chars",
       "body": "max 90 chars",
-      "cta": "max 20 chars"
+      "cta": "max 20 chars"${enableABTesting ? ',\n      "set": "A"' : ''}
     },
     {
       "platform": "linkedin",
       "headline": "max 40 chars",
       "body": "max 150 chars",
-      "cta": "max 20 chars"
-    }
+      "cta": "max 20 chars"${enableABTesting ? ',\n      "set": "A"' : ''}
+    }${enableABTesting ? `,
+    {
+      "platform": "meta",
+      "headline": "max 40 chars - DIFFERENT approach from Set A",
+      "body": "max 125 chars - DIFFERENT angle/benefits from Set A",
+      "cta": "max 20 chars",
+      "set": "B"
+    },
+    {
+      "platform": "tiktok",
+      "headline": "max 30 chars - DIFFERENT from Set A",
+      "body": "max 100 chars - DIFFERENT from Set A",
+      "cta": "max 20 chars",
+      "set": "B"
+    },
+    {
+      "platform": "google",
+      "headline": "max 30 chars - DIFFERENT from Set A",
+      "body": "max 90 chars - DIFFERENT from Set A",
+      "cta": "max 20 chars",
+      "set": "B"
+    },
+    {
+      "platform": "linkedin",
+      "headline": "max 40 chars - DIFFERENT from Set A",
+      "body": "max 150 chars - DIFFERENT from Set A",
+      "cta": "max 20 chars",
+      "set": "B"
+    }` : ''}
   ]
 }`
           }
@@ -279,6 +310,7 @@ Return JSON:
       cta_text: variant.cta,
       creative_url: assetUrl,
       predicted_roas: (2.5 + Math.random() * 2).toFixed(2),
+      variant_set: variant.set || 'A'
     }));
 
     const { data: insertedVariants, error: insertError } = await supabase

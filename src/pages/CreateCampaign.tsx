@@ -21,12 +21,14 @@ export default function CreateCampaign() {
   const { realtorProfile, isLoading: realtorLoading, viewMode } = useRealtor();
   const [user, setUser] = useState<any>(null);
   const [campaignName, setCampaignName] = useState("");
+  const [suggestingName, setSuggestingName] = useState(false);
   const [uploadType, setUploadType] = useState<'image' | 'video' | 'text'>('image');
   const [textContent, setTextContent] = useState("");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [enableABTesting, setEnableABTesting] = useState(false);
   
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null);
@@ -240,6 +242,46 @@ export default function CreateCampaign() {
     fileInputRef.current?.click();
   };
 
+  const handleSuggestCampaignName = async () => {
+    if (!textContent.trim()) {
+      toast({
+        title: "Add description first",
+        description: "Please add a product/service description before generating a campaign name.",
+        variant: "default"
+      });
+      return;
+    }
+
+    setSuggestingName(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('suggest-campaign-name', {
+        body: { 
+          description: textContent,
+          productType: adCategory 
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.suggestedName) {
+        setCampaignName(data.suggestedName);
+        toast({
+          title: "Campaign name suggested",
+          description: "You can edit the name if needed.",
+        });
+      }
+    } catch (error: any) {
+      console.error('Error suggesting campaign name:', error);
+      toast({
+        title: "Couldn't generate name",
+        description: error.message || "Please try again or enter a name manually.",
+        variant: "destructive"
+      });
+    } finally {
+      setSuggestingName(false);
+    }
+  };
+
   const handleCreateCampaign = async () => {
     console.log('Button clicked! User:', user, 'TextContent:', textContent, 'UploadType:', uploadType, 'File:', uploadedFile);
     
@@ -351,11 +393,11 @@ export default function CreateCampaign() {
 
       console.log('Campaign and asset created, calling generate-ad-variants...');
 
-      // Trigger AI generation with retry logic
+      // Trigger AI generation with retry logic (A/B testing creates 2 sets if enabled)
       const { error: generateError } = await invokeWithRetry(
         supabase,
         'generate-ad-variants',
-        { campaignId: campaign.id },
+        { campaignId: campaign.id, enableABTesting },
         { maxRetries: 3, initialDelayMs: 1000 }
       );
 
@@ -447,11 +489,41 @@ export default function CreateCampaign() {
             {/* Campaign Name */}
             <div className="space-y-2">
               <label className="text-sm font-medium uppercase tracking-wide">Campaign Name</label>
-              <Input
-                value={campaignName}
-                onChange={(e) => setCampaignName(e.target.value)}
-                placeholder="My Product Campaign"
-                className="border-foreground"
+              <div className="flex gap-2">
+                <Input
+                  value={campaignName}
+                  onChange={(e) => setCampaignName(e.target.value)}
+                  placeholder="My Product Campaign"
+                  className="border-foreground flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSuggestCampaignName}
+                  disabled={suggestingName || !textContent.trim()}
+                  className="whitespace-nowrap"
+                >
+                  {suggestingName ? "Suggesting..." : "✨ AI Suggest"}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Add your description below, then click "AI Suggest" for a campaign name
+              </p>
+            </div>
+
+            {/* A/B Testing Toggle */}
+            <div className="flex items-center justify-between p-4 border border-border bg-card">
+              <div className="flex items-center gap-3">
+                <div>
+                  <label className="text-sm font-medium">A/B Testing</label>
+                  <p className="text-xs text-muted-foreground">
+                    Generate 2 versions to test which performs better
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={enableABTesting}
+                onCheckedChange={setEnableABTesting}
               />
             </div>
 
