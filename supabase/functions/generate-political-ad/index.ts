@@ -42,7 +42,12 @@ RESTRICTED WORDS/PHRASES TO AVOID:
 - Unsubstantiated statistics or claims
 
 Platform: ${platform}
-Character Limit: ${characterLimit} characters (body only, excluding disclaimer)`;
+Character Limit: ${characterLimit} characters (body only, excluding disclaimer)
+
+PLATFORM-SPECIFIC DISCLAIMER REQUIREMENTS:
+- X (Twitter): Disclaimer must fit within 280 char total limit (body + disclaimer)
+- Meta/TikTok/LinkedIn: Disclaimer can be separate field
+- Google: Disclaimer in landing page per policy`;
 
     const userPrompt = `Create 3 compelling political ad variations for:
 
