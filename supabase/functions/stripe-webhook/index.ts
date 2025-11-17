@@ -533,6 +533,52 @@ serve(async (req) => {
         break;
       }
 
+      case 'account.updated': {
+        const account = event.data.object as Stripe.Account;
+        
+        console.log('Stripe Connect account updated:', account.id);
+
+        // Find affiliate with this Stripe account
+        const { data: affiliate } = await supabase
+          .from('affiliates')
+          .select('id, user_id')
+          .eq('stripe_account_id', account.id)
+          .maybeSingle();
+
+        if (affiliate) {
+          // Determine account status
+          let accountStatus = 'pending';
+          
+          if (account.charges_enabled && account.payouts_enabled) {
+            accountStatus = 'verified';
+          } else if (account.requirements?.disabled_reason) {
+            // Account is restricted or rejected
+            accountStatus = account.requirements.disabled_reason === 'rejected.fraud' 
+              ? 'rejected' 
+              : 'restricted';
+          } else if (account.requirements?.currently_due && account.requirements.currently_due.length > 0) {
+            accountStatus = 'pending';
+          }
+
+          // Update affiliate record
+          await supabase
+            .from('affiliates')
+            .update({
+              stripe_account_status: accountStatus,
+              stripe_onboarding_complete: account.charges_enabled && account.payouts_enabled,
+            })
+            .eq('id', affiliate.id);
+
+          console.log('Updated affiliate account status:', { 
+            affiliateId: affiliate.id, 
+            accountStatus,
+            chargesEnabled: account.charges_enabled,
+            payoutsEnabled: account.payouts_enabled 
+          });
+        }
+        break;
+      }
+
       default:
         console.log(`Unhandled event type: ${event.type}`);
     }

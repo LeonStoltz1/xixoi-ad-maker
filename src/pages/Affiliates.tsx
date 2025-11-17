@@ -95,6 +95,26 @@ const AffiliatesPage = () => {
       return;
     }
 
+    // Check Stripe account status
+    const accountStatus = (affiliate as any).stripe_account_status;
+    if (accountStatus === 'rejected') {
+      toast.error("Your Stripe account was rejected. Please contact support.");
+      setRequestError("Stripe account rejected. Contact support@xixoi.com");
+      return;
+    }
+    
+    if (accountStatus === 'restricted') {
+      toast.error("Your Stripe account is restricted. Please complete verification in Stripe.");
+      setRequestError("Account restricted. Complete verification in your Stripe dashboard.");
+      return;
+    }
+
+    if (accountStatus !== 'verified') {
+      toast.error("Your Stripe account verification is pending. Please wait for approval.");
+      setRequestError("Account verification pending. This may take 1-2 business days.");
+      return;
+    }
+
     setIsRequestingPayout(true);
     setRequestError(null);
 
@@ -225,6 +245,37 @@ const AffiliatesPage = () => {
                   >
                     Connect Bank Account with Stripe
                   </Button>
+                </div>
+              )}
+
+              {/* Account Status Warnings */}
+              {affiliate.stripe_account_id && (affiliate as any).stripe_account_status === 'pending' && (
+                <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                    ⏳ Your Stripe account verification is pending. This may take 1-2 business days.
+                  </p>
+                </div>
+              )}
+
+              {affiliate.stripe_account_id && (affiliate as any).stripe_account_status === 'restricted' && (
+                <div className="mb-4 p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                  <p className="text-sm font-medium text-orange-700 dark:text-orange-300 mb-2">
+                    ⚠️ Your Stripe account is restricted. Please complete verification.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Visit your Stripe dashboard to complete any required verification steps.
+                  </p>
+                </div>
+              )}
+
+              {affiliate.stripe_account_id && (affiliate as any).stripe_account_status === 'rejected' && (
+                <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+                  <p className="text-sm font-medium text-red-700 dark:text-red-300 mb-2">
+                    ❌ Your Stripe account was rejected.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Please contact support@xixoi.com for assistance.
+                  </p>
                 </div>
               )}
 
