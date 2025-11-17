@@ -1,10 +1,12 @@
 import { SupabaseClient } from '@supabase/supabase-js';
+import { requestQueue } from './requestQueue';
 
 interface RetryOptions {
   maxRetries?: number;
   initialDelayMs?: number;
   maxDelayMs?: number;
   backoffMultiplier?: number;
+  useQueue?: boolean; // Whether to use the request queue
 }
 
 /**
@@ -26,7 +28,8 @@ export async function invokeWithRetry<T = any>(
     maxRetries = 3,
     initialDelayMs = 1000,
     maxDelayMs = 10000,
-    backoffMultiplier = 2
+    backoffMultiplier = 2,
+    useQueue = true // Enable queue by default
   } = options;
 
   let lastError: any = null;
@@ -34,9 +37,10 @@ export async function invokeWithRetry<T = any>(
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      const { data, error } = await supabase.functions.invoke(functionName, {
-        body
-      });
+      // Use queue if enabled, otherwise direct invoke
+      const { data, error } = useQueue
+        ? await requestQueue.enqueue<T>(supabase, functionName, body)
+        : await supabase.functions.invoke(functionName, { body });
 
       // If no error or error is not 429, return immediately
       if (!error || (!error.message?.includes('429') && !error.message?.includes('rate limit'))) {
