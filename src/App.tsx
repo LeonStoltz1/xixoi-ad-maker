@@ -71,13 +71,13 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<RealtorIdentification />} />
-            <Route path="/political/verify" element={<VerifyCandidate />} />
-            <Route path="/political/generate" element={<GeneratePoliticalAd />} />
-            <Route path="/political/dashboard" element={<PoliticalDashboard />} />
             
-            {/* Public Verification Portal - no auth required */}
-            <Route path="/verify/ad/:adId" element={<VerifyAd />} />
-            <Route path="/verify/candidate/:candidateId" element={<VerifyCandidate />} />
+            {/* POLITICAL MODE HIDDEN - Re-enable later for launch */}
+            {/* <Route path="/political/verify" element={<VerifyCandidate />} /> */}
+            {/* <Route path="/political/generate" element={<GeneratePoliticalAd />} /> */}
+            {/* <Route path="/political/dashboard" element={<PoliticalDashboard />} /> */}
+            {/* <Route path="/verify/ad/:adId" element={<VerifyAd />} /> */}
+            {/* <Route path="/verify/candidate/:candidateId" element={<VerifyCandidate />} /> */}
             <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-campaign" element={<CreateCampaign />} />
           <Route path="/targeting/:campaignId" element={<TargetingSetup />} />

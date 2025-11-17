@@ -93,8 +93,8 @@ export const Header = () => {
                 </div>
               )}
               
-              {/* Political Dashboard Link - Only shown for political tier users */}
-              {politicalProfile?.hasPoliticalTier && (
+              {/* POLITICAL MODE HIDDEN - Re-enable later */}
+              {/* {politicalProfile?.hasPoliticalTier && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -103,7 +103,7 @@ export const Header = () => {
                 >
                   Political Dashboard
                 </Button>
-              )}
+              )} */}
               
               {/* Plan Badge */}
               <div className={`px-3 py-1.5 rounded-full border text-xs md:text-sm ${

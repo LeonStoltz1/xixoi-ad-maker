@@ -243,8 +243,8 @@ export default function Dashboard() {
           {/* SECTION 1: Global Spend Summary */}
           <GlobalSpendSummary key={refreshKey} />
 
-          {/* Political Dashboard Widget */}
-          {politicalProfile?.hasPoliticalTier && (
+          {/* POLITICAL MODE HIDDEN - Re-enable later for launch */}
+          {/* {politicalProfile?.hasPoliticalTier && (
             <div className="p-6 border-2 border-primary rounded-lg bg-primary/5">
               <div className="flex items-start justify-between">
                 <div>
@@ -263,7 +263,7 @@ export default function Dashboard() {
                 </Button>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* SECTION 2: Campaign Cards */}
           <div>
