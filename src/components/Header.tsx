@@ -58,7 +58,7 @@ export const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-32 bg-black border-b border-white/20">
-      <div className="container mx-auto max-w-content px-6 h-full flex items-center justify-between">
+      <div className="mx-auto px-6 h-full flex items-center justify-between">
         {/* Logo - Left Side */}
         <Link to={logoDestination} className="text-lg md:text-xl font-bold font-heading flex items-center text-white">
           <video 
