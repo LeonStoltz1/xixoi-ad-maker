@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -45,6 +45,8 @@ interface Campaign {
   contact_phone?: string | null;
   contact_email?: string | null;
   landing_url?: string | null;
+  target_audience?: string | null;
+  target_location?: string | null;
 }
 
 export default function Dashboard() {
@@ -64,6 +66,7 @@ export default function Dashboard() {
   const [showContactDetection, setShowContactDetection] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
   const { politicalProfile } = usePolitical();
@@ -121,6 +124,20 @@ export default function Dashboard() {
       setCampaignPerformance(perfMap);
     }
   };
+
+  // Filter campaigns based on search query
+  const filteredCampaigns = campaigns.filter(campaign => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    return (
+      campaign.name.toLowerCase().includes(query) ||
+      campaign.primary_goal?.toLowerCase().includes(query) ||
+      campaign.target_audience?.toLowerCase().includes(query) ||
+      campaign.target_location?.toLowerCase().includes(query) ||
+      campaign.status?.toLowerCase().includes(query)
+    );
+  });
 
   const handleUpdate = () => {
     if (user) {
@@ -243,6 +260,20 @@ export default function Dashboard() {
           {/* SECTION 1: Global Spend Summary */}
           <GlobalSpendSummary key={refreshKey} />
 
+          {/* Search Input */}
+          {campaigns.length > 0 && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search campaigns by name, goal, audience, or location..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          )}
+
           {/* POLITICAL MODE HIDDEN - Re-enable later for launch */}
           {/* {politicalProfile?.hasPoliticalTier && (
             <div className="p-6 border-2 border-primary bg-primary/5">
@@ -267,7 +298,9 @@ export default function Dashboard() {
 
           {/* SECTION 2: Campaign Cards */}
           <div>
-            <h3 className="text-xl font-semibold mb-4">Campaigns</h3>
+            <h3 className="text-xl font-semibold mb-4">
+              Campaigns {searchQuery && `(${filteredCampaigns.length} ${filteredCampaigns.length === 1 ? 'result' : 'results'})`}
+            </h3>
             {campaigns.length === 0 ? (
               <div className="text-center py-12 border-2 border-dashed">
                 <p className="text-muted-foreground mb-4">No campaigns yet</p>
@@ -276,9 +309,16 @@ export default function Dashboard() {
                   Create Your First Campaign
                 </Button>
               </div>
+            ) : filteredCampaigns.length === 0 ? (
+              <div className="text-center py-12 border-2 border-dashed">
+                <p className="text-muted-foreground mb-4">No campaigns match your search</p>
+                <Button variant="outline" onClick={() => setSearchQuery("")}>
+                  Clear Search
+                </Button>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {campaigns.map((campaign) => (
+                {filteredCampaigns.map((campaign) => (
                   <EnhancedCampaignCard
                     key={campaign.id}
                     campaign={campaign}
