@@ -30,7 +30,7 @@ export const AIBuildsSection = () => {
           <div className="border border-foreground aspect-square flex flex-col overflow-hidden">
             <div className="flex-1 bg-foreground/5 relative">
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 border-2 border-foreground rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 border-2 border-foreground flex items-center justify-center">
                   <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-foreground border-b-8 border-b-transparent ml-1"></div>
                 </div>
               </div>
@@ -48,7 +48,7 @@ export const AIBuildsSection = () => {
           <div className="border border-foreground aspect-square flex flex-col overflow-hidden">
             <div className="p-3 bg-background border-b border-foreground">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 border-2 border-foreground rounded-full"></div>
+                <div className="w-8 h-8 border-2 border-foreground"></div>
                 <div className="flex-1 space-y-1">
                   <div className="h-2 bg-foreground w-20"></div>
                   <div className="h-2 bg-foreground/50 w-16"></div>

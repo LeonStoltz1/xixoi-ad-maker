@@ -236,7 +236,7 @@ export function RealEstateDetailsForm(props: RealEstateDetailsFormProps) {
           control={form.control}
           name="includeEHO"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+            <FormItem className="flex flex-row items-center justify-between border p-3">
               <div className="space-y-0.5">
                 <FormLabel>Include Equal Housing Opportunity</FormLabel>
                 <p className="text-xs text-muted-foreground">

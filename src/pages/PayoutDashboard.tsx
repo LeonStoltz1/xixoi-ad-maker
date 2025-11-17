@@ -79,10 +79,10 @@ export default function PayoutDashboard() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   {format(new Date(p.month + "-01"), "MMM yyyy")}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   ${p.affiliate.toFixed(2)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   ${p.agency.toFixed(2)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold">

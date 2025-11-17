@@ -228,7 +228,7 @@ export default function AffiliateAdmin() {
                 {affiliates.map((affiliate) => (
                   <div
                     key={affiliate.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    className="flex items-center justify-between p-4 border hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">

@@ -144,7 +144,7 @@ export default function AddAdBudget() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="animate-spin h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -155,7 +155,7 @@ export default function AddAdBudget() {
     return (
       <div className="min-h-screen bg-background p-4 md:p-6">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-6 p-4 bg-muted rounded-lg">
+          <div className="flex items-center justify-between mb-6 p-4 bg-muted">
             <Button
               variant="outline"
               onClick={() => {
@@ -241,7 +241,7 @@ export default function AddAdBudget() {
                 {platforms.map((platform) => (
                   <div
                     key={platform.id}
-                    className="flex items-center space-x-3 border border-foreground/20 p-4 rounded-lg hover:bg-muted/50 transition-colors"
+                    className="flex items-center space-x-3 border border-foreground/20 p-4 hover:bg-muted/50 transition-colors"
                   >
                     <Checkbox
                       id={platform.id}
@@ -261,7 +261,7 @@ export default function AddAdBudget() {
 
             {/* Auto-calculated Budget Display */}
             {minimumBudget && selectedPlatforms.length > 0 && (
-              <div className="border border-primary/30 bg-primary/5 p-4 rounded-lg space-y-3">
+              <div className="border border-primary/30 bg-primary/5 p-4 space-y-3">
                 <h3 className="text-sm md:text-base font-semibold flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-primary" />
                   Required Budget for {budgetPeriod === 'weekly' ? 'Weekly' : 'Monthly'} Campaign
@@ -327,7 +327,7 @@ export default function AddAdBudget() {
             {spendPlan && spendPlan.isValid && (
               <div className="space-y-4">
                 {/* Charge Breakdown */}
-                <div className="border border-foreground/20 p-4 md:p-6 rounded-lg space-y-3">
+                <div className="border border-foreground/20 p-4 md:p-6 space-y-3">
                   <h3 className="text-sm md:text-base font-semibold mb-3">You'll be charged ${spendPlan.initialStripeCharge.toFixed(2)} now</h3>
                   <div className="flex justify-between text-sm md:text-base">
                     <span>Ad Budget:</span>
@@ -352,7 +352,7 @@ export default function AddAdBudget() {
                 </div>
 
                 {/* AI Summary Card */}
-                <div className="border border-primary/30 bg-primary/5 p-4 md:p-6 rounded-lg space-y-3">
+                <div className="border border-primary/30 bg-primary/5 p-4 md:p-6 space-y-3">
                   <div className="flex items-center gap-2 mb-2">
                     <Sparkles className="w-5 h-5 text-primary" />
                     <h3 className="text-sm md:text-base font-semibold">AI Spend Plan</h3>

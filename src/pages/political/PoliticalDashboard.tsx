@@ -434,9 +434,9 @@ export default function PoliticalDashboard() {
             </div>
             <Progress value={usagePercentage} className="h-2" />
             {usagePercentage >= 90 && (
-              <div className="flex items-start gap-2 p-3 bg-orange-50 border border-orange-200 rounded">
-                <AlertCircle className="w-4 h-4 text-orange-600 mt-0.5" />
-                <p className="text-sm text-orange-800">
+              <div className="flex items-start gap-2 p-3 bg-background border border-foreground">
+                <AlertCircle className="w-4 h-4 mt-0.5" />
+                <p className="text-sm">
                   You're approaching your monthly limit. Ads reset on the 1st of each month.
                 </p>
               </div>
@@ -449,7 +449,7 @@ export default function PoliticalDashboard() {
           <h3 className="font-semibold text-lg mb-4">Platform Distribution</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {['meta', 'google', 'tiktok', 'linkedin', 'x'].map(platform => (
-              <div key={platform} className="text-center p-4 border border-border rounded-lg">
+              <div key={platform} className="text-center p-4 border border-border">
                 <p className="text-sm text-muted-foreground capitalize mb-2">{platform}</p>
                 <p className="text-2xl font-bold">{platformCounts[platform] || 0}</p>
               </div>
@@ -481,7 +481,7 @@ export default function PoliticalDashboard() {
               {ads.slice(0, 5).map((ad) => (
                 <div
                   key={ad.id}
-                  className="flex items-start gap-4 p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex items-start gap-4 p-4 border border-border hover:bg-muted/50 transition-colors"
                 >
                   {ad.imageUrl && (
                     <img

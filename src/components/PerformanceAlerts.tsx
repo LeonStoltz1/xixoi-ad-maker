@@ -71,9 +71,9 @@ export const PerformanceAlerts = () => {
   /* Uncomment after types regenerate:
   const getAlertIcon = (type: string) => {
     switch (type) {
-      case 'high_roas': return <TrendingUp className="w-5 h-5 text-green-500" />;
-      case 'low_roas': return <TrendingDown className="w-5 h-5 text-red-500" />;
-      default: return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+      case 'high_roas': return <TrendingUp className="w-5 h-5" />;
+      case 'low_roas': return <TrendingDown className="w-5 h-5" />;
+      default: return <AlertTriangle className="w-5 h-5" />;
     }
   };
 
@@ -89,7 +89,7 @@ export const PerformanceAlerts = () => {
       </CardHeader>
       <CardContent className="space-y-3">
         {alerts.map((alert) => (
-          <div key={alert.id} className="flex items-start gap-3 p-3 border border-foreground/10 rounded-lg">
+          <div key={alert.id} className="flex items-start gap-3 p-3 border border-foreground/10">
             {getAlertIcon(alert.alert_type)}
             <div className="flex-1">
               <p className="text-sm md:text-base font-medium">{alert.message}</p>

@@ -58,7 +58,7 @@ export const AISupportChat = () => {
   if (!isOpen) {
     return (
       <Button
-        className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-lg"
+        className="fixed bottom-6 right-6 w-14 h-14 shadow-lg"
         onClick={() => setIsOpen(true)}
       >
         <MessageCircle className="w-6 h-6" />
@@ -102,7 +102,7 @@ export const AISupportChat = () => {
           </>
         ) : (
           <>
-            <div className="p-3 bg-muted rounded-lg">
+            <div className="p-3 bg-muted">
               <p className="text-sm font-medium mb-2">AI Response:</p>
               <p className="text-sm">{response}</p>
             </div>

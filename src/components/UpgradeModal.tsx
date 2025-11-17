@@ -64,11 +64,11 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: Upg
                   <div className="text-xs font-bold uppercase tracking-wide mb-1">FREE</div>
                   <div className="text-xl md:text-2xl font-bold">$0</div>
                 </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-1 ${
+                <div className={`w-5 h-5 border-2 flex items-center justify-center mt-1 ${
                   selectedPlan === 'free' ? 'border-foreground' : 'border-foreground'
                 }`}>
                   {selectedPlan === 'free' && (
-                    <div className="w-3 h-3 rounded-full bg-foreground" />
+                    <div className="w-3 h-3 bg-foreground" />
                   )}
                 </div>
               </div>
@@ -96,11 +96,11 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: Upg
                   <div className="text-xs font-bold uppercase tracking-wide mb-1">PUBLISH PRO</div>
                   <div className="text-xl md:text-2xl font-bold">$29 per ad set</div>
                 </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-1 ${
+                <div className={`w-5 h-5 border-2 flex items-center justify-center mt-1 ${
                   selectedPlan === 'single' ? 'border-foreground' : 'border-foreground'
                 }`}>
                   {selectedPlan === 'single' && (
-                    <div className="w-3 h-3 rounded-full bg-foreground" />
+                    <div className="w-3 h-3 bg-foreground" />
                   )}
                 </div>
               </div>
@@ -128,11 +128,11 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: Upg
                   <div className="text-xs font-bold uppercase tracking-wide mb-1">UNLIMITED PRO</div>
                   <div className="text-xl md:text-2xl font-bold">$99/month</div>
                 </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-1 ${
+                <div className={`w-5 h-5 border-2 flex items-center justify-center mt-1 ${
                   selectedPlan === 'unlimited' ? 'border-foreground' : 'border-foreground'
                 }`}>
                   {selectedPlan === 'unlimited' && (
-                    <div className="w-3 h-3 rounded-full bg-foreground" />
+                    <div className="w-3 h-3 bg-foreground" />
                   )}
                 </div>
               </div>

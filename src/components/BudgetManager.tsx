@@ -164,12 +164,12 @@ export function BudgetManager({ campaigns, onBudgetUpdate }: BudgetManagerProps)
                       <span className="text-xs text-muted-foreground">
                         {campaign.status === 'ready' ? (
                           campaign.is_active ? (
-                            <span className="text-green-600">Active</span>
+                            <span className="font-medium">Active</span>
                           ) : (
-                            <span className="text-orange-600">Paused</span>
+                            <span className="font-medium">Paused</span>
                           )
                         ) : (
-                          <span className="text-yellow-600">Draft</span>
+                          <span className="font-medium">Draft</span>
                         )}
                       </span>
                     </Label>

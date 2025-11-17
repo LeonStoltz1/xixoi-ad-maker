@@ -216,8 +216,8 @@ export default function CampaignAnalytics() {
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Demo Data Banner */}
           {isDemoData && (
-            <div className="border-2 border-yellow-600 bg-yellow-600/10 p-6 flex items-start gap-4">
-              <AlertCircle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-1" />
+            <div className="border-2 border-foreground p-6 flex items-start gap-4">
+              <AlertCircle className="w-6 h-6 flex-shrink-0 mt-1" />
               <div className="space-y-2">
                 <h3 className="font-bold text-lg">Demo Mode - Simulated Data</h3>
                 <p className="text-sm">

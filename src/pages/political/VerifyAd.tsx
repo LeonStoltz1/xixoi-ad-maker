@@ -116,7 +116,7 @@ export default function VerifyAd() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto mb-4"></div>
+          <div className="animate-spin h-12 w-12 border-b-2 border-foreground mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading verification data...</p>
         </div>
       </div>
@@ -300,14 +300,14 @@ export default function VerifyAd() {
                 <img
                   src={ad.watermarkUrl}
                   alt="Watermarked political ad"
-                  className="w-full rounded-lg border"
+                  className="w-full border"
                 />
               </div>
             </>
           )}
 
           {/* Compliance Badge */}
-          <div className="mt-8 p-4 bg-muted rounded-lg text-center">
+          <div className="mt-8 p-4 bg-muted text-center">
             <CheckCircle2 className="w-12 h-12 text-primary mx-auto mb-2" />
             <p className="font-semibold">This ad has been verified by xiXoi™</p>
             <p className="text-sm text-muted-foreground mt-1">
