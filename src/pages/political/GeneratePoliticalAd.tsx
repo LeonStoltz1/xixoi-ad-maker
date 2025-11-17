@@ -170,6 +170,13 @@ export default function GeneratePoliticalAd() {
           } else if (watermarkData) {
             setWatermarkUrl(watermarkData.watermarkUrl);
             setSignature(watermarkData.signatureBase58);
+            
+            if (watermarkData.verifyUrl) {
+              toast({
+                title: "QR Code Added",
+                description: "Scan the QR code on your ad to verify authenticity",
+              });
+            }
           }
         } catch (watermarkError) {
           console.error('Watermark generation error:', watermarkError);
@@ -466,12 +473,15 @@ export default function GeneratePoliticalAd() {
                         className="w-full rounded border border-border"
                       />
                       {signature && (
-                        <div className="p-3 bg-muted rounded">
+                        <div className="p-3 bg-muted rounded space-y-2">
                           <p className="text-xs text-muted-foreground font-mono break-all">
                             <strong>Digital Signature:</strong> {signature.substring(0, 32)}...
                           </p>
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className="text-xs text-muted-foreground">
                             This signature verifies the authenticity of your political ad.
+                          </p>
+                          <p className="text-xs text-primary font-medium">
+                            ✓ QR code included for instant verification
                           </p>
                         </div>
                       )}

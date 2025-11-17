@@ -294,6 +294,9 @@ export default function VerifyAd() {
               <Separator className="mb-6" />
               <div>
                 <h2 className="text-xl font-semibold mb-4">Verified Ad Creative</h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Scan the QR code in the bottom-left corner to verify this ad's authenticity
+                </p>
                 <img
                   src={ad.watermarkUrl}
                   alt="Watermarked political ad"
