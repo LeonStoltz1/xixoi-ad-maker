@@ -271,7 +271,31 @@ Check for ALL policy violations including discriminatory language, misleading cl
     });
 
     if (!aiResponse.ok) {
-      console.error('AI API error:', aiResponse.status);
+      const errorText = await aiResponse.text();
+      console.error('AI API error:', aiResponse.status, errorText);
+      
+      if (aiResponse.status === 429) {
+        return new Response(
+          JSON.stringify({ 
+            approved: false,
+            error: 'AI moderation service temporarily unavailable. Please try again in a moment.',
+            overallRisk: 'unknown'
+          }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      if (aiResponse.status === 402) {
+        return new Response(
+          JSON.stringify({ 
+            approved: false,
+            error: 'AI moderation service credits exhausted. Please contact support at support@xixoi.com',
+            overallRisk: 'unknown'
+          }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       throw new Error('Failed to moderate content');
     }
 

@@ -14,6 +14,14 @@ serve(async (req) => {
 
   try {
     const { priceType, campaignId, useEmbedded } = await req.json();
+    
+    if (!priceType) {
+      return new Response(
+        JSON.stringify({ error: 'Price type is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
     console.log('Creating checkout session:', { priceType, campaignId, useEmbedded });
 
     // Initialize Stripe
