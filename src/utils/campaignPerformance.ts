@@ -7,6 +7,7 @@ export interface CampaignPerformanceMetrics {
   cpm: number;
   cpc: number;
   roas: number | null;
+  lastUpdated: string;
 }
 
 export async function getCampaignPerformance(campaignId: string): Promise<CampaignPerformanceMetrics> {
@@ -76,5 +77,6 @@ export async function getCampaignPerformance(campaignId: string): Promise<Campai
     cpm,
     cpc,
     roas,
+    lastUpdated: new Date().toISOString(),
   };
 }

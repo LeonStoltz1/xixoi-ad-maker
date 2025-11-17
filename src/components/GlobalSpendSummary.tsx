@@ -8,7 +8,8 @@ interface SpendSummary {
   todaySpend: number;
   monthSpend: number;
   totalSpent: number;
-  totalRemainingBudget: number;
+  walletBalance: number;
+  monthlySpendLimit: number | null;
 }
 
 export function GlobalSpendSummary() {
@@ -16,7 +17,8 @@ export function GlobalSpendSummary() {
     todaySpend: 0,
     monthSpend: 0,
     totalSpent: 0,
-    totalRemainingBudget: 0,
+    walletBalance: 0,
+    monthlySpendLimit: null,
   });
   const [loading, setLoading] = useState(true);
 
@@ -33,10 +35,17 @@ export function GlobalSpendSummary() {
       const firstOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
         .toISOString().split('T')[0];
 
+      // Get user profile for monthly spend limit
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('monthly_ad_spend_limit')
+        .eq('id', user.id)
+        .single();
+
       // Get campaigns
       const { data: campaigns } = await supabase
         .from('campaigns')
-        .select('id, status, is_active, daily_budget, total_spent, lifetime_budget')
+        .select('id, status, is_active, total_spent')
         .eq('user_id', user.id);
 
       if (!campaigns) return;
@@ -44,13 +53,14 @@ export function GlobalSpendSummary() {
       // Calculate total spent across all campaigns
       const totalSpent = campaigns.reduce((sum, c) => sum + (c.total_spent || 0), 0);
 
-      // Calculate total remaining budget across all campaigns
-      const totalRemaining = campaigns.reduce((sum, c) => {
-        if (c.lifetime_budget) {
-          return sum + Math.max(0, c.lifetime_budget - (c.total_spent || 0));
-        }
-        return sum;
-      }, 0);
+      // Get wallet balance
+      const { data: wallet } = await supabase
+        .from('ad_wallets')
+        .select('balance')
+        .eq('user_id', user.id)
+        .single();
+
+      const walletBalance = wallet?.balance ? Number(wallet.balance) : 0;
 
       // Get today's spend
       const { data: todaySpendData } = await supabase
@@ -74,7 +84,8 @@ export function GlobalSpendSummary() {
         todaySpend,
         monthSpend,
         totalSpent,
-        totalRemainingBudget: totalRemaining,
+        walletBalance,
+        monthlySpendLimit: profile?.monthly_ad_spend_limit ? Number(profile.monthly_ad_spend_limit) : null,
       });
     } catch (error) {
       console.error('Error loading spend summary:', error);
@@ -113,14 +124,20 @@ export function GlobalSpendSummary() {
           </div>
           
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground">Remaining Budget</span>
-            <span className="text-xl font-bold">
-              {summary.totalRemainingBudget > 0 
-                ? `$${summary.totalRemainingBudget.toFixed(2)}` 
-                : 'Unlimited'
-              }
+            <span className="text-sm font-medium text-muted-foreground">Wallet Balance</span>
+            <span className={`text-xl font-bold ${summary.walletBalance < 50 ? 'text-destructive' : ''}`}>
+              ${summary.walletBalance.toFixed(2)}
             </span>
           </div>
+          
+          {summary.monthlySpendLimit && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-muted-foreground">Monthly Limit</span>
+              <span className="text-xl font-bold">
+                ${summary.monthSpend.toFixed(2)} / ${summary.monthlySpendLimit.toFixed(2)}
+              </span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

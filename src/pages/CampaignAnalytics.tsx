@@ -53,7 +53,7 @@ export default function CampaignAnalytics() {
 
       setCampaign(campaignData);
 
-      // Fetch or generate demo performance data
+      // Fetch performance data (no demo generation)
       const { data: performanceData } = await supabase
         .from("campaign_performance")
         .select("*")
@@ -62,9 +62,6 @@ export default function CampaignAnalytics() {
 
       if (performanceData && performanceData.length > 0) {
         setPerformance(performanceData);
-      } else {
-        // Generate demo data
-        await generateDemoData(campaignId);
       }
 
       setLoading(false);
@@ -73,51 +70,6 @@ export default function CampaignAnalytics() {
     fetchData();
   }, [campaignId, navigate, toast]);
 
-  const generateDemoData = async (campaignId: string) => {
-    // Generate 7 days of demo performance data
-    const demoData = [];
-    const platforms = ["meta", "tiktok", "google", "linkedin", "x"];
-    
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      
-      for (const platform of platforms) {
-        const impressions = Math.floor(Math.random() * 5000) + 1000;
-        const clicks = Math.floor(impressions * (Math.random() * 0.05 + 0.01)); // 1-6% CTR
-        const spend = parseFloat((Math.random() * 50 + 10).toFixed(2));
-        const conversions = Math.floor(clicks * (Math.random() * 0.15 + 0.05)); // 5-20% conversion
-        const revenue = parseFloat((conversions * (Math.random() * 100 + 50)).toFixed(2));
-        const ctr = parseFloat(((clicks / impressions) * 100).toFixed(2));
-        const cpc = parseFloat((spend / clicks).toFixed(2));
-        const roas = parseFloat((revenue / spend).toFixed(2));
-
-        demoData.push({
-          campaign_id: campaignId,
-          platform,
-          date: date.toISOString().split('T')[0],
-          impressions,
-          clicks,
-          spend,
-          conversions,
-          revenue,
-          ctr,
-          cpc,
-          roas,
-          is_demo: true,
-        });
-      }
-    }
-
-    const { data } = await supabase
-      .from("campaign_performance")
-      .insert(demoData)
-      .select();
-
-    if (data) {
-      setPerformance(data);
-    }
-  };
 
   const calculateTotals = () => {
     const totals = {
@@ -180,9 +132,56 @@ export default function CampaignAnalytics() {
     );
   }
 
+  // Empty state if no performance data
+  if (performance.length === 0) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-foreground/20 bg-black">
+          <div className="container mx-auto px-6 py-4 flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/dashboard")}
+              className="text-white hover:text-white hover:bg-white/10"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <video
+                src="/xiXoiLogo.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-12 h-12 object-contain"
+              />
+              <h1 className="text-xl md:text-2xl font-bold text-white">Campaign Analytics</h1>
+            </div>
+          </div>
+        </header>
+        <main className="container mx-auto px-6 py-12">
+          <div className="max-w-2xl mx-auto text-center space-y-6">
+            <AlertCircle className="w-16 h-16 mx-auto" />
+            <h2 className="text-2xl font-bold">No Performance Data Yet</h2>
+            <p className="text-muted-foreground">
+              Your campaign was recently published. Performance data typically becomes available within 24-48 hours
+              after your ads start running on the selected platforms.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              You can track real-time performance directly in your Meta, TikTok, Google, or LinkedIn ad accounts
+              while xiXoi™ collects data.
+            </p>
+            <Button onClick={() => navigate("/dashboard")} className="mt-4">
+              Back to Dashboard
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   const totals = calculateTotals();
   const platformPerformance = getPlatformPerformance();
-  const isDemoData = performance.length > 0 && performance[0].is_demo;
 
   return (
     <div className="min-h-screen bg-background">
@@ -214,20 +213,6 @@ export default function CampaignAnalytics() {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-12">
         <div className="max-w-6xl mx-auto space-y-8">
-          {/* Demo Data Banner */}
-          {isDemoData && (
-            <div className="border-2 border-foreground p-6 flex items-start gap-4">
-              <AlertCircle className="w-6 h-6 flex-shrink-0 mt-1" />
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg">Demo Mode - Simulated Data</h3>
-                <p className="text-sm">
-                  This dashboard displays simulated performance metrics for demonstration purposes. 
-                  To view real campaign data, connect your Meta, TikTok, Google, LinkedIn, and X accounts 
-                  in Settings and publish your campaign to these platforms.
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* ELITE: Auto-Optimizer Toggle */}
           {userPlan === 'elite' && (
