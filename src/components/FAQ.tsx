@@ -16,7 +16,7 @@ const faqs = [
   },
   {
     question: "Which ad platforms do you support?",
-    answer: "xiXoi™ currently supports Meta Ads (Facebook & Instagram), TikTok Ads, Google Ads, and LinkedIn Ads. xiXoi™ handles all ad platform accounts for you—no setup required.",
+    answer: "xiXoi™ currently supports Meta Ads (Facebook & Instagram), TikTok Ads, Google Ads, LinkedIn Ads, and X (Twitter) Ads. xiXoi™ handles all ad platform accounts for you—no setup required.",
   },
   {
     question: "Do I need advertising experience?",

@@ -10,7 +10,7 @@ This guide provides step-by-step instructions for testing the master-account-onl
 First, insert placeholder records for each platform's system credentials. Run this SQL in your Supabase SQL Editor:
 
 ```sql
--- Insert system credential placeholders for all 4 platforms
+-- Insert system credential placeholders for all 5 platforms
 INSERT INTO public.platform_credentials (
   platform,
   platform_account_id,
@@ -24,11 +24,12 @@ INSERT INTO public.platform_credentials (
   ('meta', 'PLACEHOLDER_META_ACCOUNT_ID', 'PLACEHOLDER_TOKEN_TO_BE_REPLACED', NULL, 'system', NULL, 'pending', NULL),
   ('tiktok', 'PLACEHOLDER_TIKTOK_ACCOUNT_ID', 'PLACEHOLDER_TOKEN_TO_BE_REPLACED', NULL, 'system', NULL, 'pending', NULL),
   ('google', 'PLACEHOLDER_GOOGLE_ACCOUNT_ID', 'PLACEHOLDER_TOKEN_TO_BE_REPLACED', NULL, 'system', NULL, 'pending', NULL),
-  ('linkedin', 'PLACEHOLDER_LINKEDIN_ACCOUNT_ID', 'PLACEHOLDER_TOKEN_TO_BE_REPLACED', NULL, 'system', NULL, 'pending', NULL)
+  ('linkedin', 'PLACEHOLDER_LINKEDIN_ACCOUNT_ID', 'PLACEHOLDER_TOKEN_TO_BE_REPLACED', NULL, 'system', NULL, 'pending', NULL),
+  ('x', 'PLACEHOLDER_X_ACCOUNT_ID', 'PLACEHOLDER_TOKEN_TO_BE_REPLACED', NULL, 'system', NULL, 'pending', NULL)
 ON CONFLICT (platform, owner_type, owner_id) DO NOTHING;
 ```
 
-**Expected Result:** 4 rows inserted (or already exist message)
+**Expected Result:** 5 rows inserted (or already exist message)
 
 ---
 
@@ -58,7 +59,7 @@ SELECT * FROM public.user_roles WHERE user_id = 'YOUR_USER_ID';
 ### 3A. Access Admin Page
 1. Navigate to `/xi-admin/platform-credentials`
 2. **Expected:** Page loads successfully (no redirect to /dashboard or /auth)
-3. **Expected:** You see 4 platform cards: Meta, TikTok, Google, LinkedIn
+3. **Expected:** You see 5 platform cards: Meta, TikTok, Google, LinkedIn, X
 
 ### 3B. Verify Server-Side Admin Check
 1. Open browser DevTools → Network tab
@@ -87,7 +88,7 @@ console.log('Encrypted:', data);
 2. **Expected:** Returns `{ encrypted: "base64-encrypted-string" }`
 
 ### 4B. Update Tokens via Admin UI
-For each platform (Meta, TikTok, Google, LinkedIn):
+For each platform (Meta, TikTok, Google, LinkedIn, X):
 
 1. Click "Update Token" button on the platform card
 2. Paste the **actual master access token** for that platform
@@ -100,6 +101,7 @@ For each platform (Meta, TikTok, Google, LinkedIn):
 - **TikTok:** TikTok Ads Manager API access token
 - **Google:** Google Ads API developer token + OAuth credentials
 - **LinkedIn:** LinkedIn Marketing API access token
+- **X:** X (Twitter) API v2 credentials with tweet creation permissions
 
 ---
 
@@ -148,7 +150,7 @@ console.log('Token Length:', metaCreds.accessToken.length);
 5. **Expected:** Character counter shows limits for selected platforms
 
 ### 6C. Platform Selection & Budget
-1. Select platforms: Meta (required), TikTok, Google, LinkedIn
+1. Select platforms: Meta (required), TikTok, Google, LinkedIn, X
 2. Set daily budgets for each selected platform ($20 minimum)
 3. **Expected:** Budget sliders work for each platform independently
 
@@ -187,7 +189,7 @@ console.log('Token Length:', metaCreds.accessToken.length);
 ### 8A. Check Edge Function Logs
 For each platform publish function:
 1. Navigate to Supabase → Edge Functions → Logs
-2. Filter by function name: `publish-meta`, `publish-tiktok`, etc.
+2. Filter by function name: `publish-meta`, `publish-tiktok`, `publish-google`, `publish-linkedin`, `publish-x`
 3. **Expected:** Logs show "Retrieved system credentials for [platform]"
 4. **Expected:** No errors about "user credentials not found"
 
@@ -195,7 +197,7 @@ For each platform publish function:
 If you have access to platform ad accounts:
 1. Check Meta Business Manager → Ad Account
 2. **Expected:** See newly created campaign/ad
-3. Repeat for TikTok, Google, LinkedIn accounts
+3. Repeat for TikTok, Google, LinkedIn, X accounts
 
 ### 8C. Database Verification
 Run this SQL to verify campaign was published:
@@ -271,16 +273,16 @@ DELETE FROM platform_credentials WHERE platform = 'tiktok' AND owner_type = 'sys
 
 Before going live, verify:
 
-- [ ] All 4 platform system credentials inserted with REAL tokens
+- [ ] All 5 platform system credentials inserted with REAL tokens
 - [ ] Tokens encrypted using encrypt-master-token function
 - [ ] Admin role system working (is_admin RPC returns correct results)
 - [ ] Admin UI (/xi-admin/platform-credentials) protected by server-side RLS
 - [ ] NoAdAccountsBanner displays correctly on /create-campaign only
 - [ ] All marketing copy updated (FAQ, Terms, Privacy, Hero)
 - [ ] Payment flow works end-to-end (Stripe → publish → success)
-- [ ] All 4 publish functions call getSystemCredentials correctly
+- [ ] All 5 publish functions call getSystemCredentials correctly
 - [ ] Edge function logs show successful credential retrieval
-- [ ] Campaign creation flow works for all 4 platforms
+- [ ] Campaign creation flow works for all 5 platforms
 - [ ] Dashboard displays published campaigns correctly
 - [ ] Security: Non-admins cannot access credentials or admin pages
 
@@ -317,11 +319,11 @@ SELECT platform, status FROM platform_credentials WHERE owner_type = 'system';
 ## Success Criteria
 
 **Phase 6 is complete when:**
-1. ✅ All 4 system credentials encrypted and stored in database
+1. ✅ All 5 system credentials encrypted and stored in database
 2. ✅ Admin page accessible only to admin users via server-side RLS
 3. ✅ Token update flow works via admin UI + encrypt-master-token
 4. ✅ Campaign creation shows NoAdAccountsBanner
-5. ✅ All 4 publish functions retrieve system credentials successfully
+5. ✅ All 5 publish functions retrieve system credentials successfully
 6. ✅ End-to-end test campaign publishes without errors
 7. ✅ No OAuth references remain in user-facing UI/copy
 8. ✅ Security validated: non-admins cannot access credentials
@@ -333,7 +335,7 @@ SELECT platform, status FROM platform_credentials WHERE owner_type = 'system';
 Once all tests pass:
 1. Deploy to production environment
 2. Update DNS/domain settings to https://xixoi.com
-3. Submit API approval applications to Meta, Google, TikTok, LinkedIn
+3. Submit API approval applications to Meta, Google, TikTok, LinkedIn, and X
 4. Monitor edge function logs for first 48 hours
 5. Set up token refresh automation (if needed for platforms with expiring tokens)
 

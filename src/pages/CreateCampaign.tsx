@@ -48,11 +48,13 @@ export default function CreateCampaign() {
     tiktok: { selected: boolean; budget: number };
     google: { selected: boolean; budget: number };
     linkedin: { selected: boolean; budget: number };
+    x: { selected: boolean; budget: number };
   }>({
     meta: { selected: true, budget: 20 },
     tiktok: { selected: false, budget: 20 },
     google: { selected: false, budget: 20 },
     linkedin: { selected: false, budget: 20 },
+    x: { selected: false, budget: 20 },
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -63,7 +65,8 @@ export default function CreateCampaign() {
     meta: 125,
     linkedin: 150,
     tiktok: 100,
-    google: 90
+    google: 90,
+    x: 140
   };
 
   // Get the strictest character limit based on selected platforms
@@ -624,7 +627,7 @@ export default function CreateCampaign() {
                   />
                   <div className="flex justify-between items-center text-xs">
                     <p className="text-muted-foreground">
-                      ✓ Meta: 125 chars • TikTok: 100 chars • Google: 90 chars • LinkedIn: 150 chars
+                      ✓ Meta: 125 • TikTok: 100 • Google: 90 • LinkedIn: 150 • X: 140
                     </p>
                     <p className={`font-medium ${
                       isOverLimit 
