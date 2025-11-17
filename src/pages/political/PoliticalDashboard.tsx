@@ -24,12 +24,24 @@ import {
   Clock,
   AlertCircle,
   Eye,
-  Rocket
+  Rocket,
+  DollarSign
 } from "lucide-react";
 import { usePolitical } from "@/contexts/PoliticalContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { PoliticalAd } from "@/types/political";
+
+interface SpendMetrics {
+  totalSpend: number;
+  metaSpend: number;
+  tiktokSpend: number;
+  googleSpend: number;
+  linkedinSpend: number;
+  totalImpressions: number;
+  totalClicks: number;
+  averageCTR: number;
+}
 
 export default function PoliticalDashboard() {
   const navigate = useNavigate();
@@ -37,6 +49,16 @@ export default function PoliticalDashboard() {
   const { politicalProfile } = usePolitical();
   const [ads, setAds] = useState<PoliticalAd[]>([]);
   const [loading, setLoading] = useState(true);
+  const [spendMetrics, setSpendMetrics] = useState<SpendMetrics>({
+    totalSpend: 0,
+    metaSpend: 0,
+    tiktokSpend: 0,
+    googleSpend: 0,
+    linkedinSpend: 0,
+    totalImpressions: 0,
+    totalClicks: 0,
+    averageCTR: 0,
+  });
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [selectedAd, setSelectedAd] = useState<PoliticalAd | null>(null);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['meta']);
@@ -50,6 +72,7 @@ export default function PoliticalDashboard() {
 
   useEffect(() => {
     fetchAds();
+    fetchSpendMetrics();
   }, []);
 
   async function fetchAds() {
@@ -94,6 +117,75 @@ export default function PoliticalDashboard() {
     }
   }
 
+  const fetchSpendMetrics = async () => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      // Get all published political ad campaign IDs
+      const { data: politicalAds } = await supabase
+        .from('political_ads')
+        .select('campaign_id')
+        .eq('user_id', user.user.id)
+        .eq('published', true)
+        .not('campaign_id', 'is', null);
+
+      if (!politicalAds || politicalAds.length === 0) {
+        return;
+      }
+
+      const campaignIds = politicalAds.map(ad => ad.campaign_id).filter(Boolean);
+
+      // Fetch spend data
+      const { data: spendData } = await supabase
+        .from('campaign_spend_daily')
+        .select('platform, spend')
+        .in('campaign_id', campaignIds);
+
+      // Fetch performance data
+      const { data: perfData } = await supabase
+        .from('campaign_performance')
+        .select('impressions, clicks, ctr')
+        .in('campaign_id', campaignIds);
+
+      if (spendData) {
+        const metrics: SpendMetrics = {
+          totalSpend: 0,
+          metaSpend: 0,
+          tiktokSpend: 0,
+          googleSpend: 0,
+          linkedinSpend: 0,
+          totalImpressions: 0,
+          totalClicks: 0,
+          averageCTR: 0,
+        };
+
+        spendData.forEach(item => {
+          metrics.totalSpend += item.spend || 0;
+          if (item.platform === 'meta') metrics.metaSpend += item.spend || 0;
+          if (item.platform === 'tiktok') metrics.tiktokSpend += item.spend || 0;
+          if (item.platform === 'google') metrics.googleSpend += item.spend || 0;
+          if (item.platform === 'linkedin') metrics.linkedinSpend += item.spend || 0;
+        });
+
+        if (perfData) {
+          perfData.forEach(item => {
+            metrics.totalImpressions += item.impressions || 0;
+            metrics.totalClicks += item.clicks || 0;
+          });
+          
+          if (metrics.totalImpressions > 0) {
+            metrics.averageCTR = (metrics.totalClicks / metrics.totalImpressions) * 100;
+          }
+        }
+
+        setSpendMetrics(metrics);
+      }
+    } catch (error) {
+      console.error('Error fetching spend metrics:', error);
+    }
+  };
+
   const handlePublish = async () => {
     if (!selectedAd || selectedPlatforms.length === 0) return;
 
@@ -121,6 +213,7 @@ export default function PoliticalDashboard() {
       setPublishDialogOpen(false);
       setSelectedAd(null);
       fetchAds();
+      fetchSpendMetrics();
 
       // Navigate to campaign analytics
       if (data?.campaignId) {
@@ -257,6 +350,73 @@ export default function PoliticalDashboard() {
             </div>
           </Card>
         </div>
+
+        {/* Spend Tracking Metrics */}
+        {publishedAds.length > 0 && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-emerald-100 rounded-lg">
+                    <DollarSign className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Spend</p>
+                    <p className="text-2xl font-bold">${spendMetrics.totalSpend.toFixed(2)}</p>
+                  </div>
+                </div>
+              </Card>
+              
+              <Card className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-purple-100 rounded-lg">
+                    <TrendingUp className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Impressions</p>
+                    <p className="text-2xl font-bold">{spendMetrics.totalImpressions.toLocaleString()}</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-indigo-100 rounded-lg">
+                    <BarChart3 className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Average CTR</p>
+                    <p className="text-2xl font-bold">{spendMetrics.averageCTR.toFixed(2)}%</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {spendMetrics.totalSpend > 0 && (
+              <Card className="p-6">
+                <h3 className="font-semibold text-lg mb-4">Spend by Platform</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Meta</p>
+                    <p className="text-xl font-bold">${spendMetrics.metaSpend.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">TikTok</p>
+                    <p className="text-xl font-bold">${spendMetrics.tiktokSpend.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Google</p>
+                    <p className="text-xl font-bold">${spendMetrics.googleSpend.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">LinkedIn</p>
+                    <p className="text-xl font-bold">${spendMetrics.linkedinSpend.toFixed(2)}</p>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </>
+        )}
 
         {/* Monthly Usage */}
         <Card className="p-6">
