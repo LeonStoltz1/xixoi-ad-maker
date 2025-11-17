@@ -171,14 +171,14 @@ export default function AffiliateAdmin() {
 
           <Card>
             <CardContent className="pt-6">
-              <div className="text-xl md:text-2xl font-bold text-green-600">${totalPaid.toFixed(2)}</div>
+              <div className="text-xl md:text-2xl font-bold">${totalPaid.toFixed(2)}</div>
               <div className="text-sm text-muted-foreground">Total Paid</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="pt-6">
-              <div className="text-xl md:text-2xl font-bold text-yellow-600">${totalPending.toFixed(2)}</div>
+              <div className="text-xl md:text-2xl font-bold">${totalPending.toFixed(2)}</div>
               <div className="text-sm text-muted-foreground">Pending</div>
             </CardContent>
           </Card>
@@ -239,13 +239,13 @@ export default function AffiliateAdmin() {
                         {affiliate.stripe_onboarding_complete ? (
                           <>
                             {(affiliate as any).stripe_account_status === 'verified' && (
-                              <Badge className="bg-green-500">✓ Verified</Badge>
+                              <Badge className="bg-foreground text-background">✓ Verified</Badge>
                             )}
                             {(affiliate as any).stripe_account_status === 'pending' && (
-                              <Badge className="bg-blue-500">⏳ Pending</Badge>
+                              <Badge className="bg-background text-foreground border border-foreground">⏳ Pending</Badge>
                             )}
                             {(affiliate as any).stripe_account_status === 'restricted' && (
-                              <Badge className="bg-orange-500">⚠️ Restricted</Badge>
+                              <Badge className="bg-background text-foreground border border-foreground">⚠️ Restricted</Badge>
                             )}
                             {(affiliate as any).stripe_account_status === 'rejected' && (
                               <Badge variant="destructive">❌ Rejected</Badge>

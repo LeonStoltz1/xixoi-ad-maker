@@ -224,8 +224,8 @@ const AffiliatesPage = () => {
               
               {/* Stripe Connect Warning */}
               {(!affiliate.stripe_account_id || !affiliate.stripe_onboarding_complete) && (
-                <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                  <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300 mb-2">
+                <div className="mb-4 p-4 bg-background border border-foreground">
+                  <p className="text-sm font-medium mb-2">
                     ⚠️ Connect your bank account to receive payouts
                   </p>
                   <Button 
@@ -250,16 +250,16 @@ const AffiliatesPage = () => {
 
               {/* Account Status Warnings */}
               {affiliate.stripe_account_id && (affiliate as any).stripe_account_status === 'pending' && (
-                <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                <div className="mb-4 p-4 bg-background border border-foreground">
+                  <p className="text-sm font-medium">
                     ⏳ Your Stripe account verification is pending. This may take 1-2 business days.
                   </p>
                 </div>
               )}
 
               {affiliate.stripe_account_id && (affiliate as any).stripe_account_status === 'restricted' && (
-                <div className="mb-4 p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                  <p className="text-sm font-medium text-orange-700 dark:text-orange-300 mb-2">
+                <div className="mb-4 p-4 bg-background border border-foreground">
+                  <p className="text-sm font-medium mb-2">
                     ⚠️ Your Stripe account is restricted. Please complete verification.
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -269,8 +269,8 @@ const AffiliatesPage = () => {
               )}
 
               {affiliate.stripe_account_id && (affiliate as any).stripe_account_status === 'rejected' && (
-                <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-                  <p className="text-sm font-medium text-red-700 dark:text-red-300 mb-2">
+                <div className="mb-4 p-4 bg-background border-2 border-foreground">
+                  <p className="text-sm font-medium mb-2">
                     ❌ Your Stripe account was rejected.
                   </p>
                   <p className="text-xs text-muted-foreground">
