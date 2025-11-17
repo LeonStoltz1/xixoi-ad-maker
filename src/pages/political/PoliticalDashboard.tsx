@@ -4,6 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { 
   ArrowLeft, 
   PlusCircle, 
@@ -12,17 +23,30 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  Eye
+  Eye,
+  Rocket
 } from "lucide-react";
 import { usePolitical } from "@/contexts/PoliticalContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import type { PoliticalAd } from "@/types/political";
 
 export default function PoliticalDashboard() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { politicalProfile } = usePolitical();
   const [ads, setAds] = useState<PoliticalAd[]>([]);
   const [loading, setLoading] = useState(true);
+  const [publishDialogOpen, setPublishDialogOpen] = useState(false);
+  const [selectedAd, setSelectedAd] = useState<PoliticalAd | null>(null);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['meta']);
+  const [platformBudgets, setPlatformBudgets] = useState<Record<string, number>>({
+    meta: 20,
+    tiktok: 20,
+    google: 20,
+    linkedin: 20,
+  });
+  const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     fetchAds();
@@ -69,6 +93,50 @@ export default function PoliticalDashboard() {
       setLoading(false);
     }
   }
+
+  const handlePublish = async () => {
+    if (!selectedAd || selectedPlatforms.length === 0) return;
+
+    setPublishing(true);
+    try {
+      const budgets = Object.fromEntries(
+        selectedPlatforms.map(p => [p, platformBudgets[p]])
+      );
+
+      const { data, error } = await supabase.functions.invoke('publish-political-ad', {
+        body: {
+          politicalAdId: selectedAd.id,
+          platforms: selectedPlatforms,
+          budgets,
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Published Successfully",
+        description: `Your political ad is now live on ${selectedPlatforms.length} platform(s)`,
+      });
+
+      setPublishDialogOpen(false);
+      setSelectedAd(null);
+      fetchAds();
+
+      // Navigate to campaign analytics
+      if (data?.campaignId) {
+        navigate(`/analytics/${data.campaignId}`);
+      }
+    } catch (error) {
+      console.error('Error publishing ad:', error);
+      toast({
+        title: "Publishing Failed",
+        description: error instanceof Error ? error.message : "Failed to publish ad",
+        variant: "destructive",
+      });
+    } finally {
+      setPublishing(false);
+    }
+  };
 
   if (!politicalProfile?.hasPoliticalTier) {
     return (
@@ -285,9 +353,31 @@ export default function PoliticalDashboard() {
                       </div>
                       <div className="flex items-center gap-2">
                         {ad.published ? (
-                          <Badge variant="default">Published</Badge>
+                          <>
+                            <Badge variant="default">Published</Badge>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => navigate(`/verify/ad/${ad.id}`)}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              View
+                            </Button>
+                          </>
                         ) : (
-                          <Badge variant="secondary">Draft</Badge>
+                          <>
+                            <Badge variant="secondary">Draft</Badge>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setSelectedAd(ad);
+                                setPublishDialogOpen(true);
+                              }}
+                            >
+                              <Rocket className="w-4 h-4 mr-1" />
+                              Publish
+                            </Button>
+                          </>
                         )}
                       </div>
                     </div>
@@ -295,14 +385,102 @@ export default function PoliticalDashboard() {
                       Created {new Date(ad.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <Button size="sm" variant="ghost">
-                    <Eye className="w-4 h-4" />
-                  </Button>
                 </div>
               ))}
             </div>
           )}
         </Card>
+
+        {/* Publish Dialog */}
+        <Dialog open={publishDialogOpen} onOpenChange={setPublishDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Publish Political Ad</DialogTitle>
+              <DialogDescription>
+                Select platforms and set daily budgets for your political ad campaign
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6 py-4">
+              {/* Platform Selection */}
+              <div className="space-y-3">
+                <Label>Select Platforms</Label>
+                {[
+                  { id: 'meta', label: 'Meta (Facebook & Instagram)' },
+                  { id: 'tiktok', label: 'TikTok' },
+                  { id: 'google', label: 'Google Ads' },
+                  { id: 'linkedin', label: 'LinkedIn' },
+                ].map((platform) => (
+                  <div key={platform.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={platform.id}
+                      checked={selectedPlatforms.includes(platform.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedPlatforms([...selectedPlatforms, platform.id]);
+                        } else {
+                          setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform.id));
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor={platform.id}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {platform.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
+
+              {/* Budget Settings */}
+              {selectedPlatforms.length > 0 && (
+                <div className="space-y-3">
+                  <Label>Daily Budgets</Label>
+                  {selectedPlatforms.map((platform) => (
+                    <div key={platform} className="flex items-center gap-4">
+                      <Label className="capitalize w-32">{platform}</Label>
+                      <div className="flex items-center gap-2 flex-1">
+                        <span className="text-sm text-muted-foreground">$</span>
+                        <Input
+                          type="number"
+                          min="5"
+                          max="500"
+                          value={platformBudgets[platform]}
+                          onChange={(e) =>
+                            setPlatformBudgets({
+                              ...platformBudgets,
+                              [platform]: Number(e.target.value),
+                            })
+                          }
+                          className="w-24"
+                        />
+                        <span className="text-sm text-muted-foreground">/day</span>
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-sm text-muted-foreground">
+                    Total daily budget: ${selectedPlatforms.reduce((sum, p) => sum + platformBudgets[p], 0)}/day
+                  </p>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setPublishDialogOpen(false)}
+                disabled={publishing}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handlePublish}
+                disabled={publishing || selectedPlatforms.length === 0}
+              >
+                {publishing ? 'Publishing...' : 'Publish Ad'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
