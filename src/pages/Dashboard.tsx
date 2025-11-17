@@ -281,7 +281,6 @@ export default function Dashboard() {
                 {campaigns.map((campaign) => (
                   <div key={campaign.id} className="space-y-4">
                     <EnhancedCampaignCard
-                      key={`card-${campaign.id}`}
                       campaign={campaign}
                       performance={campaignPerformance[campaign.id] || {
                         spendToday: 0,
