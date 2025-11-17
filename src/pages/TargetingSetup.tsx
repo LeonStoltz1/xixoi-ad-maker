@@ -538,7 +538,7 @@ export default function TargetingSetup() {
                   rows={8}
                   className="resize-none"
                 />
-                <div className="bg-muted/50 rounded-md p-3 mt-2">
+                <div className="bg-muted/50 p-3 mt-2 border border-foreground/10">
                   <p className="text-xs text-muted-foreground font-medium mb-2">✅ Good description includes:</p>
                   <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
                     <li>Clear product/service details</li>
@@ -634,17 +634,17 @@ export default function TargetingSetup() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-center gap-2 text-sm">
             <div className="flex items-center gap-2 text-muted-foreground">
-              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">✓</div>
+              <div className="w-6 h-6 bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold border border-foreground">✓</div>
               <span>Create Campaign</span>
             </div>
             <div className="w-8 h-px bg-primary"></div>
             <div className="flex items-center gap-2 text-foreground font-semibold">
-              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</div>
+              <div className="w-6 h-6 bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold border border-foreground">2</div>
               <span>Review Targeting</span>
             </div>
             <div className="w-8 h-px bg-border"></div>
             <div className="flex items-center gap-2 text-muted-foreground">
-              <div className="w-6 h-6 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold">3</div>
+              <div className="w-6 h-6 bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold border border-foreground/20">3</div>
               <span>Publish</span>
             </div>
           </div>
@@ -668,7 +668,7 @@ export default function TargetingSetup() {
         </div>
 
         {/* Detected Product */}
-        <div className="bg-card border border-border rounded-lg p-6 mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+        <div className="bg-card border border-border p-6 mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <div className="flex items-start gap-3">
             <Sparkles className="w-5 h-5 text-primary mt-1" />
             <div>
@@ -679,7 +679,7 @@ export default function TargetingSetup() {
         </div>
 
         {/* Target Audience */}
-        <div className="bg-card border border-border rounded-lg p-6 mb-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+        <div className="bg-card border border-border p-6 mb-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
           <h3 className="font-semibold text-foreground mb-4">Target Audience</h3>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
@@ -694,7 +694,7 @@ export default function TargetingSetup() {
               <span className="text-muted-foreground min-w-[80px]">Interests:</span>
               <div className="flex flex-wrap gap-2">
                 {audienceSuggestion.audience.interests.map((interest, idx) => (
-                  <span key={idx} className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm">
+                  <span key={idx} className="px-3 py-1 bg-secondary text-secondary-foreground text-sm border border-foreground/20">
                     {interest}
                   </span>
                 ))}
@@ -708,7 +708,7 @@ export default function TargetingSetup() {
         </div>
 
         {/* Budget Slider */}
-        <div className="bg-card border border-border rounded-lg p-6 mb-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+        <div className="bg-card border border-border p-6 mb-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
           <h3 className="font-semibold text-foreground mb-4">Daily Budget</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -730,7 +730,7 @@ export default function TargetingSetup() {
         </div>
 
         {/* Platform Selection */}
-        <div className="bg-card border border-border rounded-lg p-6 mb-8 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+        <div className="bg-card border border-border p-6 mb-8 animate-fade-in" style={{ animationDelay: '0.4s' }}>
           <h3 className="font-semibold text-foreground mb-4">Recommended Platforms</h3>
           <div className="grid grid-cols-2 gap-3">
             {platformOptions.map((platform) => (

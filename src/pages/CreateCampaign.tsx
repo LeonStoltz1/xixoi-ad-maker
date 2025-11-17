@@ -27,7 +27,7 @@ export default function CreateCampaign() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
+  
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null);
   const [generatedVariants, setGeneratedVariants] = useState<any[]>([]);
@@ -443,7 +443,7 @@ export default function CreateCampaign() {
             <p className="text-muted-foreground">Upload your content and let AI do the rest</p>
           </div>
 
-          <div className="border border-foreground rounded-2xl p-8 space-y-6">
+          <div className="border border-foreground p-8 space-y-6">
             {/* Campaign Name */}
             <div className="space-y-2">
               <label className="text-sm font-medium uppercase tracking-wide">Campaign Name</label>
@@ -461,7 +461,7 @@ export default function CreateCampaign() {
               <div className="grid grid-cols-3 gap-3">
                 <button
                   onClick={() => setUploadType('image')}
-                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all ${
+                  className={`border-2 p-6 flex flex-col items-center gap-3 transition-all ${
                     uploadType === 'image' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
                   }`}
                 >
@@ -471,7 +471,7 @@ export default function CreateCampaign() {
                 
                 <button
                   onClick={() => setUploadType('video')}
-                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all ${
+                  className={`border-2 p-6 flex flex-col items-center gap-3 transition-all ${
                     uploadType === 'video' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
                   }`}
                 >
@@ -481,7 +481,7 @@ export default function CreateCampaign() {
                 
                 <button
                   onClick={() => setUploadType('text')}
-                  className={`border-2 rounded-xl p-6 flex flex-col items-center gap-3 transition-all ${
+                  className={`border-2 p-6 flex flex-col items-center gap-3 transition-all ${
                     uploadType === 'text' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
                   }`}
                 >
@@ -495,7 +495,7 @@ export default function CreateCampaign() {
             <div className="space-y-4">
               {/* Real Estate Mode Toggle (only for realtors in realtor view mode) */}
               {realtorProfile?.isRealtor && viewMode === 'realtor' && (
-                <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-card">
+                <div className="flex items-center justify-between p-4 border border-border bg-card">
                   <div className="flex items-center gap-3">
                     <Home className="w-5 h-5 text-primary" />
                     <div>
@@ -679,7 +679,7 @@ export default function CreateCampaign() {
                   onDragOver={handleDragOver}
                   onDragEnter={handleDragEnter}
                   onDragLeave={handleDragLeave}
-                  className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors ${
+                  className={`border-2 border-dashed p-12 text-center cursor-pointer transition-colors ${
                     isDragging 
                       ? 'border-foreground bg-foreground/5' 
                       : 'border-foreground/20 hover:border-foreground/40'
@@ -709,7 +709,7 @@ export default function CreateCampaign() {
                       <video 
                         src={previewUrl} 
                         controls
-                        className="max-h-48 mx-auto rounded-lg"
+                        className="max-h-48 mx-auto"
                       />
                       <p className="text-muted-foreground text-xs">
                         {uploadedFile && `${(uploadedFile.size / 1024 / 1024).toFixed(2)}MB`} • Click or drag to change
@@ -735,7 +735,7 @@ export default function CreateCampaign() {
 
             {/* Media Rights Confirmation */}
             <div className="border-t pt-6 space-y-4">
-              <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg border">
+              <div className="flex items-start gap-3 p-4 bg-muted/30 border">
                 <ShieldCheck className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                 <div className="flex-1 space-y-3">
                   <div className="flex items-start gap-2">
@@ -780,110 +780,6 @@ export default function CreateCampaign() {
         </div>
       </main>
 
-      {/* Preview Modal */}
-      {showPreview && createdCampaignId && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
-          <div className="bg-background border border-foreground max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-8 space-y-8">
-              <div className="space-y-2">
-                <h2 className="text-2xl md:text-3xl font-bold">Here's what xiXoi™ created</h2>
-                <p className="text-muted-foreground">
-                  {generatedVariants.length === 1 
-                    ? "AI generated 1 platform-optimized variant (free tier)" 
-                    : `AI generated ${generatedVariants.length} platform-optimized variants`}
-                </p>
-                {generatedVariants.length > 1 && (
-                  <p className="text-xs text-muted-foreground">Select one variant to publish</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {generatedVariants.map((variant, index) => (
-                  <div 
-                    key={variant.id} 
-                    className={`border-2 bg-background p-6 space-y-4 cursor-pointer transition-all ${
-                      generatedVariants.length > 1 
-                        ? (selectedVariantId === variant.id 
-                            ? 'border-foreground shadow-lg' 
-                            : 'border-foreground/20 hover:border-foreground/50')
-                        : 'border-foreground'
-                    }`}
-                    onClick={() => {
-                      if (generatedVariants.length > 1) {
-                        setSelectedVariantId(variant.id);
-                      }
-                    }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider">{variant.variant_type}</span>
-                      <div className="flex items-center gap-2">
-                        {generatedVariants.length > 1 && selectedVariantId === variant.id && (
-                          <span className="text-xs font-bold bg-foreground text-background px-2 py-1">SELECTED</span>
-                        )}
-                        <span className="text-xs text-muted-foreground">ROAS: {variant.predicted_roas}x</span>
-                      </div>
-                    </div>
-                    
-                    {/* Show uploaded image from creative_url */}
-                    {variant.creative_url && (
-                      <div className="w-full aspect-square bg-muted overflow-hidden">
-                        <img 
-                          src={variant.creative_url} 
-                          alt="Campaign creative" 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    
-                    <div className="bg-foreground text-background px-4 py-3">
-                      <div className="text-sm font-bold">{variant.headline}</div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="text-sm">{variant.body_copy}</p>
-                    </div>
-
-                    <div className="border-2 border-foreground py-2 px-4 text-center">
-                      <span className="font-bold text-sm">{variant.cta_text || 'LEARN MORE'}</span>
-                    </div>
-
-                    <div className="text-right text-[14px] opacity-60">
-                      Powered By xiXoi™
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex gap-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowPreview(false)}
-                  className="flex-1"
-                >
-                  Go Back
-                </Button>
-                <Button 
-                  onClick={() => {
-                    if (generatedVariants.length > 1 && !selectedVariantId) {
-                      toast({
-                        variant: "destructive",
-                        title: "Selection Required",
-                        description: "Please select one variant to continue",
-                      });
-                      return;
-                    }
-                    setShowPreview(false);
-                    setShowPlatformSelection(true);
-                  }}
-                  className="flex-1"
-                >
-                  Choose Platforms
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Platform Selection Modal */}
       {showPlatformSelection && (

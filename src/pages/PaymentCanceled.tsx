@@ -8,7 +8,7 @@ const PaymentCanceled = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-6">
       <div className="container mx-auto max-w-md text-center space-y-8">
-        <div className="w-24 h-24 mx-auto border-2 border-foreground rounded-full flex items-center justify-center">
+        <div className="w-24 h-24 mx-auto border-2 border-foreground flex items-center justify-center">
           <X className="w-12 h-12" />
         </div>
 
