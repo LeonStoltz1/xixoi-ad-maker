@@ -277,40 +277,23 @@ export default function Dashboard() {
                 </Button>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {campaigns.map((campaign) => (
-                  <div key={campaign.id} className="space-y-4">
-                    <EnhancedCampaignCard
-                      campaign={campaign}
-                      performance={campaignPerformance[campaign.id] || {
-                        spendToday: 0,
-                        spendThisMonth: 0,
-                        ctr: 0,
-                        cpm: 0,
-                        cpc: 0,
-                        roas: null,
-                      }}
-                      onUpdate={handleUpdate}
-                      onEdit={handleEditClick}
-                      onViewAnalytics={(id) => navigate(`/campaign-analytics?id=${id}`)}
-                    />
-                    
-                    {/* AI Recommendations per campaign */}
-                    {campaignPerformance[campaign.id] && (
-                      <CampaignAIRecommendations
-                        key={`recommendations-${campaign.id}`}
-                        campaignId={campaign.id}
-                        campaignName={campaign.name}
-                        performance={campaignPerformance[campaign.id]}
-                        budget={{
-                          daily: campaign.daily_budget || 0,
-                          remaining: campaign.lifetime_budget 
-                            ? campaign.lifetime_budget - campaign.total_spent 
-                            : null,
-                        }}
-                      />
-                    )}
-                  </div>
+                  <EnhancedCampaignCard
+                    key={campaign.id}
+                    campaign={campaign}
+                    performance={campaignPerformance[campaign.id] || {
+                      spendToday: 0,
+                      spendThisMonth: 0,
+                      ctr: 0,
+                      cpm: 0,
+                      cpc: 0,
+                      roas: null,
+                    }}
+                    onUpdate={handleUpdate}
+                    onEdit={handleEditClick}
+                    onViewAnalytics={(id) => navigate(`/campaign-analytics?id=${id}`)}
+                  />
                 ))}
               </div>
             )}
