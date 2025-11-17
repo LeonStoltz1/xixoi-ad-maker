@@ -161,14 +161,49 @@ CRITICAL COMPLIANCE RULES (NEVER VIOLATE):
 
 DO NOT write about "xiXoi" or "AI-powered ads" — you are writing ads FOR THE USER'S PRODUCT.
 
-Platform specifications:
-- Meta: Primary text 125 chars max, Headline 40 chars max
-- TikTok: Text 100 chars max  
-- Google Ads: Description 90 chars max, Headline 30 chars max
-- LinkedIn: Primary text 150 chars max
-- X (Twitter): Text 280 chars max
+Platform specifications with tone guidance:
 
-${enableABTesting ? 'A/B TESTING MODE: Generate TWO DISTINCT sets of ad copy with different approaches (Set A: feature-focused, Set B: benefit-focused). Each set should have 4 variants (one per platform).' : ''}
+Meta (Facebook/Instagram):
+- Primary text: 125 chars max, Headline: 40 chars max
+- Tone: Clear, conversational, visual-first, benefit-driven
+- Style: Lead with value, complement imagery, use emojis sparingly, mobile-optimized
+- Example: "Timeless elegance meets modern craftsmanship. 🕰️ Swiss-made precision you can wear every day."
+
+TikTok:
+- Text: 100 chars max
+- Tone: Hooky, scroll-stopping, mobile-first, casual, Gen-Z friendly
+- Style: POV format, conversational, use trends, engaging first 2 words, native feel
+- Example: "POV: You finally treat yourself to that watch you've been eyeing 👀✨"
+
+Google Ads:
+- Description: 90 chars max, Headline: 30 chars max
+- Tone: Short, punchy, benefit-driven, search-intent focused
+- Style: Feature + benefit, include CTA, answer search query directly, transactional
+- Example: "Swiss Luxury Watches | Free Shipping | 2-Year Warranty"
+
+LinkedIn:
+- Primary text: 150 chars max
+- Tone: Professional, value-first, B2B focused, credibility-building
+- Style: Lead with business value, industry-relevant, authoritative, decision-maker focused
+- Example: "Premium timepieces for professionals who value craftsmanship and precision engineering."
+
+X (Twitter):
+- Text: 280 chars max
+- Tone: Single concise post, conversational, no fluff, punchy
+- Style: Direct, tweet-native, can use thread format if needed, personality-driven
+- Example: "Swiss-made watches that don't compromise on style or substance. Built to last. Shop now →"
+
+CRITICAL: Each platform's copy must have DISTINCTLY DIFFERENT tone and structure. Do not reuse the same copy across platforms. Adapt language, formatting, and messaging style to match each platform's native content patterns and user expectations.
+
+PLATFORM DIFFERENTIATION REQUIREMENT:
+Each platform must receive copy that feels NATIVE to that platform's content ecosystem. Same product, different storytelling approach per platform:
+- Meta: Visual storytelling with benefit focus
+- TikTok: Trend-aware, casual, hook-first approach  
+- Google: Search-intent matching, transactional clarity
+- LinkedIn: Professional value proposition, B2B language
+- X: Conversational, punchy, personality-forward
+
+${enableABTesting ? 'A/B TESTING MODE: Generate TWO DISTINCT sets of ad copy with different approaches (Set A: feature-focused, Set B: benefit-focused). Each set should have 5 variants (one per platform). Apply platform-specific tone guidance to BOTH sets. The difference should be feature vs. benefit focus, NOT tone/style differences.' : ''}
 
 Your task:
 1. Read the vision analysis (if provided) AND user's description
@@ -195,67 +230,67 @@ Return JSON:
   "variants": [
     {
       "platform": "meta",
-      "headline": "max 40 chars - compelling headline about their product",
-      "body": "max 125 chars - persuasive copy using their details and image features",
-      "cta": "max 20 chars"${enableABTesting ? ',\n      "set": "A"' : ''}
+      "headline": "[Clear, benefit-driven, visual-first | 40 chars max]",
+      "body": "[Conversational, complement imagery, mobile-optimized | 125 chars max]",
+      "cta": "[Action-oriented | 20 chars max]"${enableABTesting ? ',\n      "set": "A"' : ''}
     },
     {
       "platform": "tiktok",
-      "headline": "max 30 chars",
-      "body": "max 100 chars",
-      "cta": "max 20 chars"${enableABTesting ? ',\n      "set": "A"' : ''}
+      "headline": "[Hooky, scroll-stopping, Gen-Z friendly | 30 chars max]",
+      "body": "[Casual, POV format, trend-aware | 100 chars max]",
+      "cta": "[Native, engaging | 20 chars max]"${enableABTesting ? ',\n      "set": "A"' : ''}
     },
     {
       "platform": "google",
-      "headline": "max 30 chars",
-      "body": "max 90 chars",
-      "cta": "max 20 chars"${enableABTesting ? ',\n      "set": "A"' : ''}
+      "headline": "[Search-intent focused, transactional | 30 chars max]",
+      "body": "[Benefit-driven, direct answer | 90 chars max]",
+      "cta": "[Direct action | 20 chars max]"${enableABTesting ? ',\n      "set": "A"' : ''}
     },
     {
       "platform": "linkedin",
-      "headline": "max 40 chars",
-      "body": "max 150 chars",
-      "cta": "max 20 chars"${enableABTesting ? ',\n      "set": "A"' : ''}
+      "headline": "[Professional, value-first, B2B | 40 chars max]",
+      "body": "[Credibility-building, decision-maker focused | 150 chars max]",
+      "cta": "[Business-oriented | 20 chars max]"${enableABTesting ? ',\n      "set": "A"' : ''}
     },
     {
       "platform": "x",
-      "headline": "max 40 chars",
-      "body": "max 280 chars - full tweet with compelling copy",
-      "cta": "max 20 chars"${enableABTesting ? ',\n      "set": "A"' : ''}
+      "headline": "[Punchy, conversational, personality-driven | 40 chars max]",
+      "body": "[Direct, no fluff, tweet-native | 280 chars max]",
+      "cta": "[Engaging, tweet-appropriate | 20 chars max]"${enableABTesting ? ',\n      "set": "A"' : ''}
     }${enableABTesting ? `,
     {
       "platform": "meta",
-      "headline": "max 40 chars - DIFFERENT approach from Set A",
-      "body": "max 125 chars - DIFFERENT angle/benefits from Set A",
-      "cta": "max 20 chars",
+      "headline": "[Clear, benefit-driven, visual-first | 40 chars max - DIFFERENT approach from Set A]",
+      "body": "[Conversational, complement imagery | 125 chars max - DIFFERENT angle/benefits from Set A]",
+      "cta": "[Action-oriented | 20 chars max]",
       "set": "B"
     },
     {
       "platform": "tiktok",
-      "headline": "max 30 chars - DIFFERENT from Set A",
-      "body": "max 100 chars - DIFFERENT from Set A",
-      "cta": "max 20 chars",
+      "headline": "[Hooky, scroll-stopping | 30 chars max - DIFFERENT from Set A]",
+      "body": "[Casual, POV format | 100 chars max - DIFFERENT from Set A]",
+      "cta": "[Native, engaging | 20 chars max]",
       "set": "B"
     },
     {
       "platform": "google",
-      "headline": "max 30 chars - DIFFERENT from Set A",
-      "body": "max 90 chars - DIFFERENT from Set A",
-      "cta": "max 20 chars",
+      "headline": "[Search-intent focused | 30 chars max - DIFFERENT from Set A]",
+      "body": "[Benefit-driven | 90 chars max - DIFFERENT from Set A]",
+      "cta": "[Direct action | 20 chars max]",
       "set": "B"
     },
     {
       "platform": "linkedin",
-      "headline": "max 40 chars - DIFFERENT from Set A",
-      "body": "max 150 chars - DIFFERENT from Set A",
-      "cta": "max 20 chars",
+      "headline": "[Professional, value-first | 40 chars max - DIFFERENT from Set A]",
+      "body": "[Credibility-building | 150 chars max - DIFFERENT from Set A]",
+      "cta": "[Business-oriented | 20 chars max]",
       "set": "B"
     },
     {
       "platform": "x",
-      "headline": "max 40 chars - DIFFERENT from Set A",
-      "body": "max 280 chars - DIFFERENT tweet approach from Set A",
-      "cta": "max 20 chars",
+      "headline": "[Punchy, conversational | 40 chars max - DIFFERENT from Set A]",
+      "body": "[Direct, no fluff | 280 chars max - DIFFERENT tweet approach from Set A]",
+      "cta": "[Engaging | 20 chars max]",
       "set": "B"
     }` : ''}
   ]
