@@ -15,6 +15,7 @@ import { useRealtor } from "@/contexts/RealtorContext";
 import { RealEstateDetailsForm } from "@/components/real-estate/RealEstateDetailsForm";
 import { buildRealEstateFeatureSummary, buildHousingFooter } from "@/lib/realEstatePrompt";
 import type { RealEstateDetailsFormValues } from "@/schema/realEstate";
+import { invokeWithRetry } from "@/lib/retryWithBackoff";
 
 export default function CreateCampaign() {
   const { realtorProfile, isLoading: realtorLoading, viewMode } = useRealtor();
@@ -350,10 +351,13 @@ export default function CreateCampaign() {
 
       console.log('Campaign and asset created, calling generate-ad-variants...');
 
-      // Trigger AI generation
-      const { error: generateError } = await supabase.functions.invoke('generate-ad-variants', {
-        body: { campaignId: campaign.id }
-      });
+      // Trigger AI generation with retry logic
+      const { error: generateError } = await invokeWithRetry(
+        supabase,
+        'generate-ad-variants',
+        { campaignId: campaign.id },
+        { maxRetries: 3, initialDelayMs: 1000 }
+      );
 
       if (generateError) {
         console.error('AI generation error:', generateError);

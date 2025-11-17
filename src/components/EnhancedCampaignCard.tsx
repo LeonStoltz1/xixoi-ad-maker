@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { invokeWithRetry } from "@/lib/retryWithBackoff";
 import { 
-  Pause, 
+  Pause,
   Play, 
   DollarSign, 
   TrendingUp, 
@@ -206,14 +207,17 @@ export function EnhancedCampaignCard({
     setShowAISuggestion(false);
     
     try {
-      const { data, error } = await supabase.functions.invoke('rewrite-ad-copy', {
-        body: {
+      const { data, error } = await invokeWithRetry(
+        supabase,
+        'rewrite-ad-copy',
+        {
           originalCopy: editedBodyCopy,
           characterLimit,
           platforms: selectedPlatforms.length > 0 ? selectedPlatforms : ['meta', 'google', 'tiktok', 'linkedin'],
           creativeUrl: selectedVariant?.creative_url || null
-        }
-      });
+        },
+        { maxRetries: 2, initialDelayMs: 1000 }
+      );
 
       if (error) {
         // Handle rate limit and credits exhausted errors
@@ -363,19 +367,19 @@ export function EnhancedCampaignCard({
         description: "Checking ad against platform policies",
       });
 
-      const { data: moderationResult, error: moderationError } = await supabase.functions.invoke(
+      const { data: moderationResult, error: moderationError } = await invokeWithRetry(
+        supabase,
         'moderate-ad-content',
         {
-          body: {
-            campaignId: campaign.id,
-            platforms: ['meta', 'tiktok', 'google', 'linkedin', 'x'],
-            adContent: {
-              headline: editedHeadline.trim(),
-              body_copy: editedBodyCopy.trim(),
-              cta_text: editedCtaText.trim(),
-            }
+          campaignId: campaign.id,
+          platforms: ['meta', 'tiktok', 'google', 'linkedin', 'x'],
+          adContent: {
+            headline: editedHeadline.trim(),
+            body_copy: editedBodyCopy.trim(),
+            cta_text: editedCtaText.trim(),
           }
-        }
+        },
+        { maxRetries: 2, initialDelayMs: 1000 }
       );
       
       if (moderationError) {

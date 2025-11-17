@@ -6,6 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Brain, Target, Sparkles, AlertTriangle, Pencil, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import { invokeWithRetry } from "@/lib/retryWithBackoff";
 import {
   Dialog,
   DialogContent,
@@ -110,10 +111,13 @@ export default function TargetingSetup() {
     try {
       setLoading(true);
       
-      // Call the generate-ad-variants function which also generates audience suggestions
-      const { data, error } = await supabase.functions.invoke('generate-ad-variants', {
-        body: { campaignId }
-      });
+      // Call the generate-ad-variants function with retry logic
+      const { data, error } = await invokeWithRetry(
+        supabase,
+        'generate-ad-variants',
+        { campaignId },
+        { maxRetries: 3, initialDelayMs: 1000 }
+      );
 
       if (error) {
         // Handle rate limit and credits exhausted errors
@@ -210,15 +214,15 @@ export default function TargetingSetup() {
     try {
       setModerating(true);
 
-      // Step 1: Moderate content before publishing
-      const { data: moderation, error: moderationError } = await supabase.functions.invoke(
+      // Step 1: Moderate content before publishing with retry logic
+      const { data: moderation, error: moderationError } = await invokeWithRetry(
+        supabase,
         'moderate-ad-content',
         {
-          body: {
-            campaignId,
-            platforms: selectedPlatforms
-          }
-        }
+          campaignId,
+          platforms: selectedPlatforms
+        },
+        { maxRetries: 2, initialDelayMs: 1000 }
       );
 
       if (moderationError) {
@@ -347,15 +351,15 @@ export default function TargetingSetup() {
         throw tempUpdateError;
       }
 
-      // Step 1: Validate content against ALL platforms before saving
-      const { data: moderation, error: moderationError } = await supabase.functions.invoke(
+      // Step 1: Validate content against ALL platforms before saving with retry logic
+      const { data: moderation, error: moderationError } = await invokeWithRetry(
+        supabase,
         'moderate-ad-content',
         {
-          body: {
-            campaignId: campaign.id,
-            platforms: ['meta', 'tiktok', 'google', 'linkedin', 'x'] // Check against all platforms
-          }
-        }
+          campaignId: campaign.id,
+          platforms: ['meta', 'tiktok', 'google', 'linkedin', 'x'] // Check against all platforms
+        },
+        { maxRetries: 2, initialDelayMs: 1000 }
       );
 
       if (moderationError) {

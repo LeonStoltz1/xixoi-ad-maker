@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageCircle, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { invokeWithRetry } from '@/lib/retryWithBackoff';
 
 export const AISupportChat = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,9 +23,12 @@ export const AISupportChat = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('ai-support', {
-        body: { subject, message }
-      });
+      const { data, error } = await invokeWithRetry(
+        supabase,
+        'ai-support',
+        { subject, message },
+        { maxRetries: 2, initialDelayMs: 1000 }
+      );
 
       if (error) throw error;
 

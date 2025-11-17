@@ -16,6 +16,7 @@ import { usePolitical } from "@/contexts/PoliticalContext";
 import { PoliticalAdGenerationSchema, type PoliticalAdGenerationFormValues } from "@/schema/political";
 import { checkPoliticalCompliance } from "@/lib/politicalCompliance";
 import type { ComplianceIssue } from "@/types/political";
+import { invokeWithRetry } from "@/lib/retryWithBackoff";
 
 export default function GeneratePoliticalAd() {
   const navigate = useNavigate();
@@ -149,8 +150,10 @@ export default function GeneratePoliticalAd() {
 
       const characterLimit = platformLimits[data.platform];
       
-      const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-political-ad', {
-        body: {
+      const { data: functionData, error: functionError } = await invokeWithRetry(
+        supabase,
+        'generate-political-ad',
+        {
           candidateName: politicalProfile.candidate!.fullName,
           race: politicalProfile.candidate!.race,
           electionYear: politicalProfile.candidate!.electionYear,
@@ -159,8 +162,9 @@ export default function GeneratePoliticalAd() {
           platform: data.platform,
           customMessage: data.customMessage,
           characterLimit,
-        }
-      });
+        },
+        { maxRetries: 2, initialDelayMs: 1000 }
+      );
 
       if (functionError) {
         // Handle rate limit and credits exhausted errors
