@@ -50,7 +50,12 @@ Deno.serve(async (req) => {
       // Check if user has affiliate referral
       const { data: referral } = await supabase
         .from('affiliate_referrals')
-        .select('affiliate_id, total_revenue, affiliate_earnings, affiliates!inner(stripe_account_id)')
+        .select(`
+          affiliate_id, 
+          total_revenue, 
+          affiliate_earnings, 
+          affiliates!inner(stripe_account_id, is_blocked)
+        `)
         .eq('referred_user_id', sub.user_id)
         .maybeSingle();
 
@@ -62,21 +67,30 @@ Deno.serve(async (req) => {
       totalAffiliatePayout += affiliatePayout;
       totalAgencyBonus += agencyBonus;
 
-      // Transfer to Affiliate if exists
+      // Transfer to Affiliate if exists and not blocked
       if (referral && Array.isArray(referral.affiliates) && referral.affiliates[0]?.stripe_account_id) {
-        console.log(`Transferring $${affiliatePayout} to affiliate`);
-        transfers.push(
-          stripe.transfers.create({
-            amount: Math.round(affiliatePayout * 100),
-            currency: 'usd',
-            destination: referral.affiliates[0].stripe_account_id,
-            metadata: { 
-              type: 'affiliate', 
-              subscription_id: sub.id,
-              month 
-            }
-          })
-        );
+        const affiliate = referral.affiliates[0];
+        
+        if (affiliate.is_blocked) {
+          console.log(`Affiliate is blocked, skipping transfer for subscription: ${sub.id}`);
+        } else {
+          console.log(`Transferring $${affiliatePayout} to affiliate`);
+          transfers.push(
+            stripe.transfers.create({
+              amount: Math.round(affiliatePayout * 100),
+              currency: 'usd',
+              destination: affiliate.stripe_account_id,
+              metadata: { 
+                type: 'affiliate', 
+                subscription_id: sub.id,
+                month 
+              }
+            }).catch((error: any) => {
+              console.error(`Transfer failed for affiliate ${referral.affiliate_id}:`, error);
+              return null; // Return null on error so Promise.all doesn't fail
+            })
+          );
+        }
       }
 
       // Log payout
@@ -151,7 +165,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    await Promise.all(transfers);
+    // Wait for all transfers to complete (filter out nulls from failed transfers)
+    await Promise.all(transfers.filter(t => t !== null));
 
     // Optional: Trigger Zapier webhook if configured
     const ZAPIER_WEBHOOK = Deno.env.get('ZAPIER_PAYOUT_WEBHOOK');
