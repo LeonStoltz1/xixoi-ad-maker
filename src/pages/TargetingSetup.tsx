@@ -116,6 +116,14 @@ export default function TargetingSetup() {
       });
 
       if (error) {
+        // Handle rate limit and credits exhausted errors
+        if (error.message?.includes('429') || error.message?.includes('rate limit')) {
+          toast.error('AI service temporarily unavailable. Please try again in a moment.');
+          return;
+        } else if (error.message?.includes('402') || error.message?.includes('credits exhausted')) {
+          toast.error('AI service credits exhausted. Please contact support at support@xixoi.com');
+          return;
+        }
         const errorMessage = error.message || 'Failed to generate targeting suggestions';
         throw new Error(errorMessage);
       }
@@ -215,6 +223,16 @@ export default function TargetingSetup() {
 
       if (moderationError) {
         console.error('Moderation error:', moderationError);
+        
+        // Handle rate limit and credits exhausted errors
+        if (moderationError.message?.includes('429') || moderationError.message?.includes('rate limit')) {
+          toast.error('AI service temporarily unavailable. Please try again in a moment.');
+          return;
+        } else if (moderationError.message?.includes('402') || moderationError.message?.includes('credits exhausted')) {
+          toast.error('AI service credits exhausted. Please contact support at support@xixoi.com');
+          return;
+        }
+        
         toast.error('Content moderation check failed. Please try again.');
         return;
       }
@@ -342,6 +360,16 @@ export default function TargetingSetup() {
 
       if (moderationError) {
         console.error('Moderation validation error:', moderationError);
+        
+        // Handle rate limit and credits exhausted errors
+        if (moderationError.message?.includes('429') || moderationError.message?.includes('rate limit')) {
+          toast.error('AI service temporarily unavailable. Please try again in a moment.');
+          return;
+        } else if (moderationError.message?.includes('402') || moderationError.message?.includes('credits exhausted')) {
+          toast.error('AI service credits exhausted. Please contact support at support@xixoi.com');
+          return;
+        }
+        
         toast.error('Failed to validate content. Please try again.');
         setSavingEdit(false);
         return;

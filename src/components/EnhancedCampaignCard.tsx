@@ -215,7 +215,25 @@ export function EnhancedCampaignCard({
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle rate limit and credits exhausted errors
+        if (error.message?.includes('429') || error.message?.includes('rate limit')) {
+          toast({
+            variant: "destructive",
+            title: "Rate limit reached",
+            description: "AI service temporarily unavailable. Please try again in a moment."
+          });
+          return;
+        } else if (error.message?.includes('402') || error.message?.includes('credits exhausted')) {
+          toast({
+            variant: "destructive",
+            title: "Credits exhausted",
+            description: "AI service credits exhausted. Please contact support at support@xixoi.com"
+          });
+          return;
+        }
+        throw error;
+      }
 
       if (data?.error) {
         toast({
@@ -359,6 +377,26 @@ export function EnhancedCampaignCard({
           }
         }
       );
+      
+      if (moderationError) {
+        // Handle rate limit and credits exhausted errors
+        if (moderationError.message?.includes('429') || moderationError.message?.includes('rate limit')) {
+          toast({
+            variant: "destructive",
+            title: "Rate limit reached",
+            description: "Content moderation temporarily unavailable. Please try again in a moment."
+          });
+          return;
+        } else if (moderationError.message?.includes('402') || moderationError.message?.includes('credits exhausted')) {
+          toast({
+            variant: "destructive",
+            title: "Credits exhausted",
+            description: "AI service credits exhausted. Please contact support at support@xixoi.com"
+          });
+          return;
+        }
+        throw moderationError;
+      }
 
       if (moderationError) {
         console.error('Moderation error:', moderationError);
