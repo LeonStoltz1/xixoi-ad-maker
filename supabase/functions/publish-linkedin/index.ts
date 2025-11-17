@@ -1,5 +1,5 @@
 import { supabaseClient } from "../_shared/supabase.ts";
-import { decrypt } from "../_shared/encryption.ts";
+import { getSystemCredentials } from "../_shared/credentials.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,22 +17,20 @@ Deno.serve(async (req) => {
 
     const supabase = supabaseClient();
 
-    const { data: account, error: accountError } = await supabase
-      .from("ad_accounts")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("platform", "linkedin")
-      .single();
-
-    if (accountError || !account) {
-      console.error("No LinkedIn account found:", accountError);
-      return new Response(JSON.stringify({ error: "No LinkedIn Ads account connected" }), { 
-        status: 400, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+    // Get system credentials for LinkedIn (no longer user-specific)
+    let credentials;
+    try {
+      credentials = await getSystemCredentials("linkedin");
+      console.log("Retrieved LinkedIn system credentials successfully");
+    } catch (error) {
+      console.error("Failed to get LinkedIn system credentials:", error);
+      return new Response(
+        JSON.stringify({ error: "Platform credentials unavailable" }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    const token = await decrypt(account.access_token);
+    const token = credentials.accessToken;
 
     // STUB RESPONSE (replace later with real LinkedIn Marketing API calls)
     const result = {
