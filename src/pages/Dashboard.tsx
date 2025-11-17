@@ -251,28 +251,28 @@ export default function Dashboard() {
                 Money-first view of your ad performance
               </p>
             </div>
-            <Button size="lg" onClick={() => navigate("/create-campaign")}>
-              <Plus className="w-5 h-5 mr-2" />
-              New Campaign
-            </Button>
+            <div className="flex items-center gap-3 flex-wrap">
+              {campaigns.length > 0 && (
+                <div className="relative w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Search campaigns..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              )}
+              <Button size="lg" onClick={() => navigate("/create-campaign")}>
+                <Plus className="w-5 h-5 mr-2" />
+                New Campaign
+              </Button>
+            </div>
           </div>
 
           {/* SECTION 1: Global Spend Summary */}
           <GlobalSpendSummary key={refreshKey} />
-
-          {/* Search Input */}
-          {campaigns.length > 0 && (
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search campaigns by name, goal, audience, or location..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          )}
 
           {/* POLITICAL MODE HIDDEN - Re-enable later for launch */}
           {/* {politicalProfile?.hasPoliticalTier && (
