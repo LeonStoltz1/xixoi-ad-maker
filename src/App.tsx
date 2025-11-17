@@ -26,12 +26,7 @@ import Influencers from "./pages/Influencers";
 import AffiliateLeaderboard from "./pages/AffiliateLeaderboard";
 import PayoutDashboard from "./pages/PayoutDashboard";
 import PayoutSettings from "./pages/PayoutSettings";
-import AdPlatformDashboard from "./pages/AdPlatformDashboard";
 import CampaignPublish from "./pages/CampaignPublish";
-import MetaConnect from "./pages/connect/MetaConnect";
-import GoogleConnect from "./pages/connect/GoogleConnect";
-import TikTokConnect from "./pages/connect/TikTokConnect";
-import LinkedInConnect from "./pages/connect/LinkedInConnect";
 import NotFound from "./pages/NotFound";
 import { RealtorIdentification } from "./components/onboarding/RealtorIdentification";
 import { RealtorProvider } from "./contexts/RealtorContext";
@@ -98,12 +93,7 @@ const App = () => (
           <Route path="/leaderboard" element={<AffiliateLeaderboard />} />
           <Route path="/payouts" element={<PayoutDashboard />} />
           <Route path="/payout-settings" element={<PayoutSettings />} />
-          <Route path="/ad-platforms" element={<AdPlatformDashboard />} />
           <Route path="/campaign-publish" element={<CampaignPublish />} />
-          <Route path="/connect/meta" element={<MetaConnect />} />
-          <Route path="/connect/google" element={<GoogleConnect />} />
-          <Route path="/connect/tiktok" element={<TikTokConnect />} />
-          <Route path="/connect/linkedin" element={<LinkedInConnect />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
