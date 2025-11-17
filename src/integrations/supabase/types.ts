@@ -14,45 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      ad_accounts: {
-        Row: {
-          access_token: string
-          created_at: string | null
-          expires_at: string | null
-          id: string
-          platform: string
-          platform_account_id: string
-          refresh_token: string | null
-          status: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          access_token: string
-          created_at?: string | null
-          expires_at?: string | null
-          id?: string
-          platform: string
-          platform_account_id: string
-          refresh_token?: string | null
-          status?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          access_token?: string
-          created_at?: string | null
-          expires_at?: string | null
-          id?: string
-          platform?: string
-          platform_account_id?: string
-          refresh_token?: string | null
-          status?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       ad_budget_reloads: {
         Row: {
           amount: number
@@ -1142,6 +1103,51 @@ export type Database = {
           platform_ad_account_id?: string
           status?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      platform_credentials: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          owner_id: string | null
+          owner_type: string | null
+          platform: string
+          platform_account_id: string
+          refresh_token: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          owner_id?: string | null
+          owner_type?: string | null
+          platform: string
+          platform_account_id: string
+          refresh_token?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          owner_id?: string | null
+          owner_type?: string | null
+          platform?: string
+          platform_account_id?: string
+          refresh_token?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
