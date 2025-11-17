@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Wallet } from 'lucide-react';
+import { Header } from '@/components/Header';
 
 export default function WalletPage() {
   const navigate = useNavigate();
@@ -21,7 +22,8 @@ export default function WalletPage() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6">
+    <div className="min-h-screen bg-background p-4 md:p-6 pt-40">
+      <Header />
       <div className="max-w-6xl mx-auto">
         <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" />

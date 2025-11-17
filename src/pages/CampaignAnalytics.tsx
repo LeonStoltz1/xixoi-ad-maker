@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, TrendingUp, MousePointer, DollarSign, Target, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Header } from "@/components/Header";
 
 export default function CampaignAnalytics() {
   const { id: campaignId } = useParams();
@@ -136,30 +137,8 @@ export default function CampaignAnalytics() {
   if (performance.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <header className="border-b border-foreground/20 bg-black">
-          <div className="container mx-auto px-6 py-4 flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/dashboard")}
-              className="text-white hover:text-white hover:bg-white/10"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div className="flex items-center gap-2">
-              <video
-                src="/xiXoiLogo.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-12 h-12 object-contain"
-              />
-              <h1 className="text-xl md:text-2xl font-bold text-white">Campaign Analytics</h1>
-            </div>
-          </div>
-        </header>
-        <main className="container mx-auto px-6 py-12">
+        <Header />
+        <main className="container mx-auto px-6 py-12 pt-40">
           <div className="max-w-2xl mx-auto text-center space-y-6">
             <AlertCircle className="w-16 h-16 mx-auto" />
             <h2 className="text-2xl font-bold">No Performance Data Yet</h2>
@@ -185,33 +164,10 @@ export default function CampaignAnalytics() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-foreground/20 bg-black">
-        <div className="container mx-auto px-6 py-4 flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/dashboard")}
-            className="text-white hover:text-white hover:bg-white/10"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <video
-              src="/xiXoiLogo.mp4"
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-12 h-12 object-contain"
-            />
-            <h1 className="text-xl md:text-2xl font-bold text-white">Campaign Analytics</h1>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-12">
+      <main className="container mx-auto px-6 py-12 pt-40">
         <div className="max-w-6xl mx-auto space-y-8">
 
           {/* ELITE: Auto-Optimizer Toggle */}

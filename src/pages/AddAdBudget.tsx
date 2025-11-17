@@ -11,6 +11,7 @@ import { ArrowLeft, Sparkles, AlertCircle } from 'lucide-react';
 import { generateSpendPlan, getPlatformRequirements, getMinimumDailySpend, getMinimumTotalSpend } from '@/lib/spendEngine';
 import type { User } from '@supabase/supabase-js';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Header } from '@/components/Header';
 
 export default function AddAdBudget() {
   const navigate = useNavigate();
@@ -183,7 +184,8 @@ export default function AddAdBudget() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6">
+    <div className="min-h-screen bg-background p-4 md:p-6 pt-40">
+      <Header />
       <div className="max-w-2xl mx-auto">
         <Button
           variant="ghost"
