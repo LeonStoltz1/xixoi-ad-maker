@@ -39,6 +39,7 @@ import { PoliticalProvider } from "./contexts/PoliticalContext";
 import VerifyCandidate from "./pages/political/VerifyCandidate";
 import GeneratePoliticalAd from "./pages/political/GeneratePoliticalAd";
 import PoliticalDashboard from "./pages/political/PoliticalDashboard";
+import VerifyAd from "./pages/political/VerifyAd";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,10 @@ const App = () => (
             <Route path="/political/verify" element={<VerifyCandidate />} />
             <Route path="/political/generate" element={<GeneratePoliticalAd />} />
             <Route path="/political/dashboard" element={<PoliticalDashboard />} />
+            
+            {/* Public Verification Portal - no auth required */}
+            <Route path="/verify/ad/:adId" element={<VerifyAd />} />
+            <Route path="/verify/candidate/:candidateId" element={<VerifyCandidate />} />
             <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-campaign" element={<CreateCampaign />} />
           <Route path="/targeting/:campaignId" element={<TargetingSetup />} />
