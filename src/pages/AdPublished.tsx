@@ -15,37 +15,45 @@ const AdPublished = () => {
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [userPlan, setUserPlan] = useState<string>('free');
+  const [isLoading, setIsLoading] = useState(true);
   const { createCheckoutSession, loading: stripeLoading } = useStripeCheckout();
 
   useEffect(() => {
     const fetchCampaign = async () => {
-      if (!campaignId) return;
-      
-      const { data: campaignData } = await supabase
-        .from('campaigns')
-        .select('*, campaign_assets(*)')
-        .eq('id', campaignId)
-        .single();
-      
-      const { data: variants } = await supabase
-        .from('ad_variants')
-        .select('*')
-        .eq('campaign_id', campaignId)
-        .limit(1);
-
-      // Get user plan
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('plan')
-          .eq('id', user.id)
-          .single();
-        setUserPlan(profile?.plan || 'free');
+      if (!campaignId) {
+        setIsLoading(false);
+        return;
       }
       
-      setCampaign(campaignData);
-      setSelectedVariant(variants?.[0]);
+      try {
+        const { data: campaignData } = await supabase
+          .from('campaigns')
+          .select('*, campaign_assets(*)')
+          .eq('id', campaignId)
+          .single();
+        
+        const { data: variants } = await supabase
+          .from('ad_variants')
+          .select('*')
+          .eq('campaign_id', campaignId)
+          .limit(1);
+
+        // Get user plan
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('plan')
+            .eq('id', user.id)
+            .single();
+          setUserPlan(profile?.plan || 'free');
+        }
+        
+        setCampaign(campaignData);
+        setSelectedVariant(variants?.[0]);
+      } finally {
+        setIsLoading(false);
+      }
     };
     
     fetchCampaign();
@@ -139,6 +147,27 @@ const AdPublished = () => {
       console.error('Failed to create checkout session:', error);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!selectedVariant) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-6">
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">Ad not found</p>
+          <Button onClick={() => navigate('/dashboard')}>
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-6 py-12 relative">
