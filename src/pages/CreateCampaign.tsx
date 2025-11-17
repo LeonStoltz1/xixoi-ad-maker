@@ -17,6 +17,7 @@ import { buildRealEstateFeatureSummary, buildHousingFooter } from "@/lib/realEst
 import type { RealEstateDetailsFormValues } from "@/schema/realEstate";
 import { invokeWithRetry } from "@/lib/retryWithBackoff";
 import { Header } from "@/components/Header";
+import { NoAdAccountsBanner } from "@/components/NoAdAccountsBanner";
 
 export default function CreateCampaign() {
   const { realtorProfile, isLoading: realtorLoading, viewMode } = useRealtor();
@@ -460,8 +461,13 @@ export default function CreateCampaign() {
     <div className="min-h-screen bg-background">
       <Header />
 
+      {/* No Ad Accounts Banner */}
+      <div className="container mx-auto px-6 pt-24 pb-6">
+        <NoAdAccountsBanner />
+      </div>
+
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-12 pt-40">
+      <main className="container mx-auto px-6 py-12 pt-8">
         <div className="max-w-2xl mx-auto space-y-8">
           <div className="text-center space-y-2">
             <h2 className="text-2xl md:text-3xl font-bold">Create New Campaign</h2>
