@@ -110,17 +110,28 @@ export default function GeneratePoliticalAd() {
   };
 
   async function onSubmit(data: PoliticalAdGenerationFormValues) {
-    if (hasReachedLimit) {
-      toast({
-        title: "Usage Limit Reached",
-        description: "You've reached your monthly limit of 100 political ads.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setLoading(true);
     try {
+      // Check and increment usage quota before generating
+      const { data: usageData, error: usageError } = await supabase.functions.invoke(
+        'increment-political-usage'
+      );
+
+      if (usageError || usageData?.error) {
+        toast({
+          title: "Usage Limit Reached",
+          description: usageData?.message || "Failed to check usage quota",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      toast({
+        title: "Quota Updated",
+        description: `${usageData.remaining} ads remaining this month`,
+      });
+
       const characterLimit = platformLimits[data.platform];
       
       const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-political-ad', {
@@ -174,12 +185,7 @@ export default function GeneratePoliticalAd() {
       });
       setComplianceIssues(allIssues);
 
-      // Increment usage counter
-      await supabase
-        .from('profiles')
-        .update({ political_ads_used: politicalProfile.adsUsed + 1 })
-        .eq('id', (await supabase.auth.getUser()).data.user!.id);
-
+      // Refresh profile to get updated usage count
       await refreshProfile();
 
       toast({

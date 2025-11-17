@@ -94,3 +94,6 @@ verify_jwt = true
 
 [functions.sign-political-ad]
 verify_jwt = true
+
+[functions.increment-political-usage]
+verify_jwt = true
