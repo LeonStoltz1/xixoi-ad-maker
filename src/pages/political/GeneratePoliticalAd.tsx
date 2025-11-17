@@ -442,7 +442,7 @@ export default function GeneratePoliticalAd() {
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Campaign Image (Optional)</label>
-                  <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary transition-colors">
+                  <div className="border-2 border-dashed p-8 text-center hover:border-primary transition-colors">
                     {previewUrl ? (
                       <div className="space-y-2">
                         <img src={previewUrl} alt="Preview" className="max-h-48 mx-auto rounded" />
@@ -502,7 +502,7 @@ export default function GeneratePoliticalAd() {
                 {watermarkUrl && (
                   <Card className="p-6">
                     <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      <CheckCircle2 className="w-5 h-5" />
                       Watermarked Preview
                     </h3>
                     <div className="space-y-4">

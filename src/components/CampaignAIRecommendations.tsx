@@ -146,7 +146,7 @@ export function CampaignAIRecommendations({
           {recommendations.map((rec, index) => (
             <div 
               key={index} 
-              className="flex items-start gap-3 p-3 rounded-lg border bg-background/50"
+              className="flex items-start gap-3 p-3 border bg-background/50"
             >
               <div className="mt-0.5">
                 {getIcon(rec.type)}

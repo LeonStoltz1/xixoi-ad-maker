@@ -293,10 +293,10 @@ export default function VerifyCandidate() {
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">ID Front *</label>
-                    <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary">
+                    <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed cursor-pointer hover:border-primary">
                       {idFrontFile ? (
                         <div className="text-center">
-                          <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                          <CheckCircle2 className="w-8 h-8 mx-auto mb-2" />
                           <p className="text-xs">{idFrontFile.name}</p>
                         </div>
                       ) : (
@@ -316,10 +316,10 @@ export default function VerifyCandidate() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">ID Back *</label>
-                    <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary">
+                    <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed cursor-pointer hover:border-primary">
                       {idBackFile ? (
                         <div className="text-center">
-                          <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                          <CheckCircle2 className="w-8 h-8 mx-auto mb-2" />
                           <p className="text-xs">{idBackFile.name}</p>
                         </div>
                       ) : (
@@ -339,10 +339,10 @@ export default function VerifyCandidate() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">Selfie *</label>
-                    <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary">
+                    <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed cursor-pointer hover:border-primary">
                       {selfieFile ? (
                         <div className="text-center">
-                          <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                          <CheckCircle2 className="w-8 h-8 mx-auto mb-2" />
                           <p className="text-xs">{selfieFile.name}</p>
                         </div>
                       ) : (

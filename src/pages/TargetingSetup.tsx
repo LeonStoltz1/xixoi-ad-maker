@@ -457,18 +457,18 @@ export default function TargetingSetup() {
           <div className="max-w-lg w-full">
             <div className="text-center space-y-6">
               <div className="flex justify-center">
-                <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+                <div className="w-16 h-16 bg-destructive/10 flex items-center justify-center">
                   <AlertTriangle className="w-8 h-8 text-destructive" />
                 </div>
               </div>
               
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold text-foreground">Content Policy Issue</h2>
-                <p className="text-red-600 dark:text-red-400 font-medium">{errorState.message}</p>
+                <p className="font-medium">{errorState.message}</p>
               </div>
               
-              <div className="bg-muted/50 rounded-lg p-4 text-left">
-                <p className="text-sm text-red-600 dark:text-red-400">
+              <div className="bg-muted/50 p-4 text-left">
+                <p className="text-sm">
                   {errorState.details}
                 </p>
               </div>
@@ -512,7 +512,7 @@ export default function TargetingSetup() {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Edit Campaign</DialogTitle>
-              <DialogDescription className="text-red-600 dark:text-red-400">
+              <DialogDescription className="font-medium">
                 Update your campaign description to fix content policy issues. Make sure to remove any discriminatory language, illegal content, or misleading claims.
               </DialogDescription>
             </DialogHeader>
@@ -873,21 +873,21 @@ export default function TargetingSetup() {
                 {moderationResult.violations.map((violation: any, index: number) => (
                   <div 
                     key={index} 
-                    className={`p-4 rounded-lg border-2 ${
+                    className={`p-4 border-2 ${
                       violation.severity === 'high' 
                         ? 'border-destructive bg-destructive/5' 
                         : violation.severity === 'medium'
-                        ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/20'
-                        : 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20'
+                        ? 'border-foreground bg-background'
+                        : 'border-foreground/50 bg-background'
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`mt-0.5 font-bold text-xs uppercase px-2 py-1 rounded ${
+                      <div className={`mt-0.5 font-bold text-xs uppercase px-2 py-1 ${
                         violation.severity === 'high'
                           ? 'bg-destructive text-destructive-foreground'
                           : violation.severity === 'medium'
-                          ? 'bg-orange-500 text-white'
-                          : 'bg-yellow-500 text-white'
+                          ? 'bg-foreground text-background'
+                          : 'bg-foreground/70 text-background'
                       }`}>
                         {violation.severity}
                       </div>
@@ -911,12 +911,12 @@ export default function TargetingSetup() {
               </div>
             )}
 
-            <div className={`p-4 rounded-lg border ${
+            <div className={`p-4 border ${
               moderationResult?.overallRisk === 'high'
                 ? 'border-destructive bg-destructive/5'
                 : moderationResult?.overallRisk === 'medium'
-                ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/20'
-                : 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20'
+                ? 'border-foreground bg-background'
+                : 'border-foreground/50 bg-background'
             }`}>
               <p className="text-sm font-medium mb-2">Overall Risk: <span className="uppercase">{moderationResult?.overallRisk}</span></p>
               <p className="text-sm text-muted-foreground">

@@ -105,7 +105,7 @@ export function CampaignContactSection({
         <div className="space-y-2 pl-6 border-l-2 border-primary/20">
           <Label htmlFor="contact-phone">Phone Number *</Label>
           <div className="flex gap-2">
-            <div className="w-20 flex items-center justify-center border rounded-md bg-muted text-sm font-medium">
+            <div className="w-20 flex items-center justify-center border bg-muted text-sm font-medium">
               {!geolocation.loading && geolocation.phonePrefix ? geolocation.phonePrefix : '+1'}
             </div>
             <Input
@@ -185,9 +185,9 @@ export function CampaignContactSection({
 
       {/* Compliance disclaimer */}
       {showDisclaimer && (primaryGoal === 'calls' || primaryGoal === 'email') && (
-        <Alert className="border-orange-200 bg-orange-50">
-          <AlertCircle className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="text-xs text-orange-900">
+        <Alert className="border-foreground bg-background">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="text-xs">
             By using Call/Email CTAs you confirm you have permission to receive calls/emails and agree to each platform's advertising policies and anti-spam rules.
           </AlertDescription>
         </Alert>

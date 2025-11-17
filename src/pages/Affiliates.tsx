@@ -182,7 +182,7 @@ const AffiliatesPage = () => {
             ← Back to Dashboard
           </Button>
           <h1 className="text-3xl md:text-4xl font-bold mb-4">xiXoi™ Affiliate Dashboard</h1>
-          <div className="inline-flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-lg px-6 py-3">
+          <div className="inline-flex items-center gap-3 bg-primary/10 border border-primary/20 px-6 py-3">
             <DollarSign className="w-6 h-6 text-primary" />
             <div>
               <p className="text-sm text-muted-foreground">Commission Rate</p>
@@ -195,13 +195,13 @@ const AffiliatesPage = () => {
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-destructive/10 border border-destructive rounded-lg text-destructive">
+          <div className="mb-6 p-4 bg-destructive/10 border border-destructive text-destructive">
             {error}
           </div>
         )}
 
         {!affiliate && (
-          <div className="bg-card border border-border rounded-lg p-8 mb-6 text-center">
+          <div className="bg-card border border-border p-8 mb-6 text-center">
             <h2 className="text-xl md:text-2xl font-semibold mb-4">Join the Affiliate Program</h2>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
               Generate your unique affiliate link and start earning 20% commission on every payment
@@ -216,7 +216,7 @@ const AffiliatesPage = () => {
         {affiliate && (
           <>
             {/* Affiliate Link */}
-            <div className="bg-card border border-border rounded-lg p-6 mb-6">
+            <div className="bg-card border border-border p-6 mb-6">
               <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
                 <Copy className="w-5 h-5" />
                 Your Affiliate Link
@@ -296,7 +296,7 @@ const AffiliatesPage = () => {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-              <div className="bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/30 rounded-lg p-6">
+              <div className="bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/30 p-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-foreground">Commission Rate</span>
                   <DollarSign className="w-5 h-5 text-primary" />
@@ -304,7 +304,7 @@ const AffiliatesPage = () => {
                 <div className="text-3xl md:text-4xl font-bold text-primary">20%</div>
                 <p className="text-xs text-muted-foreground mt-2">Lifetime recurring</p>
               </div>
-              <div className="bg-card border border-border rounded-lg p-6">
+              <div className="bg-card border border-border p-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">Total Earned</span>
                   <DollarSign className="w-5 h-5 text-primary" />
@@ -313,7 +313,7 @@ const AffiliatesPage = () => {
                   ${Number(affiliate.total_earned ?? 0).toFixed(2)}
                 </div>
               </div>
-              <div className="bg-card border border-border rounded-lg p-6">
+              <div className="bg-card border border-border p-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">Total Paid Out</span>
                   <TrendingUp className="w-5 h-5 text-primary" />
@@ -322,7 +322,7 @@ const AffiliatesPage = () => {
                   ${Number(affiliate.total_paid ?? 0).toFixed(2)}
                 </div>
               </div>
-              <div className="bg-card border border-border rounded-lg p-6">
+              <div className="bg-card border border-border p-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">Available</span>
                   <Users className="w-5 h-5 text-primary" />
@@ -338,7 +338,7 @@ const AffiliatesPage = () => {
             </div>
 
             {/* Request Payout */}
-            <div className="bg-card border border-border rounded-lg p-6 mb-6">
+            <div className="bg-card border border-border p-6 mb-6">
               <h2 className="text-lg md:text-xl font-semibold mb-4">Request Payout</h2>
               <p className="text-sm text-muted-foreground mb-4">
                 Minimum payout: <strong>$100</strong>. Payouts are processed via Stripe or PayPal (depending on your method).
@@ -357,7 +357,7 @@ const AffiliatesPage = () => {
             </div>
 
             {/* Referrals */}
-            <div className="bg-card border border-border rounded-lg p-6 mb-6">
+            <div className="bg-card border border-border p-6 mb-6">
               <h2 className="text-lg md:text-xl font-semibold mb-4">Your Referrals</h2>
               {referrals.length === 0 && (
                 <p className="text-sm text-muted-foreground">
@@ -395,7 +395,7 @@ const AffiliatesPage = () => {
             </div>
 
             {/* Payout History */}
-            <div className="bg-card border border-border rounded-lg p-6">
+            <div className="bg-card border border-border p-6">
               <h2 className="text-lg md:text-xl font-semibold mb-4">Payout History</h2>
               {payouts.length === 0 && (
                 <p className="text-sm text-muted-foreground">No payouts yet.</p>

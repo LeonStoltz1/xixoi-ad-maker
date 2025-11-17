@@ -569,7 +569,7 @@ export default function CreateCampaign() {
                       isOverLimit 
                         ? 'text-destructive' 
                         : isNearLimit 
-                          ? 'text-yellow-600 dark:text-yellow-500' 
+                          ? 'text-foreground' 
                           : 'text-muted-foreground'
                     }`}>
                       {characterCount} / {characterLimit}
@@ -607,14 +607,14 @@ export default function CreateCampaign() {
                             issue.severity === 'error' 
                               ? 'border-destructive' 
                               : issue.severity === 'warning'
-                                ? 'border-yellow-500 dark:border-yellow-600'
-                                : 'border-blue-500'
+                                ? 'border-foreground'
+                                : 'border-foreground'
                           }
                         >
                           <div className="flex items-start gap-2">
                             {issue.severity === 'error' && <AlertCircle className="w-4 h-4 text-destructive mt-0.5" />}
-                            {issue.severity === 'warning' && <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5" />}
-                            {issue.severity === 'info' && <Info className="w-4 h-4 text-blue-600 mt-0.5" />}
+                            {issue.severity === 'warning' && <AlertCircle className="w-4 h-4 mt-0.5" />}
+                            {issue.severity === 'info' && <Info className="w-4 h-4 mt-0.5" />}
                             <AlertDescription className="text-xs">
                               <span className="font-semibold">{issue.severity === 'error' ? 'Error' : issue.severity === 'warning' ? 'Warning' : 'Info'}:</span> {issue.message}
                               <div className="text-xs text-muted-foreground mt-1">
@@ -629,9 +629,9 @@ export default function CreateCampaign() {
 
                   {/* Compliance passed */}
                   {complianceIssues.filter(i => i.severity === 'error').length === 0 && (
-                    <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
-                      <CheckCircle2 className="w-4 h-4 text-green-600" />
-                      <AlertDescription className="text-xs text-green-800 dark:text-green-300">
+                    <Alert className="border-foreground bg-background">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <AlertDescription className="text-xs">
                         <span className="font-semibold">No critical compliance issues detected.</span>
                         {complianceIssues.filter(i => i.severity === 'warning').length > 0 && ' Review warnings above for optimal results.'}
                       </AlertDescription>

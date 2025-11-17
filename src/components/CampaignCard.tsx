@@ -215,7 +215,7 @@ export const CampaignCard = ({ campaign, onUpdate }: CampaignCardProps) => {
         {remainingBudget !== null && (
           <div className="flex items-center justify-between p-3 bg-muted/50 rounded">
             <span className="text-sm">Remaining Budget</span>
-            <span className={`font-semibold ${remainingBudget < 50 ? 'text-orange-500' : ''}`}>
+            <span className="font-semibold">
               ${remainingBudget.toFixed(2)}
             </span>
           </div>
@@ -267,7 +267,7 @@ export const CampaignCard = ({ campaign, onUpdate }: CampaignCardProps) => {
             onClick={handleStopCampaign}
             disabled={loading || campaign.status === 'completed'}
             variant="outline"
-            className="text-red-500 hover:text-red-600"
+            className="hover:opacity-70"
           >
             <StopCircle className="h-4 w-4" />
           </Button>

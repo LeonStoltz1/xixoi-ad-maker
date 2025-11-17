@@ -96,8 +96,8 @@ export default function PayoutSettings() {
         <Card className="mb-6 border-primary/20 bg-primary/5">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-green-500" />
+              <div className="w-12 h-12 bg-primary/10 flex items-center justify-center">
+                <Calendar className="w-6 h-6" />
               </div>
               <div className="flex-1">
                 <div className="font-semibold text-lg">Automatic Payouts Active</div>
@@ -105,7 +105,7 @@ export default function PayoutSettings() {
                   Next payout: 1st of next month at 9:00 AM UTC
                 </div>
               </div>
-              <Badge className="bg-green-500">Enabled</Badge>
+              <Badge className="bg-foreground text-background">Enabled</Badge>
             </div>
           </CardContent>
         </Card>
@@ -121,7 +121,7 @@ export default function PayoutSettings() {
           <CardContent className="space-y-4">
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-6 h-6 bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-sm font-bold text-primary">1</span>
                 </div>
                 <div>
@@ -133,7 +133,7 @@ export default function PayoutSettings() {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-6 h-6 bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-sm font-bold text-primary">2</span>
                 </div>
                 <div>
@@ -145,7 +145,7 @@ export default function PayoutSettings() {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-6 h-6 bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-sm font-bold text-primary">3</span>
                 </div>
                 <div>
@@ -157,7 +157,7 @@ export default function PayoutSettings() {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-6 h-6 bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-sm font-bold text-primary">4</span>
                 </div>
                 <div>
@@ -175,7 +175,7 @@ export default function PayoutSettings() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-orange-500" />
+              <Zap className="w-5 h-5" />
               Zapier Integration (Optional)
             </CardTitle>
             <CardDescription>

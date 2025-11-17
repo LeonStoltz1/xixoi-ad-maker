@@ -173,7 +173,7 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-medium">Charged</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold text-green-600">{chargedCount}</div>
+              <div className="text-xl md:text-2xl font-bold">{chargedCount}</div>
             </CardContent>
           </Card>
           <Card>
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
                               TAMPERED
                             </Badge>
                           ) : ad.charged ? (
-                            <Badge className="bg-green-600">
+                            <Badge className="bg-foreground text-background">
                               <DollarSign className="w-3 h-3 mr-1" />
                               $29 CHARGED
                             </Badge>

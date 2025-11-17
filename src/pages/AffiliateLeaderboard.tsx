@@ -156,7 +156,7 @@ export default function AffiliateLeaderboard() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="w-12 h-12 bg-primary/10 flex items-center justify-center">
                   <Users className="w-6 h-6 text-primary" />
                 </div>
                 <div>
@@ -170,7 +170,7 @@ export default function AffiliateLeaderboard() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="w-12 h-12 bg-primary/10 flex items-center justify-center">
                   <DollarSign className="w-6 h-6 text-primary" />
                 </div>
                 <div>
@@ -184,7 +184,7 @@ export default function AffiliateLeaderboard() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="w-12 h-12 bg-primary/10 flex items-center justify-center">
                   <TrendingUp className="w-6 h-6 text-primary" />
                 </div>
                 <div>
@@ -285,7 +285,7 @@ export default function AffiliateLeaderboard() {
                 {leaderboard.map((entry) => (
                   <div
                     key={entry.rank}
-                    className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
+                    className={`flex items-center justify-between p-4 border transition-colors ${
                       entry.rank <= 3 
                         ? 'bg-primary/5 border-primary/20' 
                         : 'bg-card hover:bg-muted/50'
