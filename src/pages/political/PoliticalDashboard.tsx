@@ -38,6 +38,7 @@ interface SpendMetrics {
   tiktokSpend: number;
   googleSpend: number;
   linkedinSpend: number;
+  xSpend: number;
   totalImpressions: number;
   totalClicks: number;
   averageCTR: number;
@@ -55,6 +56,7 @@ export default function PoliticalDashboard() {
     tiktokSpend: 0,
     googleSpend: 0,
     linkedinSpend: 0,
+    xSpend: 0,
     totalImpressions: 0,
     totalClicks: 0,
     averageCTR: 0,
@@ -67,6 +69,7 @@ export default function PoliticalDashboard() {
     tiktok: 20,
     google: 20,
     linkedin: 20,
+    x: 20,
   });
   const [publishing, setPublishing] = useState(false);
 
@@ -155,6 +158,7 @@ export default function PoliticalDashboard() {
           tiktokSpend: 0,
           googleSpend: 0,
           linkedinSpend: 0,
+          xSpend: 0,
           totalImpressions: 0,
           totalClicks: 0,
           averageCTR: 0,
@@ -166,6 +170,7 @@ export default function PoliticalDashboard() {
           if (item.platform === 'tiktok') metrics.tiktokSpend += item.spend || 0;
           if (item.platform === 'google') metrics.googleSpend += item.spend || 0;
           if (item.platform === 'linkedin') metrics.linkedinSpend += item.spend || 0;
+          if (item.platform === 'x') metrics.xSpend += item.spend || 0;
         });
 
         if (perfData) {
@@ -395,7 +400,7 @@ export default function PoliticalDashboard() {
             {spendMetrics.totalSpend > 0 && (
               <Card className="p-6">
                 <h3 className="font-semibold text-lg mb-4">Spend by Platform</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Meta</p>
                     <p className="text-xl font-bold">${spendMetrics.metaSpend.toFixed(2)}</p>
@@ -411,6 +416,10 @@ export default function PoliticalDashboard() {
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">LinkedIn</p>
                     <p className="text-xl font-bold">${spendMetrics.linkedinSpend.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">X</p>
+                    <p className="text-xl font-bold">${spendMetrics.xSpend.toFixed(2)}</p>
                   </div>
                 </div>
               </Card>
@@ -569,6 +578,7 @@ export default function PoliticalDashboard() {
                   { id: 'tiktok', label: 'TikTok' },
                   { id: 'google', label: 'Google Ads' },
                   { id: 'linkedin', label: 'LinkedIn' },
+                  { id: 'x', label: 'X (Twitter)' },
                 ].map((platform) => (
                   <div key={platform.id} className="flex items-center space-x-2">
                     <Checkbox
