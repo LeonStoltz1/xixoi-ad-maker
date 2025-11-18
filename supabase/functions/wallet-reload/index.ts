@@ -25,8 +25,47 @@ serve(async (req) => {
     const { amount } = await req.json();
     if (!amount || amount <= 0) throw new Error('Invalid amount');
 
+    // Get user profile to check plan
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('plan, stripe_customer_id')
+      .eq('id', user.id)
+      .single();
+
+    const userPlan = profile?.plan || 'free';
+    const amountNum = parseFloat(amount);
+
+    // Enforce Quick-Start weekly cap
+    if (userPlan === 'quickstart') {
+      const { data: capResult, error: capError } = await supabaseClient
+        .rpc('enforce_quickstart_cap', { requested: amountNum });
+
+      if (capError) {
+        console.error('Cap enforcement error:', capError);
+        throw new Error('Failed to check spending cap');
+      }
+
+      if (!capResult?.allowed) {
+        return new Response(
+          JSON.stringify({ 
+            error: capResult?.error || 'WEEKLY_CAP_EXCEEDED',
+            message: capResult?.message || 'Quick-Start weekly $300 limit reached. Upgrade to Pro for unlimited spend.',
+            current_spend: capResult?.current_spend,
+            requested: capResult?.requested,
+            cap: capResult?.cap
+          }),
+          {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+    }
+
+    console.log('Processing wallet reload for user:', user.id, 'Plan:', userPlan, 'Amount:', amount);
+
     // Fraud check
-    const fraudCheck = await runFraudChecks(supabaseClient, user.id, amount);
+    const fraudCheck = await runFraudChecks(supabaseClient, user.id, amountNum);
     if (fraudCheck.risk_level === 'blocked') {
       throw new Error('Transaction blocked due to fraud risk');
     }
@@ -36,19 +75,14 @@ serve(async (req) => {
       apiVersion: '2023-10-16',
     });
 
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('stripe_customer_id')
-      .eq('id', user.id)
-      .single();
-
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100),
+      amount: Math.round(amountNum * 100),
       currency: 'usd',
       customer: profile?.stripe_customer_id,
       metadata: {
         user_id: user.id,
-        type: 'wallet_reload'
+        type: 'wallet_reload',
+        plan: userPlan
       }
     });
 

@@ -41,17 +41,62 @@ serve(async (req) => {
       throw new Error('Amount and platforms are required');
     }
 
-    const serviceFee = 5.00;
-    const totalAmount = parseFloat(amount) + serviceFee;
+    // Get user profile to check plan
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('plan')
+      .eq('id', user.id)
+      .single();
 
-    console.log('Creating ad budget reload:', { user: user.id, amount, platforms, serviceFee, totalAmount });
+    const userPlan = profile?.plan || 'free';
+    const amountNum = parseFloat(amount);
+
+    // Enforce Quick-Start weekly cap
+    if (userPlan === 'quickstart') {
+      const { data: capResult, error: capError } = await supabaseClient
+        .rpc('enforce_quickstart_cap', { requested: amountNum });
+
+      if (capError) {
+        console.error('Cap enforcement error:', capError);
+        throw new Error('Failed to check spending cap');
+      }
+
+      if (!capResult?.allowed) {
+        return new Response(
+          JSON.stringify({ 
+            error: capResult?.error || 'WEEKLY_CAP_EXCEEDED',
+            message: capResult?.message || 'Quick-Start weekly $300 limit reached. Upgrade to Pro for unlimited spend.',
+            current_spend: capResult?.current_spend,
+            requested: capResult?.requested,
+            cap: capResult?.cap
+          }),
+          {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+    }
+
+    // Calculate service fee (5% for Quick-Start, $5 flat for others)
+    const serviceFee = userPlan === 'quickstart' ? amountNum * 0.05 : 5.00;
+    const totalAmount = amountNum + serviceFee;
+
+    console.log('Creating ad budget reload:', { 
+      user: user.id, 
+      plan: userPlan,
+      amount, 
+      platforms, 
+      serviceFee, 
+      totalAmount 
+    });
 
     // Create the ad budget reload record
     const { data: reloadRecord, error: reloadError } = await supabaseClient
       .from('ad_budget_reloads')
       .insert({
         user_id: user.id,
-        amount: parseFloat(amount),
+        amount: amountNum,
         service_fee: serviceFee,
         total_amount: totalAmount,
         platforms: platforms,
