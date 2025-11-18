@@ -96,6 +96,16 @@ export const Header = () => {
                 </div>
               )}
               
+              {/* Connected Accounts Link - Only for Pro/Agency users */}
+              {(userPlan === 'pro' || userPlan === 'elite' || userPlan === 'agency') && (
+                <button 
+                  onClick={() => navigate('/connect-platforms')}
+                  className="px-3 py-1.5 border border-white/20 text-sm text-white hover:bg-white/10 transition-colors"
+                >
+                  Connected Accounts
+                </button>
+              )}
+
               {/* Plan Badge */}
               <div className="px-3 py-1.5 border border-white/20 text-sm">
                 <span className="text-white uppercase tracking-wide">

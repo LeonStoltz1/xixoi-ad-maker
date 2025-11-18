@@ -1,5 +1,5 @@
 import { supabaseClient } from "../_shared/supabase.ts";
-import { getSystemCredentials } from "../_shared/credentials.ts";
+import { getCredentials } from "../_shared/credentials.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,15 +17,41 @@ Deno.serve(async (req) => {
 
     const supabase = supabaseClient();
 
-    // Get system credentials for LinkedIn (no longer user-specific)
+    // Fetch user tier
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("plan")
+      .eq("id", userId)
+      .single();
+
+    if (profileError || !profile) {
+      return new Response(
+        JSON.stringify({ error: "PROFILE_NOT_FOUND" }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const tier = profile.plan;
+
+    // Get credentials (hybrid routing: master OR user)
     let credentials;
     try {
-      credentials = await getSystemCredentials("linkedin");
-      console.log("Retrieved LinkedIn system credentials successfully");
-    } catch (error) {
-      console.error("Failed to get LinkedIn system credentials:", error);
+      credentials = await getCredentials(userId, "linkedin", tier);
+      console.log("Retrieved LinkedIn credentials successfully");
+    } catch (error: any) {
+      if (error.message.includes("OAUTH_REQUIRED")) {
+        return new Response(
+          JSON.stringify({
+            error: "OAUTH_REQUIRED",
+            message: error.message,
+            connectUrl: "/connect-platforms"
+          }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      console.error("Failed to get LinkedIn credentials:", error);
       return new Response(
-        JSON.stringify({ error: "Platform credentials unavailable" }), 
+        JSON.stringify({ error: "Platform credentials unavailable" }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
