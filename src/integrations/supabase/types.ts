@@ -1303,6 +1303,8 @@ export type Database = {
           political_ads_limit: number | null
           political_ads_used: number | null
           political_tier: boolean | null
+          quickstart_week_start_date: string | null
+          quickstart_weekly_spend: number | null
           realtor_license_state: string | null
           realtor_name: string | null
           stripe_customer_id: string | null
@@ -1321,6 +1323,8 @@ export type Database = {
           political_ads_limit?: number | null
           political_ads_used?: number | null
           political_tier?: boolean | null
+          quickstart_week_start_date?: string | null
+          quickstart_weekly_spend?: number | null
           realtor_license_state?: string | null
           realtor_name?: string | null
           stripe_customer_id?: string | null
@@ -1339,6 +1343,8 @@ export type Database = {
           political_ads_limit?: number | null
           political_ads_used?: number | null
           political_tier?: boolean | null
+          quickstart_week_start_date?: string | null
+          quickstart_weekly_spend?: number | null
           realtor_license_state?: string | null
           realtor_name?: string | null
           stripe_customer_id?: string | null
@@ -1575,6 +1581,7 @@ export type Database = {
       }
     }
     Functions: {
+      enforce_quickstart_cap: { Args: { requested: number }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

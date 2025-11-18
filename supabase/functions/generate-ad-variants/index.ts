@@ -54,6 +54,31 @@ serve(async (req) => {
     // Get the text content from assets (all asset types now have description)
     const asset = campaign.campaign_assets[0];
     const productDescription = asset?.asset_text || 'Product description';
+    
+    // Political ad blocking for free and quickstart tiers
+    const POLITICAL_KEYWORDS = [
+      'vote for', 'elect ', ' candidate ', ' campaign ', ' pac ', ' ballot ',
+      ' senate', ' congress', ' president', ' governor', ' mayor', 
+      'democrat', 'republican', 'political party', 'election'
+    ];
+    
+    const descLower = productDescription.toLowerCase();
+    const isPolitical = POLITICAL_KEYWORDS.some(keyword => descLower.includes(keyword.trim()));
+    
+    if (isPolitical && (userPlan === 'free' || userPlan === 'quickstart')) {
+      console.log('Political ad blocked for tier:', userPlan);
+      return new Response(
+        JSON.stringify({ 
+          error: 'POLITICAL_UPGRADE_REQUIRED',
+          message: 'Political ads require Pro tier ($149/mo) for FEC compliance and your own connected ad accounts. Upgrade to continue.'
+        }),
+        { 
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
     const imageAsset = campaign.campaign_assets.find((a: any) => a.asset_type === 'image');
     const videoAsset = campaign.campaign_assets.find((a: any) => a.asset_type === 'video');
     const imageUrl = imageAsset?.asset_url || null;

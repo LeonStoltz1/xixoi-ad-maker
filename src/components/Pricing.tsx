@@ -17,6 +17,21 @@ const plans = [
     cta: "Start Free",
   },
   {
+    name: "QUICK-START",
+    price: "$49",
+    subtitle: "/mo",
+    features: [
+      "We manage ad accounts (zero setup)",
+      "Up to $300/week ad spend",
+      "5% service fee on top-ups",
+      "4 AI variants per campaign",
+      "Political ads blocked",
+      "Upgrade anytime to Pro",
+    ],
+    cta: "Start Quick-Start",
+    popular: true,
+  },
+  {
     name: "PUBLISH PRO",
     price: "$29",
     subtitle: "per ad set",
@@ -72,6 +87,8 @@ export const Pricing = () => {
   const handlePlanClick = (planName: string) => {
     if (planName === "FREE") {
       navigate('/auth');
+    } else if (planName === "QUICK-START") {
+      navigate('/auth?plan=quickstart');
     } else if (planName === "PUBLISH PRO") {
       navigate('/auth?plan=pro');
     } else if (planName === "SCALE ELITE") {
