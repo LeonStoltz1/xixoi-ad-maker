@@ -89,7 +89,7 @@ export const Pricing = () => {
             Simple Pricing
           </h2>
           <p className="text-base text-foreground/80">
-            Pure simplicity. No clutter. No noise.
+            From individuals to enterprises. Launch in 60 seconds.
           </p>
         </div>
 

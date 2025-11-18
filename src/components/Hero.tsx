@@ -21,10 +21,14 @@ export const Hero = () => {
       <div className="w-full max-w-content mx-auto text-center">
         <div className="space-y-tight">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight font-heading">
-            Your Ad.<br />Already Done.
+            Paid Advertising<br />for Every Human.
           </h1>
-          <p className="text-lg md:text-xl pt-tight">
-            No accounts. No setup. Run ads in 60 seconds.
+          <p className="text-lg md:text-xl pt-tight opacity-70">
+            And soon, robots too.
+          </p>
+          <p className="text-base md:text-lg pt-2">
+            Launch ads instantly on Meta, TikTok, Google, LinkedIn, and X.<br />
+            No ad account required. No skills needed.
           </p>
         </div>
         

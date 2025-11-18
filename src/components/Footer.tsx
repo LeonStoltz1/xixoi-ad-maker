@@ -43,7 +43,8 @@ export const Footer = () => {
               />
             </div>
             <p className="text-sm opacity-70">
-              Instant Ads for Everyone.
+              Paid Advertising for Every Human.<br />
+              And soon, robots too.
             </p>
           </div>
           
