@@ -20,6 +20,7 @@ interface PublishModalProps {
 
 export function PublishModal({ campaignId, platform, open, onClose }: PublishModalProps) {
   const [loading, setLoading] = useState(false);
+  const [showConnectModal, setShowConnectModal] = useState(false);
 
   const publish = async () => {
     setLoading(true);
@@ -41,11 +42,15 @@ export function PublishModal({ campaignId, platform, open, onClose }: PublishMod
         }
       );
 
-      if (!res.ok) {
-        throw new Error("Failed to publish campaign");
-      }
-
       const result = await res.json();
+
+      if (!res.ok || result.error) {
+        if (result.error === "OAUTH_REQUIRED") {
+          setShowConnectModal(true);
+          return;
+        }
+        throw new Error(result.error || "Failed to publish campaign");
+      }
       console.log("Publish result:", result);
       
       toast.success(`Campaign published to ${platform}!`);
@@ -76,6 +81,32 @@ export function PublishModal({ campaignId, platform, open, onClose }: PublishMod
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {showConnectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="rounded-2xl bg-background p-6 max-w-md w-full mx-4 border-2 border-border">
+            <h2 className="text-xl font-bold mb-2">Connect Your Ad Account</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              To publish from your Pro/Agency tier, you need to connect your {platform.toUpperCase()} account first.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowConnectModal(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => (window.location.href = "/connect-platforms")}
+                className="flex-1"
+              >
+                Connect Account
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Dialog>
   );
 }

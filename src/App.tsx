@@ -37,6 +37,7 @@ import GeneratePoliticalAd from "./pages/political/GeneratePoliticalAd";
 import PoliticalDashboard from "./pages/political/PoliticalDashboard";
 import VerifyAd from "./pages/political/VerifyAd";
 import PlatformCredentialsAdmin from "./pages/admin/PlatformCredentialsAdmin";
+import ConnectPlatforms from "./pages/ConnectPlatforms";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +78,7 @@ const App = () => (
             {/* <Route path="/verify/candidate/:candidateId" element={<VerifyCandidate />} /> */}
             <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-campaign" element={<CreateCampaign />} />
+          <Route path="/connect-platforms" element={<ConnectPlatforms />} />
           <Route path="/targeting/:campaignId" element={<TargetingSetup />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-canceled" element={<PaymentCanceled />} />

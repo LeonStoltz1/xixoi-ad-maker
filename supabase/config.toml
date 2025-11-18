@@ -97,3 +97,19 @@ verify_jwt = false
 
 [functions.publish-x]
 verify_jwt = false
+
+[functions.meta-oauth-callback]
+verify_jwt = false
+
+[functions.google-oauth-callback]
+verify_jwt = false
+
+[functions.tiktok-oauth-callback]
+verify_jwt = false
+
+[functions.linkedin-oauth-callback]
+verify_jwt = false
+
+[functions.x-oauth-callback]
+verify_jwt = false
+
