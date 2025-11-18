@@ -33,18 +33,22 @@ export default function PlatformCredentialsAdmin() {
 
   const checkAdminStatus = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Wait for auth session to be fully loaded
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (!user) {
+      if (!session) {
         navigate("/auth");
         return;
       }
 
       const { data: adminCheck, error } = await supabase.rpc("is_admin", {
-        _user_id: user.id
+        _user_id: session.user.id
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("RPC error:", error);
+        throw error;
+      }
 
       if (!adminCheck) {
         toast.error("Access denied. Admin privileges required.");
