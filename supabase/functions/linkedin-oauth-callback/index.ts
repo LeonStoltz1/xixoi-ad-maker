@@ -1,4 +1,3 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { supabaseClient } from "../_shared/supabase.ts";
 import { encrypt } from "../_shared/encryption.ts";
 
