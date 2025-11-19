@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 export const Header = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userPlan, setUserPlan] = useState<string>('free');
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { realtorProfile, viewMode, setViewMode } = useRealtor();
 
@@ -43,6 +44,15 @@ export const Header = () => {
     
     if (profile) {
       setUserPlan(profile.plan || 'free');
+    }
+
+    // Check admin status
+    const { data: adminCheck } = await supabase.rpc('is_admin', {
+      _user_id: userId
+    });
+    
+    if (adminCheck) {
+      setIsAdmin(true);
     }
   };
 
@@ -108,6 +118,16 @@ export const Header = () => {
                     Realtor
                   </span>
                 </div>
+              )}
+
+              {/* Admin Link - Only shown for admins */}
+              {isAdmin && (
+                <button 
+                  onClick={() => navigate('/admin/platform-credentials')}
+                  className="px-3 py-1.5 border border-white/20 text-sm text-white hover:bg-white/10 transition-colors"
+                >
+                  Admin
+                </button>
               )}
               
               {/* Connected Accounts Link - Only for Pro/Agency users */}
