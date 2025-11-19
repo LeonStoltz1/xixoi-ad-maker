@@ -18,6 +18,7 @@ import type { RealEstateDetailsFormValues } from "@/schema/realEstate";
 import { invokeWithRetry } from "@/lib/retryWithBackoff";
 import { Header } from "@/components/Header";
 import { NoAdAccountsBanner } from "@/components/NoAdAccountsBanner";
+import { CampaignContactSection } from "@/components/CampaignContactSection";
 
 export default function CreateCampaign() {
   const { realtorProfile, isLoading: realtorLoading, viewMode } = useRealtor();
@@ -43,6 +44,13 @@ export default function CreateCampaign() {
   // Real Estate Mode (only available for realtors)
   const [realEstateMode, setRealEstateMode] = useState(false);
   const [realEstateDetails, setRealEstateDetails] = useState<RealEstateDetailsFormValues | null>(null);
+  
+  // CTA / Contact fields
+  const [primaryGoal, setPrimaryGoal] = useState<string | null>('website');
+  const [contactPhone, setContactPhone] = useState<string | null>(null);
+  const [contactEmail, setContactEmail] = useState<string | null>(null);
+  const [landingUrl, setLandingUrl] = useState<string | null>(null);
+  
   const [selectedPlatforms, setSelectedPlatforms] = useState<{
     meta: { selected: boolean; budget: number };
     tiktok: { selected: boolean; budget: number };
@@ -335,6 +343,10 @@ export default function CreateCampaign() {
         name: campaignName || 'Untitled Campaign',
         status: 'draft',
         media_rights_confirmed_at: new Date().toISOString(),
+        primary_goal: primaryGoal,
+        contact_phone: contactPhone,
+        contact_email: contactEmail,
+        landing_url: landingUrl,
       };
 
       // Add real estate data if in Real Estate Mode
@@ -831,6 +843,20 @@ export default function CreateCampaign() {
               </div>
             )}
 
+            {/* CTA / Contact Section */}
+            <div className="border-t pt-6">
+              <CampaignContactSection
+                primaryGoal={primaryGoal}
+                contactPhone={contactPhone}
+                contactEmail={contactEmail}
+                landingUrl={landingUrl}
+                onPrimaryGoalChange={setPrimaryGoal}
+                onContactPhoneChange={setContactPhone}
+                onContactEmailChange={setContactEmail}
+                onLandingUrlChange={setLandingUrl}
+              />
+            </div>
+
             {/* Media Rights Confirmation */}
             <div className="border-t pt-6 space-y-4">
               <div className="flex items-start gap-3 p-4 bg-muted/30 border">
@@ -861,9 +887,26 @@ export default function CreateCampaign() {
               size="lg" 
               className="w-full" 
               onClick={handleCreateCampaign}
-              disabled={loading || !textContent || !mediaRightsConfirmed || ((uploadType === 'image' || uploadType === 'video') && !uploadedFile)}
+              disabled={
+                loading || 
+                !textContent || 
+                !mediaRightsConfirmed || 
+                ((uploadType === 'image' || uploadType === 'video') && !uploadedFile) ||
+                !primaryGoal ||
+                (primaryGoal === 'website' && !landingUrl) ||
+                (primaryGoal === 'calls' && !contactPhone) ||
+                (primaryGoal === 'email' && !contactEmail)
+              }
             >
-              {loading ? "Generating..." : !mediaRightsConfirmed ? "Confirm content rights to continue" : !textContent ? "Fill description to continue" : ((uploadType === 'image' || uploadType === 'video') && !uploadedFile) ? `Upload ${uploadType} to continue` : "Let me see..."}
+              {loading ? "Generating..." : 
+               !mediaRightsConfirmed ? "Confirm content rights to continue" : 
+               !textContent ? "Fill description to continue" : 
+               ((uploadType === 'image' || uploadType === 'video') && !uploadedFile) ? `Upload ${uploadType} to continue` :
+               !primaryGoal ? "Select CTA goal to continue" :
+               (primaryGoal === 'website' && !landingUrl) ? "Enter landing URL to continue" :
+               (primaryGoal === 'calls' && !contactPhone) ? "Enter phone number to continue" :
+               (primaryGoal === 'email' && !contactEmail) ? "Enter email to continue" :
+               "Let me see..."}
             </Button>
             
             {/* Helper text */}
