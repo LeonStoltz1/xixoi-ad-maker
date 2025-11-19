@@ -21,6 +21,7 @@ import Wallet from "./pages/Wallet";
 import AgencyPortal from "./pages/AgencyPortal";
 import AdminDashboard from "./pages/AdminDashboard";
 import TargetingSetup from "./pages/TargetingSetup";
+import EditCampaign from "./pages/EditCampaign";
 import Affiliates from "./pages/Affiliates";
 import AffiliateAdmin from "./pages/AffiliateAdmin";
 import Influencers from "./pages/Influencers";
@@ -83,6 +84,7 @@ const App = () => (
           <Route path="/create-campaign" element={<CreateCampaign />} />
           <Route path="/connect-platforms" element={<ConnectPlatforms />} />
           <Route path="/targeting/:campaignId" element={<TargetingSetup />} />
+          <Route path="/edit-campaign/:campaignId" element={<EditCampaign />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-canceled" element={<PaymentCanceled />} />
           <Route path="/ad-published/:id" element={<AdPublished />} />
