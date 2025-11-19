@@ -35,8 +35,11 @@ serve(async (req) => {
     const userPlan = profile?.plan || 'free';
     const amountNum = parseFloat(amount);
 
-    // Enforce Quick-Start weekly cap
-    if (userPlan === 'quickstart') {
+    // Check if user is admin (bypass limits for testing)
+    const { data: isAdmin } = await supabaseClient.rpc('is_admin', { _user_id: user.id });
+
+    // Enforce Quick-Start weekly cap (skip for admins)
+    if (userPlan === 'quickstart' && !isAdmin) {
       const { data: capResult, error: capError } = await supabaseClient
         .rpc('enforce_quickstart_cap', { requested: amountNum });
 

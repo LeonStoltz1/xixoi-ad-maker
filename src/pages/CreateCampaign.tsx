@@ -304,8 +304,11 @@ export default function CreateCampaign() {
 
     const userPlan = profile?.plan || 'free';
 
-    // FREE TIER: 1 ad per day limit
-    if (userPlan === 'free') {
+    // Check if user is admin (bypass limits for testing)
+    const { data: isAdmin } = await supabase.rpc('is_admin', { _user_id: user.id });
+
+    // FREE TIER: 1 ad per day limit (skip for admins)
+    if (userPlan === 'free' && !isAdmin) {
       const today = new Date().toISOString().split('T')[0];
       const { data: todayAds } = await supabase
         .from('campaigns')
