@@ -147,45 +147,45 @@ export default function ReviewAd() {
       
       <div className="w-full max-w-content mx-auto px-6 pt-[150px] pb-section">
         {/* Progress Steps */}
-        <div className="flex items-center justify-center gap-4 mb-12">
+        <div className="flex items-center justify-center gap-2 mb-12">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center">
               <Check className="w-5 h-5" />
             </div>
-            <span className="text-sm font-medium">Create Campaign</span>
+            <span className="text-sm font-medium hidden md:inline">Create Campaign</span>
           </div>
           
-          <div className="w-12 h-[2px] bg-foreground"></div>
+          <div className="w-8 md:w-12 h-[2px] bg-foreground"></div>
           
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center">
-              <Check className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center font-bold">
+              2
             </div>
-            <span className="text-sm font-medium">Review Targeting</span>
+            <span className="text-sm font-medium hidden md:inline">Review Targeting</span>
           </div>
           
-          <div className="w-12 h-[2px] bg-foreground"></div>
+          <div className="w-8 md:w-12 h-[2px] bg-foreground"></div>
           
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center font-bold">
               3
             </div>
-            <span className="text-sm font-medium">Review Ad</span>
+            <span className="text-sm font-medium hidden md:inline">Preview</span>
           </div>
           
-          <div className="w-12 h-[2px] bg-border"></div>
+          <div className="w-8 md:w-12 h-[2px] bg-border"></div>
           
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full border-2 border-border text-muted-foreground flex items-center justify-center font-bold">
               4
             </div>
-            <span className="text-sm text-muted-foreground">Publish</span>
+            <span className="text-sm text-muted-foreground hidden md:inline">Publish</span>
           </div>
         </div>
 
-        <h1 className="text-3xl font-bold text-foreground mb-2 text-center">Review Your Ad</h1>
+        <h1 className="text-3xl font-bold text-foreground mb-2 text-center">Preview Your Ad</h1>
         <p className="text-muted-foreground mb-8 text-center">
-          Review your ad and make any final edits before publishing
+          Review and edit your ad before publishing
         </p>
 
         <div className="grid md:grid-cols-2 gap-8">
