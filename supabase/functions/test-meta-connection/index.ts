@@ -14,23 +14,20 @@ Deno.serve(async (req) => {
   try {
     const supabase = supabaseClient();
     
-    // Parse request body safely - check if body exists first
+    // Parse request body safely - only if Content-Type indicates JSON
     let userId = "system";
     let tier = "quickstart";
     
-    // Only try to parse JSON if request has a body
-    const contentType = req.headers.get('content-type');
-    if (contentType?.includes('application/json')) {
+    const contentType = req.headers.get("content-type") || "";
+    
+    if (contentType.includes("application/json")) {
       try {
         const body = await req.json();
-        if (body?.userId) userId = body.userId;
-        if (body?.tier) tier = body.tier;
-        console.log("Received request body:", { userId, tier });
-      } catch (jsonError) {
-        console.log("Failed to parse JSON body, using defaults:", jsonError);
+        userId = body.userId ?? "system";
+        tier = body.tier ?? "quickstart";
+      } catch (err) {
+        console.warn("JSON parsing failed:", err);
       }
-    } else {
-      console.log("No JSON body in request, using defaults");
     }
 
     console.log("Testing Meta connection - userId:", userId, "tier:", tier);
