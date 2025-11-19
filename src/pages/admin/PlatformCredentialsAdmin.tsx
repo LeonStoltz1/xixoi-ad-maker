@@ -124,18 +124,19 @@ export default function PlatformCredentialsAdmin() {
 
       if (platform === "meta") {
         updateData.platform_account_id = accountId;
-        updateData.account_name = pageId; // Temporarily using account_name for page_id
+        updateData.account_name = pageId; // Store Page ID in account_name field
       }
 
+      // Upsert with proper conflict handling for (platform, owner_type)
       const { error: updateError } = await supabase
         .from("platform_credentials")
         .upsert({
           platform,
           owner_type: "system",
+          owner_id: null,
           ...updateData
-        }, {
-          onConflict: "platform,owner_type"
-        });
+        })
+        .match({ platform, owner_type: "system" });
 
       if (updateError) throw updateError;
 
@@ -150,19 +151,24 @@ export default function PlatformCredentialsAdmin() {
   };
 
   const handleTestMeta = async () => {
+    const ok = window.confirm(
+      "This will verify Meta credentials by calling the Graph API. Continue?"
+    );
+    if (!ok) return;
+
     setUpdating("meta-test");
     try {
-      const { data, error } = await supabase.functions.invoke("test-meta-publish");
+      const { data, error } = await supabase.functions.invoke("test-meta-connection");
       
       if (error) throw error;
       
       if (data.success) {
         toast.success(
-          `Meta test successful! Campaign ID: ${data.campaign_id}`,
-          { description: data.instructions }
+          `✅ Meta connection working!`,
+          { description: `Account: ${data.account_name || data.account_id}` }
         );
       } else {
-        toast.error(data.error || "Test failed");
+        toast.error(data.error || "Connection test failed");
       }
     } catch (error: any) {
       console.error("Test error:", error);
@@ -195,12 +201,15 @@ export default function PlatformCredentialsAdmin() {
             <h1 className="text-3xl font-bold">Master Platform Credentials</h1>
           </div>
           <p className="text-foreground/80 mb-4">
-            Manage system-owned master account OAuth tokens for Quick-Start tier users. These credentials power all Quick-Start ad publishing.
+            Manage system-owned master account credentials for <strong>Quick-Start tier</strong> users. These credentials power all Quick-Start ad publishing (not Free tier).
           </p>
           <div className="p-4 border-2 border-black bg-background">
             <p className="text-sm font-medium mb-2">⚠️ Critical Setup Required</p>
-            <p className="text-sm text-foreground/70">
+            <p className="text-sm text-foreground/70 mb-2">
               All 5 platforms must have valid tokens with "connected" status before Quick-Start tier can publish ads. Update any "pending" credentials below.
+            </p>
+            <p className="text-sm text-foreground/70">
+              <strong>Note:</strong> Free tier has no publish capability. Pro/Elite/Agency users connect their own OAuth accounts (not these master credentials).
             </p>
           </div>
         </div>
@@ -278,7 +287,7 @@ export default function PlatformCredentialsAdmin() {
                       className="w-full mt-2"
                       variant="secondary"
                     >
-                      {updating === "meta-test" ? "Testing..." : "🚀 Test Meta Publish"}
+                      {updating === "meta-test" ? "Testing..." : "🧪 Test Connection"}
                     </Button>
                   )}
                 </CardContent>
