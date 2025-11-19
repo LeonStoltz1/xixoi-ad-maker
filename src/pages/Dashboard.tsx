@@ -239,7 +239,7 @@ export default function Dashboard() {
     <>
       <AISupportChat />
       <AppLayout title="Dashboard">
-        <GlobalSpendSummary userId={user.id} />
+        <GlobalSpendSummary />
 
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-4 mt-8">
@@ -347,7 +347,6 @@ export default function Dashboard() {
 
           {/* SECTION 3: Account Performance Insights */}
           {campaigns.length > 0 && <AccountPerformanceInsights />}
-        </div>
 
         {/* Edit Campaign Dialog */}
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>

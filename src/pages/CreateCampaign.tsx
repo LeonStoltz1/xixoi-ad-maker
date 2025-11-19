@@ -510,23 +510,14 @@ export default function CreateCampaign() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
+    <AppLayout title="Create New Campaign" showBack backTo="/dashboard">
       {/* No Ad Accounts Banner */}
-      <div className="container mx-auto px-6 pt-24 pb-6">
-        <div className="max-w-2xl mx-auto">
-          <NoAdAccountsBanner />
-        </div>
+      <div className="max-w-2xl mx-auto mb-6">
+        <NoAdAccountsBanner />
       </div>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-12 pt-8">
-        <div className="max-w-2xl mx-auto space-y-8">
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl md:text-3xl font-bold">Create New Campaign</h2>
-            <p className="text-muted-foreground">Upload your content and let AI do the rest</p>
-          </div>
+      <div className="max-w-2xl mx-auto space-y-8">
+          <p className="text-muted-foreground text-center mb-6">Upload your content and let AI do the rest</p>
 
           <div className="border border-foreground p-8 space-y-6">
             {/* Campaign Name */}
@@ -924,8 +915,6 @@ export default function CreateCampaign() {
             )}
           </div>
         </div>
-      </main>
-
 
       {/* Platform Selection Modal */}
       {showPlatformSelection && (

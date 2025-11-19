@@ -136,10 +136,8 @@ export default function CampaignAnalytics() {
   // Empty state if no performance data
   if (performance.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-6 py-12 pt-40">
-          <div className="max-w-2xl mx-auto text-center space-y-6">
+      <AppLayout title="Campaign Analytics" showBack backTo="/dashboard">
+        <div className="max-w-2xl mx-auto text-center space-y-6">
             <AlertCircle className="w-16 h-16 mx-auto" />
             <h2 className="text-2xl font-bold">No Performance Data Yet</h2>
             <p className="text-muted-foreground">
@@ -154,8 +152,7 @@ export default function CampaignAnalytics() {
               Back to Dashboard
             </Button>
           </div>
-        </main>
-      </div>
+      </AppLayout>
     );
   }
 
@@ -163,12 +160,8 @@ export default function CampaignAnalytics() {
   const platformPerformance = getPlatformPerformance();
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-12 pt-40">
-        <div className="max-w-6xl mx-auto space-y-8">
+    <AppLayout title="Campaign Analytics" showBack backTo="/dashboard">
+      <div className="max-w-6xl mx-auto space-y-8">
 
           {/* ELITE: Auto-Optimizer Toggle */}
           {userPlan === 'elite' && (
@@ -295,9 +288,8 @@ export default function CampaignAnalytics() {
                 ))}
               </div>
             </CardContent>
-          </Card>
-        </div>
-      </main>
-    </div>
+        </Card>
+      </div>
+    </AppLayout>
   );
 }

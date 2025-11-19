@@ -213,22 +213,18 @@ export default function ConnectPlatforms() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="flex items-center justify-center h-screen">
+      <AppLayout title="Connected Ad Accounts" showBack backTo="/dashboard">
+        <div className="flex items-center justify-center h-64">
           <p className="text-muted-foreground">Loading connections...</p>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   const needsUpgrade = userPlan === "quickstart" || userPlan === "free";
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="max-w-[720px] mx-auto px-6 pt-40 pb-20">
-        <h1 className="text-3xl font-bold mb-2">Connected Ad Accounts</h1>
+    <AppLayout title="Connected Ad Accounts" showBack backTo="/dashboard">
         <p className="text-muted-foreground mb-8">
           {needsUpgrade
             ? "Upgrade to Pro to connect your own ad accounts and publish without spending limits."
@@ -289,12 +285,6 @@ export default function ConnectPlatforms() {
           ))}
         </div>
 
-        <div className="mt-8">
-          <Button variant="outline" onClick={() => navigate("/dashboard")}>
-            ← Back to Dashboard
-          </Button>
-        </div>
-      </div>
     </AppLayout>
   );
 }
