@@ -5,8 +5,8 @@ import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { AISupportChat } from "@/components/AISupportChat";
 import { usePolitical } from "@/contexts/PoliticalContext";
 import { GlobalSpendSummary } from "@/components/GlobalSpendSummary";
@@ -442,8 +442,8 @@ export default function Dashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
+      </AppLayout>
       <Footer />
-    </div>
+    </>
   );
 }

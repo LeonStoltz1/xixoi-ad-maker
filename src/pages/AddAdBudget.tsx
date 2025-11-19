@@ -11,8 +11,8 @@ import { ArrowLeft, Sparkles, AlertCircle } from 'lucide-react';
 import { generateSpendPlan, getPlatformRequirements, getMinimumDailySpend, getMinimumTotalSpend } from '@/lib/spendEngine';
 import type { User } from '@supabase/supabase-js';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Header } from '@/components/Header';
 import { QuickStartCapModal } from '@/components/QuickStartCapModal';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 export default function AddAdBudget() {
   const navigate = useNavigate();

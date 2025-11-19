@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, DollarSign, AlertTriangle, CheckCircle } from 'lucide-react';
-import { Header } from '@/components/Header';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 interface WatermarkAd {
   id: string;
@@ -311,6 +311,6 @@ export default function AdminDashboard() {
           <p>Export functionality coming soon</p>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }

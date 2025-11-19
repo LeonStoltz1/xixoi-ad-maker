@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Header } from "@/components/Header";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -295,6 +295,6 @@ export default function ConnectPlatforms() {
           </Button>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
