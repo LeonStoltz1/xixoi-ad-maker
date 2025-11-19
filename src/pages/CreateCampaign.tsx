@@ -411,36 +411,51 @@ export default function CreateCampaign() {
 
       if (generateError) {
         console.error('AI generation error:', generateError);
+        console.error('Error details:', JSON.stringify(generateError, null, 2));
+        
+        // Parse error message from multiple possible locations
+        const errorMessage = generateError.message || generateError.error || JSON.stringify(generateError);
+        const errorString = typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage);
         
         // Handle political ad upgrade requirement
-        if (generateError.message?.includes('POLITICAL_UPGRADE_REQUIRED') || generateError.message?.includes('Political ads require')) {
+        if (errorString.includes('POLITICAL_UPGRADE_REQUIRED') || errorString.includes('Political ads require')) {
           toast({
             variant: "destructive",
             title: "Political Ads Not Available on Free Tier",
             description: "Political ads require Pro tier ($149/mo) for FEC compliance. Please upgrade or remove political keywords from your description.",
             duration: 7000
           });
+          setLoading(false);
           return;
         }
         
         // Handle rate limit and credits exhausted errors
-        if (generateError.message?.includes('429') || generateError.message?.includes('rate limit')) {
+        if (errorString.includes('429') || errorString.includes('rate limit')) {
           toast({
             variant: "destructive",
             title: "Rate limit reached",
             description: "AI service temporarily unavailable. Please try again in a moment."
           });
+          setLoading(false);
           return;
-        } else if (generateError.message?.includes('402') || generateError.message?.includes('credits exhausted')) {
+        } else if (errorString.includes('402') || errorString.includes('credits exhausted')) {
           toast({
             variant: "destructive",
             title: "Credits exhausted",
             description: "AI service credits exhausted. Please contact support at support@xixoi.com"
           });
+          setLoading(false);
           return;
         }
         
-        throw generateError;
+        // Generic error handling
+        toast({
+          variant: "destructive",
+          title: "Error generating ad",
+          description: errorString.substring(0, 200) || "Failed to generate ad variants. Please try again."
+        });
+        setLoading(false);
+        return;
       }
 
       console.log('AI generation complete, fetching variants...');
