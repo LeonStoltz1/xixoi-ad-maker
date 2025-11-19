@@ -272,9 +272,6 @@ export default function Dashboard() {
           {/* Quick-Start Budget Widget */}
           <QuickStartBudgetWidget />
 
-          {/* SECTION 1: Global Spend Summary */}
-          <GlobalSpendSummary />
-
           {/* POLITICAL MODE HIDDEN - Re-enable later for launch */}
           {/* {politicalProfile?.hasPoliticalTier && (
             <div className="p-6 border-2 border-primary bg-primary/5">
