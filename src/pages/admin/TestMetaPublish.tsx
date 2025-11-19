@@ -94,7 +94,7 @@ export default function TestMetaPublish() {
         .from("ad_variants")
         .insert({
           campaign_id: campaign.id,
-          variant_type: "static_image",
+          variant_type: "meta",
           headline: "Test Ad Headline",
           body_copy: "This is a test ad to verify Meta publishing works with Quick-Start tier credentials.",
           cta_text: "Learn More",
