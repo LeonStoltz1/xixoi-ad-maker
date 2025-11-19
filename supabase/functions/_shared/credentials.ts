@@ -1,5 +1,4 @@
 import { supabaseClient } from "./supabase.ts";
-import { decrypt } from "./encryption.ts";
 
 export type PlatformCredential = {
   accessToken: string;
@@ -45,8 +44,8 @@ export async function getCredentials(
 
     console.log(`Using user credential for ${platform}`);
     return {
-      accessToken: await decrypt(cred.access_token),
-      refreshToken: cred.refresh_token ? await decrypt(cred.refresh_token) : null,
+      accessToken: cred.access_token,
+      refreshToken: cred.refresh_token ?? null,
       accountId: cred.platform_account_id ?? null,
       accountName: cred.account_name ?? null,
     };
@@ -67,10 +66,8 @@ export async function getCredentials(
   }
 
   return {
-    accessToken: await decrypt(systemCred.access_token),
-    refreshToken: systemCred.refresh_token
-      ? await decrypt(systemCred.refresh_token)
-      : null,
+    accessToken: systemCred.access_token,
+    refreshToken: systemCred.refresh_token ?? null,
     accountId: systemCred.platform_account_id ?? null,
     accountName: "xiXoi Master Account",
   };
