@@ -1,5 +1,4 @@
 import { supabaseClient } from "../_shared/supabase.ts";
-import { decrypt } from "../_shared/encryption.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -35,8 +34,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Decrypt token
-    const accessToken = await decrypt(cred.access_token);
+    // Use plaintext token
+    const accessToken = cred.access_token;
     const adAccountId = cred.platform_account_id;
 
     if (!adAccountId) {

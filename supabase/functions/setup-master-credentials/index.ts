@@ -1,5 +1,4 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { encrypt } from "../_shared/encryption.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,16 +23,13 @@ Deno.serve(async (req) => {
       throw new Error('META_ACCESS_TOKEN and META_AD_ACCOUNT_ID must be configured as secrets');
     }
 
-    console.log('Encrypting Meta access token...');
-    const encryptedToken = await encrypt(metaAccessToken);
-
     console.log('Storing Meta credentials in database...');
     const { data, error } = await supabase
       .from('platform_credentials')
       .upsert({
         platform: 'meta',
         platform_account_id: metaAdAccountId,
-        access_token: encryptedToken,
+        access_token: metaAccessToken,
         owner_type: 'system',
         status: 'connected',
         account_name: 'xiXoi Master Account'
