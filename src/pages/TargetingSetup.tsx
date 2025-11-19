@@ -510,15 +510,15 @@ export default function TargetingSetup() {
 
         {/* Edit Campaign Dialog - Always rendered */}
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-          <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
-            <DialogHeader>
+          <DialogContent className="max-w-2xl max-h-[80vh] my-8 flex flex-col">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle>Edit Campaign</DialogTitle>
               <DialogDescription className="font-medium">
                 Update your campaign description to fix content policy issues. Make sure to remove any discriminatory language, illegal content, or misleading claims.
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4 py-4 overflow-y-auto flex-1">
+            <div className="space-y-4 py-4 overflow-y-auto flex-1 min-h-0">
               <div className="space-y-2">
                 <Label htmlFor="edit-name">Campaign Name</Label>
                 <Input
@@ -559,7 +559,7 @@ export default function TargetingSetup() {
               </div>
             </div>
             
-            <DialogFooter>
+            <DialogFooter className="flex-shrink-0 pt-4 border-t">
               <Button
                 variant="outline"
                 onClick={() => setShowEditDialog(false)}
