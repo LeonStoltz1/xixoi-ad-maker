@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { toast } from "sonner";
-import { Shield, Key, AlertCircle, CheckCircle } from "lucide-react";
+import { Shield, Key, AlertCircle, CheckCircle, Search } from "lucide-react";
 
 interface PlatformCredential {
   id: string;
@@ -23,6 +23,14 @@ interface PlatformHealth {
   error?: string;
 }
 
+interface MetaPage {
+  id: string;
+  name: string;
+  category: string;
+  tasks: string[];
+  canCreateContent: boolean;
+}
+
 const PLATFORMS = ["meta"]; // TODO: Re-enable other platforms: "google", "tiktok", "linkedin", "x"
 const HEALTH_CHECK_INTERVAL = 60000; // Check every 60 seconds
 
@@ -32,6 +40,8 @@ export default function PlatformCredentialsAdmin() {
   const [loading, setLoading] = useState(true);
   const [credentials, setCredentials] = useState<PlatformCredential[]>([]);
   const [platformHealth, setPlatformHealth] = useState<PlatformHealth[]>([]);
+  const [metaPages, setMetaPages] = useState<MetaPage[]>([]);
+  const [loadingPages, setLoadingPages] = useState(false);
 
   useEffect(() => {
     checkAdminStatus();
@@ -164,6 +174,51 @@ export default function PlatformCredentialsAdmin() {
     return platformHealth.find(h => h.platform === platform);
   };
 
+  const discoverMetaPages = async () => {
+    setLoadingPages(true);
+    toast.info("Discovering Facebook Pages...");
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("discover-meta-pages");
+      
+      if (error) throw error;
+      
+      if (!data?.success) {
+        throw new Error(data?.error || "Failed to discover pages");
+      }
+
+      setMetaPages(data.pages || []);
+      toast.success(`Found ${data.pages.length} Facebook Page(s)`);
+    } catch (error: any) {
+      console.error("Failed to discover pages:", error);
+      toast.error(error.message || "Failed to discover Facebook Pages");
+    } finally {
+      setLoadingPages(false);
+    }
+  };
+
+  const selectMetaPage = async (pageId: string, pageName: string) => {
+    if (!confirm(`Set Meta Page ID to:\n\n${pageName}\nID: ${pageId}\n\nThis will enable Meta Quick-Start publishing.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("platform_credentials")
+        .update({ page_id: pageId })
+        .eq("platform", "meta")
+        .eq("owner_type", "system");
+
+      if (error) throw error;
+
+      toast.success(`✅ Page ID saved! Meta publishing is now LIVE.`);
+      await loadCredentials();
+    } catch (error: any) {
+      console.error("Failed to save page ID:", error);
+      toast.error("Failed to save Page ID");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -210,6 +265,52 @@ export default function PlatformCredentialsAdmin() {
             </p>
           </div>
         </div>
+
+        {/* Meta Page Discovery Section */}
+        <Card className="mb-6 border-2 border-black">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Search className="w-5 h-5" />
+              <CardTitle>Meta Page Discovery</CardTitle>
+            </div>
+            <CardDescription>
+              Discover and select the Facebook Page for Meta Quick-Start publishing
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button 
+              onClick={discoverMetaPages} 
+              disabled={loadingPages}
+              className="w-full"
+            >
+              {loadingPages ? "Fetching Pages..." : "🔍 Discover Available Facebook Pages"}
+            </Button>
+
+            {metaPages.length > 0 && (
+              <div className="space-y-3 mt-4">
+                <p className="text-sm font-medium">
+                  Available Pages (click to select):
+                </p>
+                <div className="space-y-2">
+                  {metaPages.map((page) => (
+                    <button
+                      key={page.id}
+                      onClick={() => selectMetaPage(page.id, page.name)}
+                      className="block w-full text-left p-4 border-2 border-black hover:bg-primary/10 transition-all"
+                    >
+                      <div className="font-bold">{page.name}</div>
+                      <div className="text-sm text-foreground/70">ID: {page.id}</div>
+                      <div className="text-xs text-foreground/50">{page.category}</div>
+                      {page.canCreateContent && (
+                        <Badge variant="outline" className="mt-2">Can Create Content</Badge>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {PLATFORMS.map((platform) => {
