@@ -6,15 +6,47 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { getTierFromPriceId, isProTier } from "@/lib/plan-config";
+import { CheckCircle2, XCircle, AlertCircle, ArrowLeft } from "lucide-react";
 
 type Platform = "meta" | "google" | "tiktok" | "linkedin" | "x";
 
-const PLATFORMS: { id: Platform; name: string; description: string }[] = [
-  { id: "meta", name: "Meta (Facebook/Instagram)", description: "Connect your Facebook Business Manager" },
-  { id: "google", name: "Google Ads", description: "Connect your Google Ads account" },
-  { id: "tiktok", name: "TikTok Ads", description: "Connect your TikTok Business account" },
-  { id: "linkedin", name: "LinkedIn Ads", description: "Connect your LinkedIn Campaign Manager" },
-  { id: "x", name: "X (Twitter)", description: "Connect your X Ads account" },
+const PLATFORMS: { 
+  id: Platform; 
+  name: string; 
+  description: string;
+  setupGuide: string;
+}[] = [
+  { 
+    id: "meta", 
+    name: "Meta (Facebook/Instagram)", 
+    description: "Publish to Facebook and Instagram feeds",
+    setupGuide: "You'll need a Facebook Business Manager with an active ad account"
+  },
+  { 
+    id: "google", 
+    name: "Google Ads", 
+    description: "Publish to Google Search and Display Network",
+    setupGuide: "You'll need a Google Ads account with billing enabled"
+  },
+  { 
+    id: "tiktok", 
+    name: "TikTok Ads", 
+    description: "Publish to TikTok For You feed",
+    setupGuide: "You'll need a TikTok Business account and ad account"
+  },
+  { 
+    id: "linkedin", 
+    name: "LinkedIn Ads", 
+    description: "Publish to LinkedIn professional network",
+    setupGuide: "You'll need a LinkedIn Campaign Manager account"
+  },
+  { 
+    id: "x", 
+    name: "X (Twitter)", 
+    description: "Publish to X timeline and promoted tweets",
+    setupGuide: "You'll need an X Ads account with approved API access"
+  },
 ];
 
 export default function ConnectPlatforms() {
@@ -28,7 +60,8 @@ export default function ConnectPlatforms() {
     x: false,
   });
   const [loading, setLoading] = useState(true);
-  const [userPlan, setUserPlan] = useState<string | null>(null);
+  const [connectingPlatform, setConnectingPlatform] = useState<Platform | null>(null);
+  const [userTier, setUserTier] = useState<string>("free");
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -58,11 +91,19 @@ export default function ConnectPlatforms() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("plan")
+        .select("stripe_price_id")
         .eq("id", user.id)
         .single();
 
-      setUserPlan(profile?.plan || "free");
+      const tier = getTierFromPriceId(profile?.stripe_price_id || null);
+      setUserTier(tier);
+
+      // If not Pro tier, redirect to upgrade page
+      if (!isProTier(tier)) {
+        toast.error("Pro tier required to connect your own ad accounts");
+        navigate("/dashboard");
+        return;
+      }
 
       const { data: credentials } = await supabase
         .from("platform_credentials")
@@ -88,24 +129,27 @@ export default function ConnectPlatforms() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const stateObj: any = { userId: user.id };
+    setConnectingPlatform(platform);
 
-    if (platform === "x") {
-      const codeVerifier = crypto.randomUUID().replace(/-/g, "");
-      stateObj.codeVerifier = codeVerifier;
-    }
+    try {
+      const stateObj: any = { userId: user.id };
 
-    const state = btoa(JSON.stringify(stateObj));
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      if (platform === "x") {
+        const codeVerifier = crypto.randomUUID().replace(/-/g, "");
+        stateObj.codeVerifier = codeVerifier;
+      }
 
-    const urls: Record<Platform, string> = {
-      meta: `https://www.facebook.com/v20.0/dialog/oauth?${new URLSearchParams({
-        client_id: import.meta.env.VITE_META_APP_ID || "",
-        redirect_uri: `${supabaseUrl}/functions/v1/meta-oauth-callback`,
-        state,
-        scope: "ads_management,business_management",
-        response_type: "code",
-      })}`,
+      const state = btoa(JSON.stringify(stateObj));
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+      const urls: Record<Platform, string> = {
+        meta: `https://www.facebook.com/v20.0/dialog/oauth?${new URLSearchParams({
+          client_id: import.meta.env.VITE_META_APP_ID || "",
+          redirect_uri: `${supabaseUrl}/functions/v1/meta-oauth-callback`,
+          state,
+          scope: "ads_management,business_management",
+          response_type: "code",
+        })}`,
       google: `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
         client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "",
         redirect_uri: `${supabaseUrl}/functions/v1/google-oauth-callback`,
@@ -138,7 +182,12 @@ export default function ConnectPlatforms() {
       })}`,
     };
 
-    window.location.href = urls[platform];
+      window.location.href = urls[platform];
+    } catch (error) {
+      console.error("Error initiating OAuth:", error);
+      toast.error(`Failed to connect ${platform}`);
+      setConnectingPlatform(null);
+    }
   };
 
   const handleDisconnect = async (platform: Platform) => {
