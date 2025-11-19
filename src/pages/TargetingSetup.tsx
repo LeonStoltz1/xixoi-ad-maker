@@ -607,6 +607,16 @@ export default function TargetingSetup() {
       
       <div className="pt-24 pb-12 px-4">
         <div className="max-w-2xl mx-auto">
+        {/* Back Button */}
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/create-campaign')}
+          className="mb-6"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Campaign
+        </Button>
+
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
           <div className="flex items-center justify-center gap-2 mb-4">
