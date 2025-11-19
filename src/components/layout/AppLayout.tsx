@@ -33,10 +33,12 @@ export function AppLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Sticky Header */}
-      <Header />
+      {/* Fixed Header */}
+      <div className="fixed top-0 left-0 right-0 z-30">
+        <Header />
+      </div>
 
-      {/* Main Content with proper top padding to prevent overlap */}
+      {/* Main Content with padding to push below fixed header */}
       <main className="pt-24 pb-12 px-4">
         <div className="max-w-[720px] mx-auto">
           {/* Standardized Back Navigation */}
@@ -44,9 +46,9 @@ export function AppLayout({
             <Button
               variant="ghost"
               onClick={handleBack}
-              className="mb-8 border border-foreground/30 hover:bg-foreground/10 hover:border-foreground/50"
+              className="mb-8 inline-flex items-center gap-2 border border-foreground/30 hover:bg-foreground/10 hover:border-foreground/50"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4" />
               {backLabel}
             </Button>
           )}
