@@ -236,21 +236,20 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
       <AISupportChat />
-      <Header />
+      <AppLayout title="Dashboard">
+        <GlobalSpendSummary userId={user.id} />
 
-      <main className="container mx-auto px-6 pt-24 pb-12">
-        <div className="max-w-7xl mx-auto space-y-8">
-          {/* Header */}
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold">Your Campaigns</h2>
-              <p className="text-muted-foreground mt-1">
-                Money-first view of your ad performance
-              </p>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap">
+        {/* Header */}
+        <div className="flex items-center justify-between flex-wrap gap-4 mt-8">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold">Your Campaigns</h2>
+            <p className="text-muted-foreground mt-1">
+              Money-first view of your ad performance
+            </p>
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
               {campaigns.length > 0 && (
                 <div className="relative w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -349,11 +348,10 @@ export default function Dashboard() {
           {/* SECTION 3: Account Performance Insights */}
           {campaigns.length > 0 && <AccountPerformanceInsights />}
         </div>
-      </main>
 
-      {/* Edit Campaign Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        {/* Edit Campaign Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Campaign</DialogTitle>
             <DialogDescription>
