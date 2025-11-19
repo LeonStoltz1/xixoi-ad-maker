@@ -1,7 +1,7 @@
 import { ArrowDown } from "lucide-react";
 
 export const ChannelsSection = () => {
-  const channels = ['META', 'TIKTOK', 'GOOGLE', 'LINKEDIN', 'X'];
+  const channels = ['META']; // TODO: Re-enable other platforms: 'TIKTOK', 'GOOGLE', 'LINKEDIN', 'X'
 
   return (
     <section className="py-section px-6 bg-background">
