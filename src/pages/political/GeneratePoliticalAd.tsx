@@ -9,10 +9,11 @@ import { Card } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Upload, AlertCircle, CheckCircle2, Sparkles, Copy } from "lucide-react";
+import { Upload, AlertCircle, CheckCircle2, Sparkles, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { usePolitical } from "@/contexts/PoliticalContext";
+import { BackButton } from "@/components/BackButton";
 import { PoliticalAdGenerationSchema, type PoliticalAdGenerationFormValues } from "@/schema/political";
 import { checkPoliticalCompliance } from "@/lib/politicalCompliance";
 import type { ComplianceIssue } from "@/types/political";
@@ -323,13 +324,10 @@ export default function GeneratePoliticalAd() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
-        </Button>
+        <BackButton to="/dashboard" label="Dashboard" className="mb-8" />
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Generate Political Ad</h1>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-4">Generate Political Ad</h1>
           <p className="text-muted-foreground">
             Candidate: {politicalProfile.candidate.fullName} • {politicalProfile.candidate.race} • {politicalProfile.candidate.electionYear}
           </p>

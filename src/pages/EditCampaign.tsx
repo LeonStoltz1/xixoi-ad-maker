@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Header } from "@/components/Header";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { invokeWithRetry } from "@/lib/retryWithBackoff";
 
@@ -156,18 +157,11 @@ export default function EditCampaign() {
       
       <div className="pt-24 pb-12 px-4">
         <div className="max-w-2xl mx-auto">
-          <Button
-            variant="outline"
-            onClick={() => navigate(-1)}
-            className="mb-8 border-foreground/20 hover:bg-foreground/5"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
+          <BackButton className="mb-8" />
 
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Edit Campaign</h1>
+              <h1 className="text-3xl font-bold text-foreground mb-4">Edit Campaign</h1>
               <p className="text-muted-foreground">
                 Update your campaign description to fix content policy issues. Make sure to remove any discriminatory language, illegal content, or misleading claims.
               </p>

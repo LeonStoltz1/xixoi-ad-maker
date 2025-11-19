@@ -3,11 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Brain, Target, Sparkles, AlertTriangle, Pencil, ArrowLeft } from "lucide-react";
+import { Brain, Target, Sparkles, AlertTriangle, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { invokeWithRetry } from "@/lib/retryWithBackoff";
 import { Header } from "@/components/Header";
+import { BackButton } from "@/components/BackButton";
 import {
   Dialog,
   DialogContent,

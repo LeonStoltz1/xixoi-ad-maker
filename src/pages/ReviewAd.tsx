@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
+import { BackButton } from "@/components/BackButton";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -361,13 +362,8 @@ export default function ReviewAd() {
         </div>
 
         {/* Back Button */}
-        <div className="mt-8 text-center">
-          <Button
-            variant="ghost"
-            onClick={() => navigate(`/targeting/${campaignId}`)}
-          >
-            ← Back to Targeting
-          </Button>
+        <div className="mt-8">
+          <BackButton to={`/targeting/${campaignId}`} label="Targeting" />
         </div>
       </div>
     </div>
