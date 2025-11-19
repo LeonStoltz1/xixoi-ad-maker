@@ -362,16 +362,36 @@ export function EnhancedCampaignCard({
   const handleDeleteCampaign = async () => {
     setDeletingCampaign(true);
     try {
-      const { error } = await supabase
-        .from('campaigns')
-        .delete()
-        .eq('id', campaign.id);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      // Call the safe delete function that stops ads on platforms first
+      const { data, error } = await supabase.functions.invoke('delete-campaign-safe', {
+        body: { campaignId: campaign.id },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
       if (error) throw error;
 
+      if (data?.success === false) {
+        // Platform stop failed - show detailed error
+        toast({
+          title: 'Cannot delete campaign',
+          description: data.message || 'Failed to stop ads on social platforms. Your ads are still running.',
+          variant: 'destructive',
+        });
+        setShowDeleteCampaignAlert(false);
+        setDeletingCampaign(false);
+        return;
+      }
+
       toast({
-        title: 'Campaign deleted',
-        description: `${campaign.name} has been permanently deleted`,
+        title: 'Campaign deleted safely',
+        description: `${campaign.name} has been stopped on all platforms and deleted`,
       });
 
       setShowDeleteCampaignAlert(false);
@@ -380,7 +400,7 @@ export function EnhancedCampaignCard({
       console.error('Error deleting campaign:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete campaign',
+        description: error instanceof Error ? error.message : 'Failed to delete campaign',
         variant: 'destructive',
       });
     } finally {
@@ -778,8 +798,14 @@ export function EnhancedCampaignCard({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Campaign?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete "{campaign.name}" and all its ad variants, performance data, and settings. This action cannot be undone.
+            <AlertDialogDescription className="space-y-2">
+              <p>This will permanently delete "{campaign.name}" from xiXoi™.</p>
+              <p className="font-semibold text-foreground">
+                ⚠️ Safety check: Your ads will be stopped on all social platforms BEFORE deletion to prevent runaway ad spend.
+              </p>
+              <p className="text-xs">
+                This action cannot be undone. All ad variants, performance data, and settings will be permanently removed.
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -789,7 +815,7 @@ export function EnhancedCampaignCard({
               disabled={deletingCampaign}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deletingCampaign ? 'Deleting...' : 'Delete Campaign'}
+              {deletingCampaign ? 'Stopping ads & deleting...' : 'Stop Ads & Delete Campaign'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
