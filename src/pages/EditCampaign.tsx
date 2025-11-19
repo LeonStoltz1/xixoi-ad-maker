@@ -17,6 +17,9 @@ export default function EditCampaign() {
   const [saving, setSaving] = useState(false);
   const [campaignName, setCampaignName] = useState("");
   const [campaignDescription, setCampaignDescription] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [landingUrl, setLandingUrl] = useState("");
 
   useEffect(() => {
     loadCampaign();
@@ -40,6 +43,9 @@ export default function EditCampaign() {
       setCampaignName(campaignData.name);
       const asset = campaignData.campaign_assets?.[0];
       setCampaignDescription(asset?.asset_text || '');
+      setContactPhone(campaignData.contact_phone || '');
+      setContactEmail(campaignData.contact_email || '');
+      setLandingUrl(campaignData.landing_url || '');
     } catch (error) {
       console.error('Error loading campaign:', error);
       toast.error('Failed to load campaign');
@@ -111,10 +117,15 @@ export default function EditCampaign() {
         return;
       }
 
-      // Update campaign name
+      // Update campaign name and destination links
       const { error: campaignError } = await supabase
         .from('campaigns')
-        .update({ name: campaignName.trim() })
+        .update({ 
+          name: campaignName.trim(),
+          contact_phone: contactPhone.trim() || null,
+          contact_email: contactEmail.trim() || null,
+          landing_url: landingUrl.trim() || null
+        })
         .eq('id', campaignId);
 
       if (campaignError) throw campaignError;
@@ -181,9 +192,49 @@ export default function EditCampaign() {
                   value={campaignDescription}
                   onChange={(e) => setCampaignDescription(e.target.value)}
                   placeholder="Describe your product or service"
-                  rows={12}
+                  rows={8}
                   className="resize-none text-base"
                 />
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-border">
+                <h3 className="text-sm font-semibold text-foreground">Call-to-Action Destinations</h3>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="contact-phone">Phone Number (optional)</Label>
+                  <Input
+                    id="contact-phone"
+                    type="tel"
+                    value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                    placeholder="+1 (555) 123-4567"
+                    className="text-base"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="contact-email">Email Address (optional)</Label>
+                  <Input
+                    id="contact-email"
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    placeholder="contact@example.com"
+                    className="text-base"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="landing-url">Website/Landing Page (optional)</Label>
+                  <Input
+                    id="landing-url"
+                    type="url"
+                    value={landingUrl}
+                    onChange={(e) => setLandingUrl(e.target.value)}
+                    placeholder="https://example.com"
+                    className="text-base"
+                  />
+                </div>
               </div>
 
               <div className="bg-muted/50 p-4 border border-foreground/10 space-y-4">
