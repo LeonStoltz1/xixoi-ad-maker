@@ -7,6 +7,10 @@ import {
 
 const faqs = [
   {
+    question: "What's included in the Free tier?",
+    answer: "Free tier lets you build and preview AI-generated ad variants with the xiXoi™ watermark. You can test the platform and see what your ads will look like before publishing. To publish ads live, upgrade to Quick-Start ($49/mo) or Pro ($149/mo).",
+  },
+  {
     question: "Who can use xiXoi™?",
     answer: "Everyone. Small businesses, restaurants, creators, coaches, service providers, online stores, agencies, political campaigns, nonprofits—anyone who wants to run paid ads without complexity or technical knowledge.",
   },

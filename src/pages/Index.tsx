@@ -3,12 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
-import { UploadSection } from "@/components/UploadSection";
-import { AIBuildsSection } from "@/components/AIBuildsSection";
-import { TargetingSection } from "@/components/TargetingSection";
-import { PaymentSection } from "@/components/PaymentSection";
-import { ChannelsSection } from "@/components/ChannelsSection";
-import { LiveAdSection } from "@/components/LiveAdSection";
+import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { Pricing } from "@/components/Pricing";
 import { FAQ } from "@/components/FAQ";
 import { Footer } from "@/components/Footer";
@@ -77,12 +72,7 @@ const Index = () => {
       <Header />
       <main>
         <Hero />
-        <UploadSection />
-        <AIBuildsSection />
-        <ChannelsSection />
-        <TargetingSection />
-        <PaymentSection />
-        <LiveAdSection />
+        <HowItWorksSection />
         <div id="pricing">
           <Pricing />
         </div>
