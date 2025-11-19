@@ -4,10 +4,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, AlertCircle, ArrowLeft, Copy, ExternalLink } from "lucide-react";
+import { CheckCircle2, AlertCircle, Copy, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { PoliticalAd, PoliticalCandidate, ComplianceIssue } from "@/types/political";
+import { BackButton } from "@/components/BackButton";
 
 export default function VerifyAd() {
   const { adId } = useParams<{ adId: string }>();

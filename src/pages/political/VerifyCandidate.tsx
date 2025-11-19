@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ArrowLeft, Upload, CheckCircle2 } from "lucide-react";
+import { Upload, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { usePolitical } from "@/contexts/PoliticalContext";
 import { PoliticalCandidateSchema, type PoliticalCandidateFormValues } from "@/schema/political";
+import { BackButton } from "@/components/BackButton";
 
 export default function VerifyCandidate() {
   const navigate = useNavigate();
