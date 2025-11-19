@@ -21,17 +21,39 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(false);
   const [showCapModal, setShowCapModal] = useState(false);
   const [capDetails, setCapDetails] = useState({ currentSpend: 0, requestedAmount: 0 });
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [loadingBalance, setLoadingBalance] = useState(true);
   
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         navigate('/auth');
+        return;
       }
+      await loadWalletBalance(user.id);
     };
     
     checkAuth();
   }, [navigate]);
+
+  const loadWalletBalance = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('ad_wallets')
+        .select('balance')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) throw error;
+      setWalletBalance(data?.balance || 0);
+    } catch (error) {
+      console.error('Failed to load wallet balance:', error);
+      setWalletBalance(0);
+    } finally {
+      setLoadingBalance(false);
+    }
+  };
 
   const handleReload = async () => {
     if (!amount || parseFloat(amount) <= 0) {
@@ -100,6 +122,22 @@ export default function WalletPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Wallet Balance Display */}
+            {!loadingBalance && (
+              <div className="mb-6 p-4 border-2 border-black bg-background">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Current Balance</span>
+                  <span className="text-2xl font-bold">
+                    ${walletBalance?.toFixed(2) || '0.00'}
+                  </span>
+                </div>
+                {walletBalance === 0 && (
+                  <p className="text-sm text-foreground/60 mt-2">
+                    Add funds below to start running campaigns
+                  </p>
+                )}
+              </div>
+            )}
             {!clientSecret ? (
               <div className="space-y-4">
                 <div>

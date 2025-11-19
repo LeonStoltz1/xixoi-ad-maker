@@ -302,12 +302,17 @@ export default function Dashboard() {
               Campaigns {searchQuery && `(${filteredCampaigns.length} ${filteredCampaigns.length === 1 ? 'result' : 'results'})`}
             </h3>
             {campaigns.length === 0 ? (
-              <div className="text-center py-12 border-2 border-dashed">
-                <p className="text-muted-foreground mb-4">No campaigns yet</p>
-                <Button onClick={() => navigate("/create-campaign")}>
-                  <Plus className="w-5 h-5 mr-2" />
-                  Create Your First Campaign
-                </Button>
+              <div className="text-center py-20 border-2 border-black">
+                <div className="max-w-md mx-auto">
+                  <h3 className="text-2xl font-bold mb-3">Ready to Launch Your First Ad?</h3>
+                  <p className="text-foreground/80 mb-6 text-base">
+                    Upload your product image, video, or description. xiXoi™ AI will generate high-converting ad variants in seconds and publish to Meta, TikTok, Google, and LinkedIn.
+                  </p>
+                  <Button onClick={() => navigate("/create-campaign")} size="lg" className="text-base px-8">
+                    <Plus className="w-5 h-5 mr-2" />
+                    Create Your First Campaign
+                  </Button>
+                </div>
               </div>
             ) : filteredCampaigns.length === 0 ? (
               <div className="text-center py-12 border-2 border-dashed">
