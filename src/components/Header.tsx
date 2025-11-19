@@ -81,7 +81,7 @@ export const Header = () => {
           <div className="flex items-center gap-4">
               {/* Realtor Mode Toggle - Only shown for realtors */}
               {realtorProfile?.isRealtor && (
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/20">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white">
                   <span 
                     onClick={() => setViewMode('general')}
                     className={`text-xs cursor-pointer transition-all ${
