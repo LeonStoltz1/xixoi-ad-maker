@@ -21,6 +21,8 @@ export default function ReviewAd() {
   const [variant, setVariant] = useState<any>(null);
   const [complianceIssues, setComplianceIssues] = useState<any[]>([]);
   const [isApproved, setIsApproved] = useState(false);
+  const [userPlan, setUserPlan] = useState<string>('free');
+  const [hasWatermark, setHasWatermark] = useState(true);
 
   // Editable fields
   const [editedHeadline, setEditedHeadline] = useState("");
@@ -42,6 +44,18 @@ export default function ReviewAd() {
       if (error) throw error;
 
       setCampaign(campaignData);
+      setHasWatermark(campaignData.has_watermark ?? true);
+      
+      // Get user plan
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('plan')
+          .eq('id', user.id)
+          .single();
+        setUserPlan(profile?.plan || 'free');
+      }
       
       // Get the first variant
       const firstVariant = campaignData.ad_variants?.[0];
@@ -206,9 +220,11 @@ export default function ReviewAd() {
                 <Button className="w-full" variant="default">
                   {editedCta}
                 </Button>
-                <p className="text-xs text-muted-foreground text-center">
-                  Powered by xiXoi™
-                </p>
+                {userPlan === 'free' && hasWatermark && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    Powered by xiXoi™
+                  </p>
+                )}
               </div>
             </Card>
           </div>

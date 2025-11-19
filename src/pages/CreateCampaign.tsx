@@ -337,11 +337,16 @@ export default function CreateCampaign() {
 
     setLoading(true);
     try {
+      // CRITICAL: Only free tier gets watermark
+      // Paid tiers (quickstart, pro, elite, agency) get no watermark
+      const hasWatermark = userPlan === 'free';
+      
       // Create campaign with media rights confirmation and optional real estate data
       const campaignData: any = {
         user_id: user.id,
         name: campaignName || 'Untitled Campaign',
         status: 'draft',
+        has_watermark: hasWatermark,
         media_rights_confirmed_at: new Date().toISOString(),
         primary_goal: primaryGoal,
         contact_phone: contactPhone,
