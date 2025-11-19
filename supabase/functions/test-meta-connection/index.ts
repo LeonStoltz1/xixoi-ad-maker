@@ -1,4 +1,5 @@
 import { supabaseClient } from "../_shared/supabase.ts";
+import { getCredentials } from "../_shared/credentials.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,49 +13,48 @@ Deno.serve(async (req) => {
 
   try {
     const supabase = supabaseClient();
+    const { userId, tier } = await req.json();
 
-    console.log("Testing Meta connection with master credentials...");
+    console.log("Testing Meta connection - userId:", userId, "tier:", tier);
 
-    // Get system Meta credentials - SELECT ALL NEEDED COLUMNS
-    const { data: cred, error: credError } = await supabase
-      .from("platform_credentials")
-      .select("access_token, platform_account_id, account_name")
-      .eq("platform", "meta")
-      .eq("owner_type", "system")
-      .maybeSingle();
-
-    if (credError || !cred) {
-      console.error("No Meta credentials found:", credError);
+    // Get credentials using hybrid routing (system for Quick-Start, user OAuth for Pro+)
+    let credentials;
+    try {
+      credentials = await getCredentials(userId || "system", "meta", tier || "quickstart");
+      console.log("Retrieved Meta credentials successfully");
+    } catch (error: any) {
+      console.error("Failed to get Meta credentials:", error);
       return new Response(
         JSON.stringify({ 
           success: false,
-          error: "No Meta master credentials configured. Please add them in Admin panel first." 
+          error: error.message || "Failed to retrieve Meta credentials"
         }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Use plaintext token
-    const accessToken = cred.access_token;
-    const adAccountId = cred.platform_account_id;
+    const accessToken = credentials.accessToken;
+    let adAccountId = credentials.accountId || "";
 
     if (!adAccountId) {
       return new Response(
         JSON.stringify({ 
           success: false,
-          error: "Ad Account ID not configured in platform_credentials" 
+          error: "Ad Account ID not configured for Meta" 
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Format account ID with act_ prefix if needed
-    const accountIdFormatted = adAccountId.startsWith("act_") ? adAccountId : `act_${adAccountId}`;
+    // Ensure account ID has act_ prefix for Meta API
+    if (!adAccountId.startsWith('act_')) {
+      adAccountId = `act_${adAccountId}`;
+    }
 
-    console.log(`Testing connection to account: ${accountIdFormatted}`);
+    console.log(`Testing connection to account: ${adAccountId}`);
 
     // Simple lightweight GET to verify credentials work
-    const testUrl = `https://graph.facebook.com/v23.0/${accountIdFormatted}?fields=id,name,account_status&access_token=${encodeURIComponent(accessToken)}`;
+    const testUrl = `https://graph.facebook.com/v23.0/${adAccountId}?fields=id,name,account_status&access_token=${encodeURIComponent(accessToken)}`;
     
     const response = await fetch(testUrl);
     const data = await response.json();
