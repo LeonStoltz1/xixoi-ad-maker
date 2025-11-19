@@ -66,7 +66,6 @@ export default function Dashboard() {
   const [detectedContact, setDetectedContact] = useState<{ phone?: string; email?: string } | null>(null);
   const [showContactDetection, setShowContactDetection] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -143,7 +142,6 @@ export default function Dashboard() {
   const handleUpdate = () => {
     if (user) {
       loadCampaigns(user.id);
-      setRefreshKey(prev => prev + 1);
     }
   };
 
@@ -276,7 +274,7 @@ export default function Dashboard() {
           <QuickStartBudgetWidget />
 
           {/* SECTION 1: Global Spend Summary */}
-          <GlobalSpendSummary key={refreshKey} />
+          <GlobalSpendSummary />
 
           {/* POLITICAL MODE HIDDEN - Re-enable later for launch */}
           {/* {politicalProfile?.hasPoliticalTier && (
@@ -349,7 +347,7 @@ export default function Dashboard() {
           </div>
 
           {/* SECTION 3: Account Performance Insights */}
-          {campaigns.length > 0 && <AccountPerformanceInsights key={refreshKey} />}
+          {campaigns.length > 0 && <AccountPerformanceInsights />}
         </div>
       </main>
 
