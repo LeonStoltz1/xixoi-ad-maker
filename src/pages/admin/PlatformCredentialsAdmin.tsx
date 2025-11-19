@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { toast } from "sonner";
 import { Shield, Key, AlertCircle, CheckCircle } from "lucide-react";
@@ -181,9 +182,16 @@ export default function PlatformCredentialsAdmin() {
       <Header />
       <div className="container mx-auto p-6 pt-40 max-w-5xl">
         <div className="mb-8">
-          <div className="flex items-center gap-2 mb-2">
-            <Shield className="w-6 h-6" />
-            <h1 className="text-3xl font-bold">Platform API Status</h1>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Shield className="w-6 h-6" />
+              <h1 className="text-3xl font-bold">Platform API Status</h1>
+            </div>
+            <Button asChild>
+              <Link to="/admin/test-meta">
+                Test Meta Publishing
+              </Link>
+            </Button>
           </div>
           <p className="text-foreground/80 mb-4">
             Monitoring system-owned master account credentials for <strong>Quick-Start tier</strong> users.
