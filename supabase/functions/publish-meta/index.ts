@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     }
 
     const token = credentials.accessToken;
-    const adAccountId = credentials.accountId || ""; // Format: act_123456789
+    let adAccountId = credentials.accountId || "";
     
     if (!adAccountId) {
       return new Response(
@@ -65,6 +65,13 @@ Deno.serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Ensure account ID has act_ prefix for Meta API
+    if (!adAccountId.startsWith('act_')) {
+      adAccountId = `act_${adAccountId}`;
+    }
+    
+    console.log("Using Meta ad account:", adAccountId);
 
     // Fetch campaign data
     const { data: campaign, error: campaignError } = await supabase
