@@ -4,14 +4,25 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  // core: inline, uppercase, SHARP corners
+  "inline-flex items-center justify-center border px-2.5 py-0.5 text-[10px] font-semibold tracking-[0.12em] uppercase rounded-none",
   {
     variants: {
       variant: {
-        default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-        secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
+        // Default black badge, white text + border
+        default: "bg-black text-white border-white",
+
+        // Outline: transparent background, white text, white border
+        outline: "bg-transparent text-white border-white",
+
+        // Subtle: inverted (white chip, black text)
+        subtle: "bg-white text-black border-black",
+
+        // Secondary: same as outline for compatibility
+        secondary: "bg-transparent text-white border-white",
+
+        // Destructive/error: same visual as subtle, message carries meaning
+        destructive: "bg-white text-black border-black",
       },
     },
     defaultVariants: {

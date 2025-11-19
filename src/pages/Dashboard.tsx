@@ -29,6 +29,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { CampaignContactSection } from "@/components/CampaignContactSection";
 import { detectContactInfo, removeContactInfo } from "@/utils/contactDetection";
+import { QuickStartBudgetWidget } from "@/components/QuickStartBudgetWidget";
 
 interface Campaign {
   id: string;
@@ -270,6 +271,9 @@ export default function Dashboard() {
               </Button>
             </div>
           </div>
+
+          {/* Quick-Start Budget Widget */}
+          <QuickStartBudgetWidget />
 
           {/* SECTION 1: Global Spend Summary */}
           <GlobalSpendSummary key={refreshKey} />
