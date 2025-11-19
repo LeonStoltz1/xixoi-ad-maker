@@ -14,6 +14,7 @@ interface PlatformCredential {
   id: string;
   platform: string;
   platform_account_id: string;
+  account_name?: string | null;
   status: string;
   expires_at: string | null;
   created_at: string;
@@ -87,6 +88,20 @@ export default function PlatformCredentialsAdmin() {
     const accessToken = prompt(`Enter new access token for ${platform}:`);
     if (!accessToken) return;
 
+    let accountId = "";
+    let pageId = "";
+
+    // For Meta, also ask for account ID and page ID
+    if (platform === "meta") {
+      accountId = prompt("Enter Meta Ad Account ID (numbers only, no 'act_' prefix):") || "";
+      pageId = prompt("Enter Facebook Page ID:") || "";
+      
+      if (!accountId || !pageId) {
+        toast.error("Meta requires both Ad Account ID and Page ID");
+        return;
+      }
+    }
+
     setUpdating(platform);
 
     try {
@@ -101,23 +116,57 @@ export default function PlatformCredentialsAdmin() {
       if (encryptError) throw encryptError;
 
       // Update the credential
+      const updateData: any = {
+        access_token: encryptedData.encrypted,
+        updated_at: new Date().toISOString(),
+        status: 'connected'
+      };
+
+      if (platform === "meta") {
+        updateData.platform_account_id = accountId;
+        updateData.account_name = pageId; // Temporarily using account_name for page_id
+      }
+
       const { error: updateError } = await supabase
         .from("platform_credentials")
-        .update({
-          access_token: encryptedData.encrypted,
-          updated_at: new Date().toISOString(),
-          status: 'connected'
-        })
-        .eq("platform", platform)
-        .eq("owner_type", "system");
+        .upsert({
+          platform,
+          owner_type: "system",
+          ...updateData
+        }, {
+          onConflict: "platform,owner_type"
+        });
 
       if (updateError) throw updateError;
 
-      toast.success(`${platform} token updated successfully`);
+      toast.success(`${platform} credentials saved successfully`);
       await loadCredentials();
     } catch (error) {
       console.error("Token update error:", error);
       toast.error(`Failed to update ${platform} token`);
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handleTestMeta = async () => {
+    setUpdating("meta-test");
+    try {
+      const { data, error } = await supabase.functions.invoke("test-meta-publish");
+      
+      if (error) throw error;
+      
+      if (data.success) {
+        toast.success(
+          `Meta test successful! Campaign ID: ${data.campaign_id}`,
+          { description: data.instructions }
+        );
+      } else {
+        toast.error(data.error || "Test failed");
+      }
+    } catch (error: any) {
+      console.error("Test error:", error);
+      toast.error(error.message || "Failed to test Meta credentials");
     } finally {
       setUpdating(null);
     }
@@ -192,8 +241,14 @@ export default function PlatformCredentialsAdmin() {
                   <div className="space-y-2 text-sm mb-4">
                     <div className="flex justify-between">
                       <span className="text-foreground/60">Account ID:</span>
-                      <span className="font-mono text-xs">{cred.platform_account_id}</span>
+                      <span className="font-mono text-xs">{cred.platform_account_id || "Not set"}</span>
                     </div>
+                    {cred.platform === "meta" && cred.account_name && (
+                      <div className="flex justify-between">
+                        <span className="text-foreground/60">Page ID:</span>
+                        <span className="font-mono text-xs">{cred.account_name}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-foreground/60">Last Updated:</span>
                       <span>{new Date(cred.updated_at).toLocaleDateString()}</span>
@@ -214,6 +269,18 @@ export default function PlatformCredentialsAdmin() {
                     <RefreshCw className={`w-4 h-4 mr-2 ${updating === cred.platform ? 'animate-spin' : ''}`} />
                     {updating === cred.platform ? "Updating..." : cred.status === "pending" ? "Add Token" : "Update Token"}
                   </Button>
+                  
+                  {/* Test button for Meta when connected */}
+                  {cred.platform === "meta" && cred.status === "connected" && (
+                    <Button
+                      onClick={handleTestMeta}
+                      disabled={updating === "meta-test"}
+                      className="w-full mt-2"
+                      variant="secondary"
+                    >
+                      {updating === "meta-test" ? "Testing..." : "🚀 Test Meta Publish"}
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ))
