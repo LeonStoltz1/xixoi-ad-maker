@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Header } from "@/components/Header";
-import { BackButton } from "@/components/BackButton";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -11,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Pencil, Check, AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 export default function ReviewAd() {
   const { campaignId } = useParams();
@@ -24,8 +23,6 @@ export default function ReviewAd() {
   const [isApproved, setIsApproved] = useState(false);
   const [userPlan, setUserPlan] = useState<string>('free');
   const [hasWatermark, setHasWatermark] = useState(true);
-
-  // Editable fields
   const [editedHeadline, setEditedHeadline] = useState("");
   const [editedBody, setEditedBody] = useState("");
   const [editedCta, setEditedCta] = useState("");
@@ -47,7 +44,6 @@ export default function ReviewAd() {
       setCampaign(campaignData);
       setHasWatermark(campaignData.has_watermark ?? true);
       
-      // Get user plan
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data: profile } = await supabase
@@ -58,7 +54,6 @@ export default function ReviewAd() {
         setUserPlan(profile?.plan || 'free');
       }
       
-      // Get the first variant
       const firstVariant = campaignData.ad_variants?.[0];
       if (firstVariant) {
         setVariant(firstVariant);
@@ -85,7 +80,7 @@ export default function ReviewAd() {
       const { data, error } = await supabase.functions.invoke('moderate-ad-content', {
         body: {
           campaignId,
-          platforms: ['meta'], // Currently only Meta is active
+          platforms: ['meta'],
           adContent: {
             headline: editedHeadline,
             body_copy: editedBody,
@@ -96,13 +91,10 @@ export default function ReviewAd() {
 
       if (error) throw error;
 
-      console.log('Moderation result:', data);
-
       if (data.approved) {
         setIsApproved(true);
         toast.success("Your ad meets all platform guidelines!");
         
-        // Update the variant with edited content if changes were made
         if (isEditing) {
           await supabase
             .from('ad_variants')
@@ -115,15 +107,14 @@ export default function ReviewAd() {
         }
       } else {
         setIsApproved(false);
-        setComplianceIssues(data.issues || []);
-        toast.error("Your ad needs some changes to meet guidelines");
+        setComplianceIssues(data.violations || []);
+        toast.error("Ad has compliance issues. Please review and edit.");
       }
     } catch (error) {
       console.error('Error checking compliance:', error);
-      toast.error("Failed to check ad compliance");
+      toast.error("Failed to check compliance");
     } finally {
       setChecking(false);
-      setIsEditing(false);
     }
   };
 
@@ -132,240 +123,127 @@ export default function ReviewAd() {
       toast.error("Please check compliance before publishing");
       return;
     }
-    navigate(`/campaign-publish?id=${campaignId}`);
+    navigate(`/campaign-publish/${campaignId}`);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-foreground" />
-      </div>
+      <AppLayout>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </AppLayout>
     );
   }
 
-  if (!campaign || !variant) {
+  if (!campaign) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-foreground mb-4">Campaign not found</p>
-          <Button onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
+      <AppLayout>
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Campaign not found</p>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   const imageUrl = campaign.campaign_assets?.[0]?.asset_url;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <div className="w-full max-w-content mx-auto px-6 pt-[180px] pb-section">
-        {/* Progress Steps */}
-        <div className="flex items-center justify-center gap-2 mb-12">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center">
-              <Check className="w-5 h-5" />
-            </div>
-            <span className="text-sm font-medium hidden md:inline">Create Campaign</span>
-          </div>
-          
-          <div className="w-8 md:w-12 h-[2px] bg-foreground"></div>
-          
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center font-bold">
-              2
-            </div>
-            <span className="text-sm font-medium hidden md:inline">Review Targeting</span>
-          </div>
-          
-          <div className="w-8 md:w-12 h-[2px] bg-foreground"></div>
-          
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center font-bold">
-              3
-            </div>
-            <span className="text-sm font-medium hidden md:inline">Preview</span>
-          </div>
-          
-          <div className="w-8 md:w-12 h-[2px] bg-border"></div>
-          
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full border-2 border-border text-muted-foreground flex items-center justify-center font-bold">
-              4
-            </div>
-            <span className="text-sm text-muted-foreground hidden md:inline">Publish</span>
-          </div>
-        </div>
-
-        <h1 className="text-3xl font-bold text-foreground mb-2 text-center">Preview Your Ad</h1>
-        <p className="text-muted-foreground mb-8 text-center">
-          Review and edit your ad before publishing
-        </p>
-
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Ad Preview */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Ad Preview</h3>
-            <Card className="border-2 border-border overflow-hidden">
-              {imageUrl && (
-                <img 
-                  src={imageUrl} 
-                  alt="Ad creative" 
-                  className="w-full aspect-square object-cover"
-                />
-              )}
-              <div className="p-4 space-y-3">
-                <h4 className="font-bold text-foreground">{editedHeadline}</h4>
-                <p className="text-sm text-foreground whitespace-pre-wrap">{editedBody}</p>
-                <Button className="w-full" variant="default">
-                  {editedCta}
-                </Button>
-                {userPlan === 'free' && hasWatermark && (
-                  <p className="text-xs text-muted-foreground text-center">
+    <AppLayout
+      title="Review & Edit Your Ad"
+      subtitle="Preview your ad and make final adjustments before publishing"
+      showBack
+      backTo={`/targeting/${campaignId}`}
+      backLabel="Targeting"
+    >
+      <div className="space-y-8">
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Ad Preview</h2>
+          <div className="space-y-4">
+            {imageUrl && (
+              <div className="relative w-full aspect-video bg-muted overflow-hidden rounded-lg">
+                <img src={imageUrl} alt="Ad creative" className="w-full h-full object-cover" />
+                {hasWatermark && userPlan === 'free' && (
+                  <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
                     Powered by xiXoi™
-                  </p>
+                  </div>
                 )}
               </div>
-            </Card>
-          </div>
-
-          {/* Edit Form */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Ad Content</h3>
-              {!isEditing && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditing(true)}
-                >
-                  <Pencil className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
-              )}
-            </div>
-
-            <div className="space-y-4">
+            )}
+            <div className="space-y-2">
               <div>
-                <Label htmlFor="headline">Headline</Label>
-                <Input
-                  id="headline"
-                  value={editedHeadline}
-                  onChange={(e) => {
-                    setEditedHeadline(e.target.value);
-                    setIsEditing(true);
-                    setIsApproved(false);
-                  }}
-                  placeholder="Enter headline"
-                  className="mt-1"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {editedHeadline.length} characters
-                </p>
+                <p className="text-sm text-muted-foreground">Headline</p>
+                <p className="font-semibold">{editedHeadline}</p>
               </div>
-
               <div>
-                <Label htmlFor="body">Body Copy</Label>
-                <Textarea
-                  id="body"
-                  value={editedBody}
-                  onChange={(e) => {
-                    setEditedBody(e.target.value);
-                    setIsEditing(true);
-                    setIsApproved(false);
-                  }}
-                  placeholder="Enter body copy"
-                  rows={6}
-                  className="mt-1"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {editedBody.length} characters
-                </p>
+                <p className="text-sm text-muted-foreground">Body</p>
+                <p className="text-sm">{editedBody}</p>
               </div>
-
               <div>
-                <Label htmlFor="cta">Call-to-Action</Label>
-                <Input
-                  id="cta"
-                  value={editedCta}
-                  onChange={(e) => {
-                    setEditedCta(e.target.value);
-                    setIsEditing(true);
-                    setIsApproved(false);
-                  }}
-                  placeholder="Enter CTA text"
-                  className="mt-1"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {editedCta.length} characters
-                </p>
-              </div>
-
-              {/* Compliance Issues */}
-              {complianceIssues.length > 0 && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    <p className="font-semibold mb-2">Compliance Issues Found:</p>
-                    <ul className="list-disc pl-4 space-y-1">
-                      {complianceIssues.map((issue, idx) => (
-                        <li key={idx} className="text-sm">{issue}</li>
-                      ))}
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* Approval Status */}
-              {isApproved && (
-                <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
-                  <Check className="h-4 w-4 text-green-600" />
-                  <AlertDescription className="text-green-800 dark:text-green-200">
-                    Your ad meets all platform guidelines and is ready to publish!
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* Action Buttons */}
-              <div className="space-y-2">
-                <Button
-                  onClick={handleCheckCompliance}
-                  disabled={checking}
-                  className="w-full"
-                  variant={isApproved ? "outline" : "default"}
-                >
-                  {checking ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Checking Compliance...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="w-4 h-4 mr-2" />
-                      Check Compliance
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  onClick={handlePublish}
-                  disabled={!isApproved}
-                  className="w-full"
-                  variant="default"
-                >
-                  Continue to Publish
-                </Button>
+                <p className="text-sm text-muted-foreground">Call-to-Action</p>
+                <Button size="sm" variant="default" className="mt-1">{editedCta}</Button>
               </div>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Back Button */}
-        <div className="mt-8">
-          <BackButton to={`/targeting/${campaignId}`} label="Targeting" />
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Edit Ad Content</h2>
+            <Button variant="ghost" size="sm" onClick={() => setIsEditing(!isEditing)}>
+              {isEditing ? (<><Check className="w-4 h-4 mr-2" />Done Editing</>) : (<><Pencil className="w-4 h-4 mr-2" />Edit</>)}
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="headline">Headline</Label>
+              <Input id="headline" value={editedHeadline} onChange={(e) => setEditedHeadline(e.target.value)} disabled={!isEditing} maxLength={40} />
+              <p className="text-xs text-muted-foreground">{editedHeadline.length}/40 characters</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="body">Body Copy</Label>
+              <Textarea id="body" value={editedBody} onChange={(e) => setEditedBody(e.target.value)} disabled={!isEditing} rows={4} maxLength={125} />
+              <p className="text-xs text-muted-foreground">{editedBody.length}/125 characters</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cta">Call-to-Action</Label>
+              <Input id="cta" value={editedCta} onChange={(e) => setEditedCta(e.target.value)} disabled={!isEditing} maxLength={30} />
+              <p className="text-xs text-muted-foreground">{editedCta.length}/30 characters</p>
+            </div>
+          </div>
+        </Card>
+
+        {complianceIssues.length > 0 && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <p className="font-semibold mb-2">Compliance Issues Found:</p>
+              <ul className="list-disc list-inside space-y-1">
+                {complianceIssues.map((issue, index) => (
+                  <li key={index} className="text-sm">{issue.platform}: {issue.issue}</li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {isApproved && (
+          <Alert>
+            <Check className="h-4 w-4" />
+            <AlertDescription>Your ad meets all platform guidelines and is ready to publish!</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={handleCheckCompliance} disabled={checking} className="flex-1">
+            {checking ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Checking...</>) : 'Check Compliance'}
+          </Button>
+          <Button onClick={handlePublish} disabled={!isApproved} className="flex-1">Continue to Publish</Button>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
