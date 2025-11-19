@@ -99,7 +99,7 @@ const App = () => (
           <Route path="/payouts" element={<PayoutDashboard />} />
           <Route path="/payout-settings" element={<PayoutSettings />} />
           <Route path="/campaign-publish" element={<CampaignPublish />} />
-          <Route path="/xi-admin/platform-credentials" element={<PlatformCredentialsAdmin />} />
+          <Route path="/admin/platform-credentials" element={<PlatformCredentialsAdmin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
