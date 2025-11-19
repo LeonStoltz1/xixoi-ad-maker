@@ -12,8 +12,7 @@ const plans = [
       '"Powered By xiXoi™" watermark',
       "Basic AI generation",
       "Auto-targeting suggestions",
-      "Publish to Meta/TikTok/Google/",
-      "LinkedIn/X",
+      "Publish to Meta/TikTok/Google/\nLinkedIn/X",
     ],
     cta: "Start Free",
   },
@@ -151,7 +150,7 @@ export const Pricing = () => {
                 {plan.features.map((feature, index) => (
                   <div key={index} className="flex items-start gap-2 text-left">
                     <span className="text-foreground flex-shrink-0 mt-0.5">✓</span>
-                    <span className="text-sm leading-[1.6]">
+                    <span className="text-sm leading-[1.6] whitespace-pre-line">
                       {feature}
                     </span>
                   </div>
