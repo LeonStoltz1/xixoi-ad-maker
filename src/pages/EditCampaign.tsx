@@ -147,11 +147,11 @@ export default function EditCampaign() {
         <div className="max-w-2xl mx-auto">
           <Button
             variant="ghost"
-            onClick={() => navigate(`/targeting/${campaignId}`)}
-            className="mb-6"
+            onClick={() => navigate(-1)}
+            className="mb-6 hover:bg-muted"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Targeting
+            Back
           </Button>
 
           <div className="space-y-6">
