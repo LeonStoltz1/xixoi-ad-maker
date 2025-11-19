@@ -1,8 +1,6 @@
 import { ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Header } from "@/components/Header";
 
 type AppLayoutProps = {
   title?: string;
@@ -13,59 +11,70 @@ type AppLayoutProps = {
   children: ReactNode;
 };
 
-export function AppLayout({ 
-  title, 
-  subtitle,
-  showBack, 
-  backTo, 
-  backLabel = "Previous page",
-  children 
-}: AppLayoutProps) {
+export function AppLayout({ title, subtitle, showBack, backTo, backLabel = "Back", children }: AppLayoutProps) {
   const navigate = useNavigate();
 
-  const handleBack = () => {
-    if (backTo) {
-      navigate(backTo);
-    } else {
-      navigate(-1);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-30">
-        <Header />
-      </div>
-
-      {/* Main Content with padding to push below fixed header */}
-      <main className="pt-24 pb-12 px-4">
-        <div className="max-w-[720px] mx-auto">
-          {/* Standardized Back Navigation */}
-          {showBack && (
-            <Button
-              variant="ghost"
-              onClick={handleBack}
-              className="mb-8 inline-flex items-center gap-2 border border-foreground/30 hover:bg-foreground/10 hover:border-foreground/50"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              {backLabel}
-            </Button>
-          )}
-
-          {/* Page Title */}
-          {title && (
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold mb-4">{title}</h1>
-              {subtitle && (
-                <p className="text-muted-foreground">{subtitle}</p>
-              )}
+    <div className="min-h-screen bg-white text-black">
+      {/* GLOBAL HEADER */}
+      <header className="fixed top-0 left-0 right-0 z-30 border-b border-neutral-800 bg-black">
+        <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4">
+          {/* Logo + brand */}
+          <Link to="/" className="flex items-center gap-3 text-white">
+            <div className="h-10 w-28 bg-neutral-900" />
+            <div className="flex flex-col leading-tight">
+              <span className="text-xs text-neutral-400">PRONOUNCED</span>
+              <span className="text-sm font-semibold tracking-[0.25em]">
+                ZEE–ZOY
+              </span>
             </div>
-          )}
+          </Link>
 
-          {/* Page Content */}
-          {children}
+          {/* Right-side nav */}
+          <nav className="flex items-center gap-3 text-sm font-medium text-white">
+            <Link to="/admin" className="rounded border border-neutral-600 px-3 py-1">
+              Admin
+            </Link>
+            <span className="rounded border border-neutral-600 px-3 py-1">
+              FREE
+            </span>
+            <Link to="/upgrade" className="px-3 py-1">
+              Upgrade
+            </Link>
+            <Link to="/sign-out" className="px-3 py-1">
+              Sign Out
+            </Link>
+          </nav>
         </div>
+      </header>
+
+      {/* PAGE CONTENT — padding-top MUST be taller than header */}
+      <main className="mx-auto max-w-6xl px-4 pt-24 pb-10">
+        {/* Standardized back nav */}
+        {showBack && (
+          <button
+            type="button"
+            onClick={() => (backTo ? navigate(backTo) : navigate(-1))}
+            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-neutral-500 hover:text-black"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>{backLabel}</span>
+          </button>
+        )}
+
+        {/* Optional page title */}
+        {title && (
+          <div className="mb-6">
+            <h1 className="mb-2 text-4xl font-semibold tracking-tight">
+              {title}
+            </h1>
+            {subtitle && (
+              <p className="text-neutral-500">{subtitle}</p>
+            )}
+          </div>
+        )}
+
+        {children}
       </main>
     </div>
   );
