@@ -16,8 +16,8 @@ import { RealEstateDetailsForm } from "@/components/real-estate/RealEstateDetail
 import { buildRealEstateFeatureSummary, buildHousingFooter } from "@/lib/realEstatePrompt";
 import type { RealEstateDetailsFormValues } from "@/schema/realEstate";
 import { invokeWithRetry } from "@/lib/retryWithBackoff";
-import { Header } from "@/components/Header";
 import { NoAdAccountsBanner } from "@/components/NoAdAccountsBanner";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { CampaignContactSection } from "@/components/CampaignContactSection";
 
 export default function CreateCampaign() {
@@ -1055,6 +1055,6 @@ export default function CreateCampaign() {
           }}
         />
       )}
-    </div>
+    </AppLayout>
   );
 }

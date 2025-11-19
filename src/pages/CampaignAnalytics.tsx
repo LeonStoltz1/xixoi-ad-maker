@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, TrendingUp, MousePointer, DollarSign, Target, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Header } from "@/components/Header";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 export default function CampaignAnalytics() {
   const { id: campaignId } = useParams();

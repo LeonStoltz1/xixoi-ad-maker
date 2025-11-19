@@ -6,8 +6,8 @@ import { Card, CardDescription, CardHeader, CardTitle, CardContent } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Wallet as WalletIcon } from 'lucide-react';
-import { Header } from '@/components/Header';
 import { QuickStartCapModal } from '@/components/QuickStartCapModal';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { useToast } from '@/hooks/use-toast';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -103,13 +103,13 @@ export default function WalletPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6 pt-40">
-      <Header />
+    <AppLayout 
+      title="Ad Wallet" 
+      showBack 
+      backTo="/dashboard" 
+      backLabel="Dashboard"
+    >
       <div className="max-w-2xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
-        </Button>
         
         <Card>
           <CardHeader>
@@ -168,14 +168,14 @@ export default function WalletPage() {
           </CardContent>
         </Card>
       </div>
-
+      
       <QuickStartCapModal
         isOpen={showCapModal}
         onClose={() => setShowCapModal(false)}
         currentSpend={capDetails.currentSpend}
         requestedAmount={capDetails.requestedAmount}
       />
-    </div>
+    </AppLayout>
   );
 }
 
