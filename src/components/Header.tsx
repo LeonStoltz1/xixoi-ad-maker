@@ -84,7 +84,11 @@ export const Header = () => {
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/20">
                   <span 
                     onClick={() => setViewMode('general')}
-                    className="text-xs text-white/70 cursor-pointer hover:text-white/90 transition-colors"
+                    className={`text-xs cursor-pointer transition-all ${
+                      viewMode === 'general' 
+                        ? 'text-white font-bold' 
+                        : 'text-white/50 hover:text-white/70'
+                    }`}
                   >
                     General
                   </span>
@@ -95,7 +99,11 @@ export const Header = () => {
                   />
                   <span 
                     onClick={() => setViewMode('realtor')}
-                    className="text-xs text-white/70 cursor-pointer hover:text-white/90 transition-colors"
+                    className={`text-xs cursor-pointer transition-all ${
+                      viewMode === 'realtor' 
+                        ? 'text-white font-bold' 
+                        : 'text-white/50 hover:text-white/70'
+                    }`}
                   >
                     Realtor
                   </span>
