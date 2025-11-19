@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/Header";
 import { toast } from "sonner";
-import { Shield, Key, RefreshCw } from "lucide-react";
+import { Shield, Key, RefreshCw, X } from "lucide-react";
 
 interface PlatformCredential {
   id: string;
@@ -27,6 +27,12 @@ export default function PlatformCredentialsAdmin() {
   const [loading, setLoading] = useState(true);
   const [credentials, setCredentials] = useState<PlatformCredential[]>([]);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    accessToken: "",
+    accountId: "",
+    pageId: ""
+  });
 
   useEffect(() => {
     checkAdminStatus();
@@ -84,18 +90,27 @@ export default function PlatformCredentialsAdmin() {
     }
   };
 
+  const handleStartEdit = (platform: string) => {
+    setEditingPlatform(platform);
+    setFormData({ accessToken: "", accountId: "", pageId: "" });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPlatform(null);
+    setFormData({ accessToken: "", accountId: "", pageId: "" });
+  };
+
   const handleUpdateToken = async (platform: string) => {
-    const accessToken = prompt(`Enter new access token for ${platform}:`);
-    if (!accessToken) return;
+    if (!formData.accessToken) {
+      toast.error("Access token is required");
+      return;
+    }
 
-    let accountId = "";
-    let pageId = "";
+    let accountId = formData.accountId;
+    let pageId = formData.pageId;
 
-    // For Meta, also ask for account ID and page ID
+    // For Meta, require both account ID and page ID
     if (platform === "meta") {
-      accountId = prompt("Enter Meta Ad Account ID (numbers only, no 'act_' prefix):") || "";
-      pageId = prompt("Enter Facebook Page ID:") || "";
-      
       if (!accountId || !pageId) {
         toast.error("Meta requires both Ad Account ID and Page ID");
         return;
@@ -109,7 +124,7 @@ export default function PlatformCredentialsAdmin() {
       const { data: encryptedData, error: encryptError } = await supabase.functions.invoke(
         "encrypt-master-token",
         {
-          body: { token: accessToken }
+          body: { token: formData.accessToken }
         }
       );
 
@@ -141,6 +156,8 @@ export default function PlatformCredentialsAdmin() {
       if (updateError) throw updateError;
 
       toast.success(`${platform} credentials saved successfully`);
+      setEditingPlatform(null);
+      setFormData({ accessToken: "", accountId: "", pageId: "" });
       await loadCredentials();
     } catch (error) {
       console.error("Token update error:", error);
@@ -247,48 +264,109 @@ export default function PlatformCredentialsAdmin() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 text-sm mb-4">
-                    <div className="flex justify-between">
-                      <span className="text-foreground/60">Account ID:</span>
-                      <span className="font-mono text-xs">{cred.platform_account_id || "Not set"}</span>
-                    </div>
-                    {cred.platform === "meta" && cred.account_name && (
-                      <div className="flex justify-between">
-                        <span className="text-foreground/60">Page ID:</span>
-                        <span className="font-mono text-xs">{cred.account_name}</span>
+                  {editingPlatform === cred.platform ? (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor={`token-${cred.platform}`}>Access Token *</Label>
+                        <Input
+                          id={`token-${cred.platform}`}
+                          type="password"
+                          placeholder="Paste access token here"
+                          value={formData.accessToken}
+                          onChange={(e) => setFormData({ ...formData, accessToken: e.target.value })}
+                          className="font-mono text-xs"
+                        />
                       </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-foreground/60">Last Updated:</span>
-                      <span>{new Date(cred.updated_at).toLocaleDateString()}</span>
-                    </div>
-                    {cred.expires_at && (
-                      <div className="flex justify-between">
-                        <span className="text-foreground/60">Token Expires:</span>
-                        <span>{new Date(cred.expires_at).toLocaleDateString()}</span>
+
+                      {cred.platform === "meta" && (
+                        <>
+                          <div className="space-y-2">
+                            <Label htmlFor={`account-${cred.platform}`}>Ad Account ID *</Label>
+                            <Input
+                              id={`account-${cred.platform}`}
+                              placeholder="e.g., 123456789 or act_123456789"
+                              value={formData.accountId}
+                              onChange={(e) => setFormData({ ...formData, accountId: e.target.value })}
+                              className="font-mono text-xs"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`page-${cred.platform}`}>Facebook Page ID *</Label>
+                            <Input
+                              id={`page-${cred.platform}`}
+                              placeholder="e.g., 987654321"
+                              value={formData.pageId}
+                              onChange={(e) => setFormData({ ...formData, pageId: e.target.value })}
+                              className="font-mono text-xs"
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleUpdateToken(cred.platform)}
+                          disabled={updating === cred.platform}
+                          className="flex-1"
+                        >
+                          <RefreshCw className={`w-4 h-4 mr-2 ${updating === cred.platform ? 'animate-spin' : ''}`} />
+                          {updating === cred.platform ? "Saving..." : "Save Credentials"}
+                        </Button>
+                        <Button
+                          onClick={handleCancelEdit}
+                          variant="outline"
+                          disabled={updating === cred.platform}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
                       </div>
-                    )}
-                  </div>
-                  <Button
-                    onClick={() => handleUpdateToken(cred.platform)}
-                    disabled={updating === cred.platform}
-                    className="w-full"
-                    variant={cred.status === "pending" ? "default" : "outline"}
-                  >
-                    <RefreshCw className={`w-4 h-4 mr-2 ${updating === cred.platform ? 'animate-spin' : ''}`} />
-                    {updating === cred.platform ? "Updating..." : cred.status === "pending" ? "Add Token" : "Update Token"}
-                  </Button>
-                  
-                  {/* Test button for Meta when connected */}
-                  {cred.platform === "meta" && cred.status === "connected" && (
-                    <Button
-                      onClick={handleTestMeta}
-                      disabled={updating === "meta-test"}
-                      className="w-full mt-2"
-                      variant="secondary"
-                    >
-                      {updating === "meta-test" ? "Testing..." : "🧪 Test Connection"}
-                    </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-2 text-sm mb-4">
+                        <div className="flex justify-between">
+                          <span className="text-foreground/60">Account ID:</span>
+                          <span className="font-mono text-xs">{cred.platform_account_id || "Not set"}</span>
+                        </div>
+                        {cred.platform === "meta" && cred.account_name && (
+                          <div className="flex justify-between">
+                            <span className="text-foreground/60">Page ID:</span>
+                            <span className="font-mono text-xs">{cred.account_name}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between">
+                          <span className="text-foreground/60">Last Updated:</span>
+                          <span>{new Date(cred.updated_at).toLocaleDateString()}</span>
+                        </div>
+                        {cred.expires_at && (
+                          <div className="flex justify-between">
+                            <span className="text-foreground/60">Token Expires:</span>
+                            <span>{new Date(cred.expires_at).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        onClick={() => handleStartEdit(cred.platform)}
+                        disabled={updating !== null}
+                        className="w-full"
+                        variant={cred.status === "pending" ? "default" : "outline"}
+                      >
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        {cred.status === "pending" ? "Add Token" : "Update Token"}
+                      </Button>
+                      
+                      {/* Test button for Meta when connected */}
+                      {cred.platform === "meta" && cred.status === "connected" && (
+                        <Button
+                          onClick={handleTestMeta}
+                          disabled={updating === "meta-test"}
+                          className="w-full mt-2"
+                          variant="secondary"
+                        >
+                          {updating === "meta-test" ? "Testing..." : "🧪 Test Connection"}
+                        </Button>
+                      )}
+                    </>
                   )}
                 </CardContent>
               </Card>
