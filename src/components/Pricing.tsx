@@ -166,11 +166,36 @@ export const Pricing = () => {
               <thead>
                 <tr className="bg-foreground text-background">
                   <th className="border border-foreground p-4 text-left font-bold text-sm">Feature</th>
-                  <th className="border border-foreground p-4 text-center font-bold text-sm">FREE</th>
-                  <th className="border border-foreground p-4 text-center font-bold text-sm">QUICK-START</th>
-                  <th className="border border-foreground p-4 text-center font-bold text-sm">PUBLISH PRO</th>
-                  <th className="border border-foreground p-4 text-center font-bold text-sm">SCALE ELITE</th>
-                  <th className="border border-foreground p-4 text-center font-bold text-sm">AGENCY</th>
+                  <th 
+                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors"
+                    onClick={() => handlePlanClick("FREE")}
+                  >
+                    FREE
+                  </th>
+                  <th 
+                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors"
+                    onClick={() => handlePlanClick("QUICK-START")}
+                  >
+                    QUICK-START
+                  </th>
+                  <th 
+                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors"
+                    onClick={() => handlePlanClick("PUBLISH PRO")}
+                  >
+                    PUBLISH PRO
+                  </th>
+                  <th 
+                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors"
+                    onClick={() => handlePlanClick("SCALE ELITE")}
+                  >
+                    SCALE ELITE
+                  </th>
+                  <th 
+                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors"
+                    onClick={() => handlePlanClick("AGENCY WHITE-LABEL")}
+                  >
+                    AGENCY
+                  </th>
                 </tr>
               </thead>
               <tbody>
