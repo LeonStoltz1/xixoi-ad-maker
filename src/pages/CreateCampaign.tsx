@@ -412,6 +412,17 @@ export default function CreateCampaign() {
       if (generateError) {
         console.error('AI generation error:', generateError);
         
+        // Handle political ad upgrade requirement
+        if (generateError.message?.includes('POLITICAL_UPGRADE_REQUIRED') || generateError.message?.includes('Political ads require')) {
+          toast({
+            variant: "destructive",
+            title: "Political Ads Not Available on Free Tier",
+            description: "Political ads require Pro tier ($149/mo) for FEC compliance. Please upgrade or remove political keywords from your description.",
+            duration: 7000
+          });
+          return;
+        }
+        
         // Handle rate limit and credits exhausted errors
         if (generateError.message?.includes('429') || generateError.message?.includes('rate limit')) {
           toast({
