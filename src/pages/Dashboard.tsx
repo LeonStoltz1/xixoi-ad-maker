@@ -308,7 +308,7 @@ export default function Dashboard() {
                 <div className="max-w-md mx-auto">
                   <h3 className="text-2xl font-bold mb-3">Ready to Launch Your First Ad?</h3>
                   <p className="text-foreground/80 mb-6 text-base">
-                    Upload your product image, video, or description. xiXoi™ AI will generate high-converting ad variants in seconds and publish to Meta, TikTok, Google, and LinkedIn.
+                    Upload your product image, video, or description. xiXoi™ AI will generate high-converting ad variants in seconds and publish to Meta.
                   </p>
                   <Button onClick={() => navigate("/create-campaign")} size="lg" className="text-base px-8">
                     <Plus className="w-5 h-5 mr-2" />
