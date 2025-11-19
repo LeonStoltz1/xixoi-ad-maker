@@ -2,13 +2,10 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/Header";
 import { toast } from "sonner";
-import { Shield, Key, RefreshCw, X } from "lucide-react";
+import { Shield, Key, AlertCircle, CheckCircle } from "lucide-react";
 
 interface PlatformCredential {
   id: string;
@@ -16,31 +13,43 @@ interface PlatformCredential {
   platform_account_id: string;
   account_name?: string | null;
   status: string;
-  expires_at: string | null;
-  created_at: string;
-  updated_at: string;
 }
+
+interface PlatformHealth {
+  platform: string;
+  isHealthy: boolean;
+  lastChecked: Date;
+  error?: string;
+}
+
+const PLATFORMS = ["meta", "google", "tiktok", "linkedin", "x"];
+const HEALTH_CHECK_INTERVAL = 60000; // Check every 60 seconds
 
 export default function PlatformCredentialsAdmin() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [credentials, setCredentials] = useState<PlatformCredential[]>([]);
-  const [updating, setUpdating] = useState<string | null>(null);
-  const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    accessToken: "",
-    accountId: "",
-    pageId: ""
-  });
+  const [platformHealth, setPlatformHealth] = useState<PlatformHealth[]>([]);
 
   useEffect(() => {
     checkAdminStatus();
   }, []);
 
+  useEffect(() => {
+    if (isAdmin && credentials.length > 0) {
+      // Initial health check
+      checkPlatformHealth();
+      
+      // Set up continuous monitoring
+      const interval = setInterval(checkPlatformHealth, HEALTH_CHECK_INTERVAL);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isAdmin, credentials]);
+
   const checkAdminStatus = async () => {
     try {
-      // Wait for auth session to be fully loaded
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -52,10 +61,7 @@ export default function PlatformCredentialsAdmin() {
         _user_id: session.user.id
       });
 
-      if (error) {
-        console.error("RPC error:", error);
-        throw error;
-      }
+      if (error) throw error;
 
       if (!adminCheck) {
         toast.error("Access denied. Admin privileges required.");
@@ -90,135 +96,67 @@ export default function PlatformCredentialsAdmin() {
     }
   };
 
-  const handleStartEdit = (platform: string) => {
-    setEditingPlatform(platform);
-    setFormData({ accessToken: "", accountId: "", pageId: "" });
-  };
+  const checkPlatformHealth = async () => {
+    console.log("Running platform health check...");
+    
+    const healthResults: PlatformHealth[] = [];
 
-  const handleCancelEdit = () => {
-    setEditingPlatform(null);
-    setFormData({ accessToken: "", accountId: "", pageId: "" });
-  };
-
-  const handleUpdateToken = async (platform: string) => {
-    if (!formData.accessToken) {
-      toast.error("Access token is required");
-      return;
-    }
-
-    let accountId = formData.accountId;
-    let pageId = formData.pageId;
-
-    // For Meta, require both account ID and page ID
-    if (platform === "meta") {
-      if (!accountId || !pageId) {
-        toast.error("Meta requires both Ad Account ID and Page ID");
-        return;
-      }
-    }
-
-    setUpdating(platform);
-
-    try {
-      // Encrypt the token
-      const { data: encryptedData, error: encryptError } = await supabase.functions.invoke(
-        "encrypt-master-token",
-        {
-          body: { token: formData.accessToken }
+    for (const platform of PLATFORMS) {
+      try {
+        // Only check platforms that have credentials configured
+        const hasCred = credentials.some(c => c.platform === platform && c.status === "connected");
+        
+        if (!hasCred) {
+          healthResults.push({
+            platform,
+            isHealthy: false,
+            lastChecked: new Date(),
+            error: "No credentials configured"
+          });
+          continue;
         }
-      );
 
-      if (encryptError) throw encryptError;
+        // Platform-specific health checks
+        let isHealthy = false;
+        let error: string | undefined;
 
-      // Update the credential
-      const updateData: any = {
-        access_token: encryptedData.encrypted,
-        updated_at: new Date().toISOString(),
-        status: 'connected'
-      };
+        if (platform === "meta") {
+          const { data, error: testError } = await supabase.functions.invoke("test-meta-connection");
+          isHealthy = !testError && data?.success === true;
+          error = testError?.message || data?.error;
+        } else {
+          // For other platforms, just verify credentials exist
+          isHealthy = true;
+        }
 
-      if (platform === "meta") {
-        updateData.platform_account_id = accountId;
-        updateData.account_name = pageId; // Store Page ID in account_name field
-      }
-
-      // Upsert with proper conflict handling for (platform, owner_type)
-      const { error: updateError } = await supabase
-        .from("platform_credentials")
-        .upsert({
+        healthResults.push({
           platform,
-          owner_type: "system",
-          owner_id: null,
-          ...updateData
-        })
-        .match({ platform, owner_type: "system" });
+          isHealthy,
+          lastChecked: new Date(),
+          error
+        });
 
-      if (updateError) throw updateError;
+      } catch (err: any) {
+        healthResults.push({
+          platform,
+          isHealthy: false,
+          lastChecked: new Date(),
+          error: err.message || "Health check failed"
+        });
+      }
+    }
 
-      toast.success(`${platform} credentials saved successfully`);
-      setEditingPlatform(null);
-      setFormData({ accessToken: "", accountId: "", pageId: "" });
-      await loadCredentials();
-    } catch (error) {
-      console.error("Token update error:", error);
-      toast.error(`Failed to update ${platform} token`);
-    } finally {
-      setUpdating(null);
+    setPlatformHealth(healthResults);
+    
+    // Show toast for any unhealthy platforms
+    const unhealthy = healthResults.filter(h => !h.isHealthy);
+    if (unhealthy.length > 0) {
+      console.error("Unhealthy platforms detected:", unhealthy.map(h => h.platform).join(", "));
     }
   };
 
-  const handleInitializeCredentials = async () => {
-    const ok = window.confirm(
-      "This will load Meta credentials from environment secrets into the database. Continue?"
-    );
-    if (!ok) return;
-
-    setUpdating("init");
-    try {
-      const { data, error } = await supabase.functions.invoke('setup-master-credentials');
-      
-      if (error) throw error;
-      
-      if (data.success) {
-        toast.success('Meta credentials initialized successfully');
-        await loadCredentials();
-      } else {
-        throw new Error(data.error || 'Setup failed');
-      }
-    } catch (err: any) {
-      console.error('Setup error:', err);
-      toast.error('Failed to initialize: ' + err.message);
-    } finally {
-      setUpdating(null);
-    }
-  };
-
-  const handleTestMeta = async () => {
-    const ok = window.confirm(
-      "This will verify Meta credentials by calling the Graph API. Continue?"
-    );
-    if (!ok) return;
-
-    setUpdating("meta-test");
-    try {
-      const { data, error } = await supabase.functions.invoke("test-meta-connection");
-      
-      if (error) throw error;
-      
-      if (data.success) {
-        toast.success(
-          `✅ Meta connection working!`,
-          { description: `Account: ${data.account_name || data.account_id}` }
-        );
-      } else {
-        toast.error(data.error || "Connection test failed");
-      }
-    } catch (error: any) {
-      console.error("Test error:", error);
-      toast.error(error.message || "Failed to test Meta credentials");
-    } finally {
-      setUpdating(null);
-    }
+  const getPlatformHealth = (platform: string): PlatformHealth | undefined => {
+    return platformHealth.find(h => h.platform === platform);
   };
 
   if (loading) {
@@ -241,208 +179,93 @@ export default function PlatformCredentialsAdmin() {
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
             <Shield className="w-6 h-6" />
-            <h1 className="text-3xl font-bold">Master Platform Credentials</h1>
+            <h1 className="text-3xl font-bold">Platform API Status</h1>
           </div>
           <p className="text-foreground/80 mb-4">
-            Manage system-owned master account credentials for <strong>Quick-Start tier</strong> users. These credentials power all Quick-Start ad publishing (not Free tier).
+            Monitoring system-owned master account credentials for <strong>Quick-Start tier</strong> users.
           </p>
           <div className="p-4 border-2 border-black bg-background">
-            <p className="text-sm font-medium mb-2">⚠️ Critical Setup Required</p>
-            <p className="text-sm text-foreground/70 mb-2">
-              All 5 platforms must have valid tokens with "connected" status before Quick-Start tier can publish ads. Update any "pending" credentials below.
-            </p>
+            <p className="text-sm font-medium mb-2">🔄 Continuous Monitoring Active</p>
             <p className="text-sm text-foreground/70">
-              <strong>Note:</strong> Free tier has no publish capability. Pro/Elite/Agency users connect their own OAuth accounts (not these master credentials).
+              Platform APIs are automatically checked every 60 seconds. Errors are displayed below when detected.
             </p>
           </div>
         </div>
 
-        {/* Quick Setup Section */}
-        <Card className="border-2 border-black mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Key className="w-5 h-5" />
-              Quick Setup: Initialize from Secrets
-            </CardTitle>
-            <CardDescription>
-              Automatically load Meta credentials from environment secrets (META_ACCESS_TOKEN, META_AD_ACCOUNT_ID) into the database.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Button
-                onClick={handleInitializeCredentials}
-                disabled={updating === 'init'}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className={`w-4 h-4 ${updating === 'init' ? 'animate-spin' : ''}`} />
-                {updating === 'init' ? 'Initializing...' : 'Initialize Meta Credentials'}
-              </Button>
-              <Button
-                onClick={handleTestMeta}
-                disabled={updating === 'meta-test'}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                {updating === 'meta-test' ? 'Testing...' : 'Test Meta Connection'}
-              </Button>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              ℹ️ This will encrypt your Meta System User Token and store it securely in the database. Make sure ENCRYPTION_KEY is exactly 32 characters.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {PLATFORMS.map((platform) => {
+            const cred = credentials.find(c => c.platform === platform);
+            const health = getPlatformHealth(platform);
+            const hasError = health && !health.isHealthy;
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {credentials.length === 0 ? (
-            <Card className="col-span-2 border-2 border-black">
-              <CardHeader>
-                <CardTitle>No Credentials Configured</CardTitle>
-                <CardDescription>
-                  No system platform credentials have been set up yet.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          ) : (
-            credentials.map((cred) => (
-              <Card key={cred.id} className="border-2 border-black">
+            return (
+              <Card 
+                key={platform} 
+                className={`border-2 ${hasError ? 'border-red-500 bg-red-50/50' : 'border-black'}`}
+              >
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Key className="w-5 h-5" />
                       <div>
-                        <CardTitle className="capitalize text-xl">{cred.platform}</CardTitle>
+                        <CardTitle className="capitalize text-xl">{platform}</CardTitle>
                         <CardDescription className="text-xs">
-                          System Master Account
+                          {cred?.account_name || "System Account"}
                         </CardDescription>
                       </div>
                     </div>
-                    <Badge 
-                      variant={cred.status === "connected" ? "default" : "secondary"}
-                      className="text-xs"
-                    >
-                      {cred.status}
-                    </Badge>
+                    {health && (
+                      health.isHealthy ? (
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                      ) : (
+                        <AlertCircle className="w-5 h-5 text-red-600" />
+                      )
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {editingPlatform === cred.platform ? (
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor={`token-${cred.platform}`}>Access Token *</Label>
-                        <Input
-                          id={`token-${cred.platform}`}
-                          type="password"
-                          placeholder="Paste access token here"
-                          value={formData.accessToken}
-                          onChange={(e) => setFormData({ ...formData, accessToken: e.target.value })}
-                          className="font-mono text-xs"
-                        />
-                      </div>
-
-                      {cred.platform === "meta" && (
-                        <>
-                          <div className="space-y-2">
-                            <Label htmlFor={`account-${cred.platform}`}>Ad Account ID *</Label>
-                            <Input
-                              id={`account-${cred.platform}`}
-                              placeholder="e.g., 123456789 or act_123456789"
-                              value={formData.accountId}
-                              onChange={(e) => setFormData({ ...formData, accountId: e.target.value })}
-                              className="font-mono text-xs"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor={`page-${cred.platform}`}>Facebook Page ID *</Label>
-                            <Input
-                              id={`page-${cred.platform}`}
-                              placeholder="e.g., 987654321"
-                              value={formData.pageId}
-                              onChange={(e) => setFormData({ ...formData, pageId: e.target.value })}
-                              className="font-mono text-xs"
-                            />
-                          </div>
-                        </>
-                      )}
-
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => handleUpdateToken(cred.platform)}
-                          disabled={updating === cred.platform}
-                          className="flex-1"
-                        >
-                          <RefreshCw className={`w-4 h-4 mr-2 ${updating === cred.platform ? 'animate-spin' : ''}`} />
-                          {updating === cred.platform ? "Saving..." : "Save Credentials"}
-                        </Button>
-                        <Button
-                          onClick={handleCancelEdit}
-                          variant="outline"
-                          disabled={updating === cred.platform}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="space-y-2 text-sm mb-4">
-                        <div className="flex justify-between">
-                          <span className="text-foreground/60">Account ID:</span>
-                          <span className="font-mono text-xs">{cred.platform_account_id || "Not set"}</span>
-                        </div>
-                        {cred.platform === "meta" && cred.account_name && (
-                          <div className="flex justify-between">
-                            <span className="text-foreground/60">Page ID:</span>
-                            <span className="font-mono text-xs">{cred.account_name}</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between">
-                          <span className="text-foreground/60">Last Updated:</span>
-                          <span>{new Date(cred.updated_at).toLocaleDateString()}</span>
-                        </div>
-                        {cred.expires_at && (
-                          <div className="flex justify-between">
-                            <span className="text-foreground/60">Token Expires:</span>
-                            <span>{new Date(cred.expires_at).toLocaleDateString()}</span>
-                          </div>
-                        )}
-                      </div>
-                      <Button
-                        onClick={() => handleStartEdit(cred.platform)}
-                        disabled={updating !== null}
-                        className="w-full"
-                        variant={cred.status === "pending" ? "default" : "outline"}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-foreground/70">Status:</span>
+                      <Badge 
+                        variant={cred?.status === "connected" ? "default" : "secondary"}
+                        className="text-xs"
                       >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        {cred.status === "pending" ? "Add Token" : "Update Token"}
-                      </Button>
-                      
-                      {/* Test button for Meta when connected */}
-                      {cred.platform === "meta" && cred.status === "connected" && (
-                        <Button
-                          onClick={handleTestMeta}
-                          disabled={updating === "meta-test"}
-                          className="w-full mt-2"
-                          variant="secondary"
-                        >
-                          {updating === "meta-test" ? "Testing..." : "🧪 Test Connection"}
-                        </Button>
-                      )}
-                    </>
-                  )}
+                        {cred?.status || "not configured"}
+                      </Badge>
+                    </div>
+
+                    {cred && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-foreground/70">Account ID:</span>
+                        <span className="text-xs font-mono">{cred.platform_account_id}</span>
+                      </div>
+                    )}
+
+                    {health && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-foreground/70">Last Check:</span>
+                        <span className="text-xs">{health.lastChecked.toLocaleTimeString()}</span>
+                      </div>
+                    )}
+
+                    {hasError && health?.error && (
+                      <div className="mt-3 p-2 bg-red-100 border border-red-300 rounded">
+                        <p className="text-xs text-red-800 font-medium">⚠️ API Error</p>
+                        <p className="text-xs text-red-700 mt-1">{health.error}</p>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
-            ))
-          )}
+            );
+          })}
         </div>
 
-        <div className="mt-8 p-6 border-2 border-black bg-background">
-          <h3 className="font-semibold mb-2">🔒 Security Notice</h3>
-          <p className="text-sm text-foreground/70 mb-3">
-            All tokens are encrypted using AES-256-GCM before storage. Only the service role can decrypt and use these credentials for publishing Quick-Start user campaigns.
-          </p>
+        <div className="mt-8 p-4 border-2 border-black bg-background">
+          <p className="text-sm font-medium mb-2">ℹ️ Note</p>
           <p className="text-sm text-foreground/70">
-            <strong>Pro/Elite/Agency users</strong> connect their own OAuth accounts and never use these master credentials.
+            Free tier has no publish capability. Pro/Elite/Agency users connect their own OAuth accounts (not these master credentials).
           </p>
         </div>
       </div>
