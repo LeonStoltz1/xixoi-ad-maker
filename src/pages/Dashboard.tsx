@@ -240,7 +240,7 @@ export default function Dashboard() {
       <AISupportChat />
       <Header />
 
-      <main className="container mx-auto px-6 py-12 mt-32">
+      <main className="container mx-auto px-6 pt-24 pb-12">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between flex-wrap gap-4">

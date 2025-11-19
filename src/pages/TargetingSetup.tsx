@@ -605,7 +605,7 @@ export default function TargetingSetup() {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="py-12 px-4">
+      <div className="pt-24 pb-12 px-4">
         <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">

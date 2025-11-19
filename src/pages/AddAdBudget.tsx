@@ -217,7 +217,7 @@ export default function AddAdBudget() {
         currentSpend={capError?.currentSpend || 0}
         requestedAmount={capError?.requested || 0}
       />
-      <div className="min-h-screen bg-background p-4 md:p-6 pt-40">
+      <div className="min-h-screen bg-background p-4 md:p-6 pt-24">
         <Header />
       <div className="max-w-2xl mx-auto">
         <Button

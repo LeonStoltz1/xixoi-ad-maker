@@ -514,7 +514,7 @@ export default function CreateCampaign() {
       <Header />
 
       {/* No Ad Accounts Banner */}
-      <div className="container mx-auto px-6 pt-40 pb-6">
+      <div className="container mx-auto px-6 pt-24 pb-6">
         <div className="max-w-2xl mx-auto">
           <NoAdAccountsBanner />
         </div>

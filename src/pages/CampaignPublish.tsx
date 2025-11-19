@@ -28,7 +28,7 @@ export default function CampaignPublish() {
   ];
 
   return (
-    <div className="container mx-auto p-6 pt-40">
+    <div className="container mx-auto p-6 pt-24">
       <Header />
       <h1 className="text-3xl md:text-4xl font-bold mb-2">Publish Campaign</h1>
       <p className="text-muted-foreground mb-8">
