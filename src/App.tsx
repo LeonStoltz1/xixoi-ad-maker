@@ -28,6 +28,7 @@ import AffiliateLeaderboard from "./pages/AffiliateLeaderboard";
 import PayoutDashboard from "./pages/PayoutDashboard";
 import PayoutSettings from "./pages/PayoutSettings";
 import CampaignPublish from "./pages/CampaignPublish";
+import ReviewAd from "./pages/ReviewAd";
 import NotFound from "./pages/NotFound";
 import { RealtorIdentification } from "./components/onboarding/RealtorIdentification";
 import { RealtorProvider } from "./contexts/RealtorContext";
@@ -101,6 +102,7 @@ const App = () => (
           <Route path="/payouts" element={<PayoutDashboard />} />
           <Route path="/payout-settings" element={<PayoutSettings />} />
           <Route path="/campaign-publish" element={<CampaignPublish />} />
+          <Route path="/review-ad/:campaignId" element={<ReviewAd />} />
           <Route path="/admin/platform-credentials" element={<PlatformCredentialsAdmin />} />
           <Route path="/admin/test-meta" element={<TestMetaPublish />} />
           <Route path="/admin/seed-data" element={<SeedTestData />} />

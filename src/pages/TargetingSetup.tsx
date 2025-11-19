@@ -778,10 +778,10 @@ export default function TargetingSetup() {
             </Button>
             <Button
               className="flex-1"
-              onClick={handlePublish}
-              disabled={loading || moderating || selectedPlatforms.length === 0}
+              onClick={() => navigate(`/review-ad/${campaignId}`)}
+              disabled={selectedPlatforms.length === 0}
             >
-              {moderating ? 'Checking Content...' : loading ? 'Publishing...' : 'Publish Now'}
+              Continue to Review
             </Button>
           </div>
           {selectedPlatforms.length === 0 && (
