@@ -510,7 +510,7 @@ export default function TargetingSetup() {
 
         {/* Edit Campaign Dialog - Always rendered */}
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
             <DialogHeader>
               <DialogTitle>Edit Campaign</DialogTitle>
               <DialogDescription className="font-medium">
@@ -518,7 +518,7 @@ export default function TargetingSetup() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4 py-4">
+            <div className="space-y-4 py-4 overflow-y-auto flex-1">
               <div className="space-y-2">
                 <Label htmlFor="edit-name">Campaign Name</Label>
                 <Input
