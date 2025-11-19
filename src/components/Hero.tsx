@@ -2,10 +2,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 
 export const Hero = () => {
-  const scrollToUpload = () => {
-    const element = document.getElementById('upload-section');
+  const scrollToHowItWorks = () => {
+    const element = document.getElementById('how-it-works');
     if (element) {
-      const headerOffset = 128; // Account for fixed header height
+      const headerOffset = 128;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
       
@@ -36,16 +36,16 @@ export const Hero = () => {
           <Button size="lg" className="text-base px-8 py-3 w-full sm:w-auto" onClick={() => window.location.href = '/auth?mode=signup'}>
             Start Free
           </Button>
-          <Button variant="outline" size="lg" className="text-base px-8 py-3 w-full sm:w-auto border-foreground" onClick={scrollToUpload}>
+          <Button variant="outline" size="lg" className="text-base px-8 py-3 w-full sm:w-auto border-foreground" onClick={scrollToHowItWorks}>
             How It Works
           </Button>
         </div>
 
         <div className="flex justify-center pt-arrow mt-arrow mb-[50px]">
           <button 
-            onClick={scrollToUpload}
+            onClick={scrollToHowItWorks}
             className="animate-bounce"
-            aria-label="Scroll to upload section"
+            aria-label="Scroll to how it works section"
           >
             <ArrowDown className="w-12 h-12 md:w-16 md:h-16 stroke-[1]" />
           </button>
