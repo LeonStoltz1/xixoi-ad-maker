@@ -171,7 +171,7 @@ const AdPublished = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-6 py-12 relative pt-40">
+    <div className="min-h-screen flex items-center justify-center bg-background px-6 pt-24 pb-12 relative">
       <Header />
       <div className="max-w-2xl mx-auto text-center space-y-12">
         {/* Back Button */}
