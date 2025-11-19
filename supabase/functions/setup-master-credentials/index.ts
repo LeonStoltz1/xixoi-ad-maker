@@ -24,18 +24,24 @@ Deno.serve(async (req) => {
     }
 
     console.log('Storing Meta credentials in database...');
+    
+    // Delete any existing system Meta credentials first
+    await supabase
+      .from('platform_credentials')
+      .delete()
+      .eq('platform', 'meta')
+      .eq('owner_type', 'system');
+    
+    // Insert new credentials
     const { data, error } = await supabase
       .from('platform_credentials')
-      .upsert({
+      .insert({
         platform: 'meta',
         platform_account_id: metaAdAccountId,
         access_token: metaAccessToken,
         owner_type: 'system',
         status: 'connected',
         account_name: 'xiXoi Master Account'
-      }, {
-        onConflict: 'platform,owner_type,owner_id',
-        ignoreDuplicates: false
       })
       .select()
       .single();

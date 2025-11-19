@@ -96,10 +96,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.setup-master-credentials]
-verify_jwt = true
+verify_jwt = false
 
 [functions.test-meta-connection]
-verify_jwt = true
+verify_jwt = false
 
 [functions.publish-x]
 verify_jwt = false
