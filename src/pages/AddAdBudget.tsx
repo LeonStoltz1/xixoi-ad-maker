@@ -12,6 +12,7 @@ import { generateSpendPlan, getPlatformRequirements, getMinimumDailySpend, getMi
 import type { User } from '@supabase/supabase-js';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Header } from '@/components/Header';
+import { QuickStartCapModal } from '@/components/QuickStartCapModal';
 
 export default function AddAdBudget() {
   const navigate = useNavigate();
@@ -23,6 +24,8 @@ export default function AddAdBudget() {
   const [reloadId, setReloadId] = useState('');
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [showCapModal, setShowCapModal] = useState(false);
+  const [capError, setCapError] = useState<{ currentSpend: number; requested: number } | null>(null);
 
   // Check authentication
   useEffect(() => {
@@ -127,11 +130,33 @@ export default function AddAdBudget() {
 
       if (error) throw error;
 
+      // Check for weekly cap error
+      if (data?.error === 'WEEKLY_CAP_EXCEEDED') {
+        setCapError({
+          currentSpend: data.current_spend || 0,
+          requested: data.requested || parseFloat(amount)
+        });
+        setShowCapModal(true);
+        setLoading(false);
+        return;
+      }
+
       setClientSecret(data.clientSecret);
       setReloadId(data.reloadId);
     } catch (error: any) {
       console.error('Error creating payment:', error);
-      toast.error(error.message || 'Failed to create payment');
+      
+      // Check if it's a weekly cap error
+      if (error.message?.includes('WEEKLY_CAP_EXCEEDED') || error.context?.error === 'WEEKLY_CAP_EXCEEDED') {
+        const context = error.context || {};
+        setCapError({
+          currentSpend: context.current_spend || 0,
+          requested: context.requested || parseFloat(amount)
+        });
+        setShowCapModal(true);
+      } else {
+        toast.error(error.message || 'Failed to create payment');
+      }
       setLoading(false);
     }
   };
@@ -184,8 +209,15 @@ export default function AddAdBudget() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6 pt-40">
-      <Header />
+    <>
+      <QuickStartCapModal
+        isOpen={showCapModal}
+        onClose={() => setShowCapModal(false)}
+        currentSpend={capError?.currentSpend || 0}
+        requestedAmount={capError?.requested || 0}
+      />
+      <div className="min-h-screen bg-background p-4 md:p-6 pt-40">
+        <Header />
       <div className="max-w-2xl mx-auto">
         <Button
           variant="ghost"
@@ -398,5 +430,6 @@ export default function AddAdBudget() {
         </Card>
       </div>
     </div>
+    </>
   );
 }
