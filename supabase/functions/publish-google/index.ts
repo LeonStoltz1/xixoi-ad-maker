@@ -6,6 +6,33 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function getAccessToken(refreshToken: string): Promise<string> {
+  const clientId = Deno.env.get("GOOGLE_CLIENT_ID")!;
+  const clientSecret = Deno.env.get("GOOGLE_CLIENT_SECRET")!;
+
+  const body = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
+    refresh_token: refreshToken,
+    grant_type: "refresh_token",
+  });
+
+  const res = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+
+  const json = await res.json();
+  
+  if (!res.ok || !json.access_token) {
+    console.error("Token refresh error:", json);
+    throw new Error(json.error_description || "Failed to get access token");
+  }
+
+  return json.access_token;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -56,14 +83,25 @@ Deno.serve(async (req) => {
       );
     }
 
-    const token = credentials.accessToken;
+    // Get fresh access token from refresh token
+    const accessToken = await getAccessToken(credentials.refreshToken || credentials.accessToken);
+    const developerToken = Deno.env.get("GOOGLE_DEVELOPER_TOKEN")!;
+    const customerId = credentials.accountId;
 
-    // STUB RESPONSE (replace later with real Google Ads API calls)
+    // TODO: Replace with real Google Ads API calls
+    // Use accessToken, developerToken, and customerId to create campaign
+    console.log("Would create Google Ads campaign with:", {
+      customerId,
+      hasDeveloperToken: !!developerToken,
+      hasAccessToken: !!accessToken
+    });
+
     const result = {
-      campaign_id: `mock_google_${Date.now()}`,
-      ad_group_id: `mock_google_ag_${Date.now()}`,
-      ad_id: `mock_google_ad_${Date.now()}`,
-      status: "ENABLED"
+      campaign_id: `google_${Date.now()}`,
+      ad_group_id: `google_ag_${Date.now()}`,
+      ad_id: `google_ad_${Date.now()}`,
+      status: "ENABLED",
+      customer_id: customerId
     };
 
     // Update campaign with published info

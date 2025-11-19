@@ -124,6 +124,10 @@ export default function PlatformCredentialsAdmin() {
           const { data, error: testError } = await supabase.functions.invoke("test-meta-connection");
           isHealthy = !testError && data?.success === true;
           error = testError?.message || data?.error;
+        } else if (platform === "google") {
+          const { data, error: testError } = await supabase.functions.invoke("test-google-connection");
+          isHealthy = !testError && data?.success === true;
+          error = testError?.message || data?.error;
         } else {
           // For other platforms, just verify credentials exist
           isHealthy = true;
