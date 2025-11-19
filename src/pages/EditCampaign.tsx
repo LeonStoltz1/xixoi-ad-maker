@@ -5,11 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Header } from "@/components/Header";
-import { BackButton } from "@/components/BackButton";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { invokeWithRetry } from "@/lib/retryWithBackoff";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 export default function EditCampaign() {
   const { campaignId } = useParams();
@@ -69,7 +68,6 @@ export default function EditCampaign() {
 
     setSaving(true);
     try {
-      // Update campaign asset temporarily
       const { error: tempUpdateError } = await supabase
         .from('campaign_assets')
         .update({ asset_text: campaignDescription.trim() })
@@ -77,7 +75,6 @@ export default function EditCampaign() {
 
       if (tempUpdateError) throw tempUpdateError;
 
-      // Validate content against all platforms
       const { data: moderation, error: moderationError } = await invokeWithRetry(
         supabase,
         'moderate-ad-content',
@@ -101,7 +98,6 @@ export default function EditCampaign() {
         return;
       }
 
-      // Check for violations
       if (!moderation.approved) {
         const violationMessages = moderation.violations
           .map((v: any) => `${v.platform}: ${v.issue}`)
@@ -109,35 +105,31 @@ export default function EditCampaign() {
         
         toast.error(
           <div className="space-y-2">
-            <p className="font-semibold">Campaign description violates advertising policies:</p>
+            <p className="font-bold">Content still has policy violations:</p>
             <pre className="text-xs whitespace-pre-wrap">{violationMessages}</pre>
-            <p className="text-sm">Please remove discriminatory or prohibited content.</p>
           </div>,
-          { duration: 10000 }
+          { duration: 8000 }
         );
         return;
       }
 
-      // Update campaign name and destination links
-      const { error: campaignError } = await supabase
+      const { error: campaignUpdateError } = await supabase
         .from('campaigns')
-        .update({ 
+        .update({
           name: campaignName.trim(),
           contact_phone: contactPhone.trim() || null,
           contact_email: contactEmail.trim() || null,
-          landing_url: landingUrl.trim() || null
+          landing_url: landingUrl.trim() || null,
         })
         .eq('id', campaignId);
 
-      if (campaignError) throw campaignError;
+      if (campaignUpdateError) throw campaignUpdateError;
 
-      // Regenerate targeting
-      toast.success('Campaign updated! Regenerating targeting...');
-      
+      toast.success('Campaign updated successfully!');
       navigate(`/targeting/${campaignId}`);
-    } catch (error) {
-      console.error('Error saving campaign:', error);
-      toast.error('Failed to save campaign');
+    } catch (error: any) {
+      console.error('Error updating campaign:', error);
+      toast.error(error.message || 'Failed to update campaign');
     } finally {
       setSaving(false);
     }
@@ -145,142 +137,128 @@ export default function EditCampaign() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+      <AppLayout>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <div className="pt-24 pb-12 px-4">
-        <div className="max-w-2xl mx-auto">
-          <BackButton className="mb-8" />
+    <AppLayout
+      title="Edit Campaign"
+      subtitle="Update your campaign description to fix content policy issues. Make sure to remove any discriminatory language, illegal content, or misleading claims."
+      showBack
+      backTo="/dashboard"
+      backLabel="Dashboard"
+    >
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="name">Campaign Name *</Label>
+          <Input
+            id="name"
+            value={campaignName}
+            onChange={(e) => setCampaignName(e.target.value)}
+            placeholder="e.g., Summer Sale 2024"
+          />
+        </div>
 
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-4">Edit Campaign</h1>
-              <p className="text-muted-foreground">
-                Update your campaign description to fix content policy issues. Make sure to remove any discriminatory language, illegal content, or misleading claims.
-              </p>
+        <div className="space-y-2">
+          <Label htmlFor="description">Campaign Description *</Label>
+          <Textarea
+            id="description"
+            value={campaignDescription}
+            onChange={(e) => setCampaignDescription(e.target.value)}
+            placeholder="Describe your product or service..."
+            rows={6}
+            className="resize-none"
+          />
+          <p className="text-sm text-muted-foreground">
+            This description will be used to generate ad copy. Be specific about what you're promoting.
+          </p>
+        </div>
+
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-semibold mb-4">Call-to-Action Destinations</h3>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                placeholder="e.g., +1 (555) 123-4567"
+              />
+              <p className="text-xs text-muted-foreground">For "Call Now" buttons</p>
             </div>
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="campaign-name">Campaign Name</Label>
-                <Input
-                  id="campaign-name"
-                  value={campaignName}
-                  onChange={(e) => setCampaignName(e.target.value)}
-                  placeholder="Enter campaign name"
-                  className="text-base"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="campaign-description">Campaign Description</Label>
-                <Textarea
-                  id="campaign-description"
-                  value={campaignDescription}
-                  onChange={(e) => setCampaignDescription(e.target.value)}
-                  placeholder="Describe your product or service"
-                  rows={8}
-                  className="resize-none text-base"
-                />
-              </div>
-
-              <div className="space-y-4 pt-4 border-t border-border">
-                <h3 className="text-sm font-semibold text-foreground">Call-to-Action Destinations</h3>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="contact-phone">Phone Number (optional)</Label>
-                  <Input
-                    id="contact-phone"
-                    type="tel"
-                    value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
-                    placeholder="+1 (555) 123-4567"
-                    className="text-base"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="contact-email">Email Address (optional)</Label>
-                  <Input
-                    id="contact-email"
-                    type="email"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder="contact@example.com"
-                    className="text-base"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="landing-url">Website/Landing Page (optional)</Label>
-                  <Input
-                    id="landing-url"
-                    type="url"
-                    value={landingUrl}
-                    onChange={(e) => setLandingUrl(e.target.value)}
-                    placeholder="https://example.com"
-                    className="text-base"
-                  />
-                </div>
-              </div>
-
-              <div className="bg-muted/50 p-4 border border-foreground/10 space-y-4">
-                <div>
-                  <p className="text-sm font-semibold text-foreground mb-2">✅ Good description includes:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Clear product/service details</li>
-                    <li>Key features and benefits</li>
-                    <li>Pricing information</li>
-                    <li>Target audience (without discrimination)</li>
-                    <li>Contact information or call-to-action</li>
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-destructive mb-2">❌ Avoid:</p>
-                  <ul className="text-sm text-destructive space-y-1 list-disc list-inside">
-                    <li>Discriminatory language (race, gender, religion, etc.)</li>
-                    <li>Illegal products or services</li>
-                    <li>Misleading or deceptive claims</li>
-                    <li>Prohibited content</li>
-                  </ul>
-                </div>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                placeholder="e.g., hello@example.com"
+              />
+              <p className="text-xs text-muted-foreground">For "Contact" buttons</p>
             </div>
 
-            <div className="flex gap-4 pt-4">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => navigate(`/targeting/${campaignId}`)}
-                disabled={saving}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1"
-                onClick={handleSave}
-                disabled={saving || !campaignName.trim() || !campaignDescription.trim()}
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Saving & Regenerating...
-                  </>
-                ) : (
-                  'Save & Regenerate Targeting'
-                )}
-              </Button>
+            <div className="space-y-2">
+              <Label htmlFor="url">Website URL</Label>
+              <Input
+                id="url"
+                type="url"
+                value={landingUrl}
+                onChange={(e) => setLandingUrl(e.target.value)}
+                placeholder="e.g., https://example.com"
+              />
+              <p className="text-xs text-muted-foreground">For "Learn More" or "Shop Now" buttons</p>
             </div>
           </div>
         </div>
+
+        <div className="bg-muted/50 p-4 space-y-3">
+          <h4 className="font-semibold text-sm">✅ Good Description Examples:</h4>
+          <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+            <li>"Sustainable yoga mats made from recycled materials. Free shipping on orders over $50."</li>
+            <li>"Professional house cleaning services. Book online in 60 seconds. Satisfaction guaranteed."</li>
+          </ul>
+          <h4 className="font-semibold text-sm mt-3">❌ Avoid These Issues:</h4>
+          <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+            <li>Discriminatory language (age, gender, religion, etc.)</li>
+            <li>Unsubstantiated health claims</li>
+            <li>Misleading promises ("guaranteed" weight loss, etc.)</li>
+          </ul>
+        </div>
+
+        <div className="flex gap-3 pt-4">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/dashboard')}
+            disabled={saving}
+            className="flex-1"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={saving || !campaignName.trim() || !campaignDescription.trim()}
+            className="flex-1"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save & Regenerate Targeting'
+            )}
+          </Button>
+        </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
