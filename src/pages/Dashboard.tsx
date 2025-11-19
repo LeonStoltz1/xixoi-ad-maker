@@ -242,14 +242,14 @@ export default function Dashboard() {
         <GlobalSpendSummary />
 
         {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-4 mt-8">
+        <div className="flex items-end justify-between flex-wrap gap-6 mt-8 mb-8">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold">Your Campaigns</h2>
             <p className="text-muted-foreground mt-1">
               Money-first view of your ad performance
             </p>
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap justify-end ml-auto">
               {campaigns.length > 0 && (
                 <div className="relative w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
