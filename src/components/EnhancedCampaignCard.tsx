@@ -102,8 +102,10 @@ export function EnhancedCampaignCard({
   const [selectedVariant, setSelectedVariant] = useState<AdVariant | null>(null);
   const [showAdModal, setShowAdModal] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [showDeleteCampaignAlert, setShowDeleteCampaignAlert] = useState(false);
   const [adToDelete, setAdToDelete] = useState<AdVariant | null>(null);
   const [deletingAdId, setDeletingAdId] = useState<string | null>(null);
+  const [deletingCampaign, setDeletingCampaign] = useState(false);
   const [editingAd, setEditingAd] = useState(false);
   const [editedHeadline, setEditedHeadline] = useState('');
   const [editedBody, setEditedBody] = useState('');
@@ -357,6 +359,35 @@ export function EnhancedCampaignCard({
     }
   };
 
+  const handleDeleteCampaign = async () => {
+    setDeletingCampaign(true);
+    try {
+      const { error } = await supabase
+        .from('campaigns')
+        .delete()
+        .eq('id', campaign.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Campaign deleted',
+        description: `${campaign.name} has been permanently deleted`,
+      });
+
+      setShowDeleteCampaignAlert(false);
+      onUpdate();
+    } catch (error) {
+      console.error('Error deleting campaign:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete campaign',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingCampaign(false);
+    }
+  };
+
   return (
     <Card className="relative overflow-hidden">
       <CardHeader className="pb-4">
@@ -402,6 +433,14 @@ export function EnhancedCampaignCard({
                 <DropdownMenuItem className="text-foreground font-medium">
                   <StopCircle className="w-4 h-4 mr-2" />
                   Stop Campaign
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => setShowDeleteCampaignAlert(true)}
+                  className="text-destructive focus:text-destructive font-medium"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Campaign
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -729,6 +768,28 @@ export function EnhancedCampaignCard({
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Campaign Confirmation Alert */}
+      <AlertDialog open={showDeleteCampaignAlert} onOpenChange={setShowDeleteCampaignAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Campaign?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete "{campaign.name}" and all its ad variants, performance data, and settings. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingCampaign}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCampaign}
+              disabled={deletingCampaign}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingCampaign ? 'Deleting...' : 'Delete Campaign'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
