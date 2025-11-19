@@ -42,6 +42,10 @@ const faqs = [
     question: "Can I edit the AI-generated ads before publishing?",
     answer: "Yes! You can review and customize all AI-generated content before publishing. xiXoi™ gives you full control over the final ad copy, images, and targeting.",
   },
+  {
+    question: "Can I run political or advocacy ads on xiXoi?",
+    answer: "Free and Quick-Start plans automatically block political and advocacy content to keep that tier brand-safe. Publish Pro and Elite/Agency plans allow political ads when you connect and publish through your own compliant ad accounts on Meta, TikTok, Google, LinkedIn, and X. You are fully responsible for following each platform's rules and all applicable laws.",
+  },
 ];
 
 export const FAQ = () => {

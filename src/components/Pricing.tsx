@@ -1,6 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
-import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { useNavigate } from "react-router-dom";
 
 const plans = [
@@ -8,11 +6,11 @@ const plans = [
     name: "FREE",
     price: "$0",
     features: [
-      "Build up to 1 ad/day",
-      '"Powered By xiXoi™" watermark',
-      "Basic AI generation",
-      "Auto-targeting suggestions",
-      "Publish to Meta/TikTok/Google/\nLinkedIn/X",
+      "Build and preview ads",
+      '"Powered by xiXoi™" watermark on all creatives',
+      "Basic AI ad generation (up to 4 variants)",
+      "Simple auto-targeting suggestions",
+      "✗ Cannot publish — upgrade to publish",
     ],
     cta: "Start Free",
   },
@@ -21,11 +19,11 @@ const plans = [
     price: "$49",
     subtitle: "/mo",
     features: [
-      "We manage ad accounts (zero setup)",
-      "Up to $300/week ad spend",
+      "We manage ad accounts — zero setup required",
+      "Up to $300/week ad spend (hard cap)",
       "5% service fee on top-ups",
       "4 AI variants per campaign",
-      "Political ads blocked",
+      "Political & advocacy ads blocked (brand-safe tier)",
       "Upgrade anytime to Pro",
     ],
     cta: "Start Quick-Start",
@@ -38,12 +36,11 @@ const plans = [
     altPrice: "or $99/mo unlimited",
     features: [
       "Remove watermark",
-      "Publish instantly",
-      "4 AI variants",
-      "ROAS predictions",
-      "Advanced targeting",
-      "Multi-channel publishing",
-      "Priority generation speed",
+      "Publish instantly to your own ad accounts",
+      "4 AI variants per campaign",
+      "Political & advocacy ads allowed*",
+      "Multi-channel publishing (Meta/TikTok/Google/\nLinkedIn/X)",
+      "No weekly spend cap",
     ],
     cta: "Go Pro",
     popular: true,
@@ -54,12 +51,11 @@ const plans = [
     subtitle: "/mo + 5% ad spend",
     features: [
       "Everything in Publish Pro",
-      "Autonomous AI optimizer",
-      "Auto-pause bad ads",
-      "Auto-scale winning ads",
-      "Predictive bidding",
-      "Custom avatars/UGC styles",
-      "Affiliate dashboard (earn 20%)",
+      "Higher practical limits & priority human support",
+      "Team use and client billing workflows",
+      "Dedicated onboarding & account review",
+      "Early access to Autonomous AI optimizer (coming soon)",
+      "Auto-pause / auto-scale / predictive bidding (roadmap)",
     ],
     cta: "Become Elite",
   },
@@ -81,7 +77,6 @@ const plans = [
 ];
 
 export const Pricing = () => {
-  const { createCheckoutSession, loading } = useStripeCheckout();
   const navigate = useNavigate();
 
   const handlePlanClick = (planName: string) => {
@@ -141,9 +136,8 @@ export const Pricing = () => {
                     : 'border-foreground hover:bg-foreground hover:text-background'
                 }`}
                 onClick={() => handlePlanClick(plan.name)}
-                disabled={loading}
               >
-                {loading ? "Processing..." : `${plan.cta} →`}
+                {`${plan.cta} →`}
               </Button>
 
               <div className="space-y-3">
@@ -159,6 +153,10 @@ export const Pricing = () => {
             </div>
           ))}
         </div>
+
+        <p className="text-xs text-foreground/60 mt-8 text-center max-w-3xl mx-auto">
+          * Political & advocacy ads are allowed on Pro and above when you connect and publish through your own compliant ad accounts on Meta, TikTok, Google, LinkedIn, and X. You remain responsible for following each platform's political advertising policies and applicable laws. Free and Quick-Start tiers block political content entirely.
+        </p>
       </div>
     </section>
   );
