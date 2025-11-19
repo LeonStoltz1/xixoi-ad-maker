@@ -226,8 +226,8 @@ const AdPublished = () => {
               </span>
             </div>
 
-            {/* Watermark for free users only */}
-            {!hasPaid && (
+            {/* Watermark for free users only - check campaign's has_watermark flag */}
+            {userPlan === 'free' && campaign?.has_watermark && (
               <div className="text-right text-[14px] opacity-60">
                 Powered By xiXoi™
               </div>
@@ -241,7 +241,7 @@ const AdPublished = () => {
             Your ad is ready to publish
           </h1>
           <p className="text-muted-foreground text-lg">
-            {!hasPaid ? 'Free with xiXoi™ credit. Remove watermark for $29.' : 'Connect to your ad platforms to launch this campaign.'}
+            {userPlan === 'free' && campaign?.has_watermark ? 'Free with xiXoi™ credit. Remove watermark for $29.' : 'Connect to your ad platforms to launch this campaign.'}
           </p>
         </div>
 
@@ -265,7 +265,7 @@ const AdPublished = () => {
               )}
             </Button>
             
-            {!hasPaid && (
+            {userPlan === 'free' && campaign?.has_watermark && (
               <Button
                 size="lg"
                 className="text-base md:text-lg py-6 px-12"
