@@ -167,6 +167,32 @@ export default function PlatformCredentialsAdmin() {
     }
   };
 
+  const handleInitializeCredentials = async () => {
+    const ok = window.confirm(
+      "This will load Meta credentials from environment secrets into the database. Continue?"
+    );
+    if (!ok) return;
+
+    setUpdating("init");
+    try {
+      const { data, error } = await supabase.functions.invoke('setup-master-credentials');
+      
+      if (error) throw error;
+      
+      if (data.success) {
+        toast.success('Meta credentials initialized successfully');
+        await loadCredentials();
+      } else {
+        throw new Error(data.error || 'Setup failed');
+      }
+    } catch (err: any) {
+      console.error('Setup error:', err);
+      toast.error('Failed to initialize: ' + err.message);
+    } finally {
+      setUpdating(null);
+    }
+  };
+
   const handleTestMeta = async () => {
     const ok = window.confirm(
       "This will verify Meta credentials by calling the Graph API. Continue?"
@@ -230,6 +256,42 @@ export default function PlatformCredentialsAdmin() {
             </p>
           </div>
         </div>
+
+        {/* Quick Setup Section */}
+        <Card className="border-2 border-black mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Key className="w-5 h-5" />
+              Quick Setup: Initialize from Secrets
+            </CardTitle>
+            <CardDescription>
+              Automatically load Meta credentials from environment secrets (META_ACCESS_TOKEN, META_AD_ACCOUNT_ID) into the database.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Button
+                onClick={handleInitializeCredentials}
+                disabled={updating === 'init'}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${updating === 'init' ? 'animate-spin' : ''}`} />
+                {updating === 'init' ? 'Initializing...' : 'Initialize Meta Credentials'}
+              </Button>
+              <Button
+                onClick={handleTestMeta}
+                disabled={updating === 'meta-test'}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                {updating === 'meta-test' ? 'Testing...' : 'Test Meta Connection'}
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              ℹ️ This will encrypt your Meta System User Token and store it securely in the database. Make sure ENCRYPTION_KEY is exactly 32 characters.
+            </p>
+          </CardContent>
+        </Card>
 
         <div className="grid gap-6 md:grid-cols-2">
           {credentials.length === 0 ? (
