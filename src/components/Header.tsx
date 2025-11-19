@@ -82,17 +82,23 @@ export const Header = () => {
               {/* Realtor Mode Toggle - Only shown for realtors */}
               {realtorProfile?.isRealtor && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/20">
-                  <Label htmlFor="view-mode" className="text-xs text-white/70 cursor-pointer">
+                  <span 
+                    onClick={() => setViewMode('general')}
+                    className="text-xs text-white/70 cursor-pointer hover:text-white/90 transition-colors"
+                  >
                     General
-                  </Label>
+                  </span>
                   <Switch
                     id="view-mode"
                     checked={viewMode === 'realtor'}
                     onCheckedChange={(checked) => setViewMode(checked ? 'realtor' : 'general')}
                   />
-                  <Label htmlFor="view-mode" className="text-xs text-white/70 cursor-pointer">
+                  <span 
+                    onClick={() => setViewMode('realtor')}
+                    className="text-xs text-white/70 cursor-pointer hover:text-white/90 transition-colors"
+                  >
                     Realtor
-                  </Label>
+                  </span>
                 </div>
               )}
               
