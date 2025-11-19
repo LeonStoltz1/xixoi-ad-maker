@@ -157,6 +157,131 @@ export const Pricing = () => {
         <p className="text-xs text-foreground/60 mt-8 text-center max-w-3xl mx-auto">
           * Political & advocacy ads are allowed on Pro and above when you connect and publish through your own compliant ad accounts on Meta, TikTok, Google, LinkedIn, and X. You remain responsible for following each platform's political advertising policies and applicable laws. Free and Quick-Start tiers block political content entirely.
         </p>
+
+        {/* Comparison Table */}
+        <div className="mt-24">
+          <h3 className="text-2xl font-bold text-center mb-12">Compare Plans</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-foreground">
+              <thead>
+                <tr className="bg-foreground text-background">
+                  <th className="border border-foreground p-4 text-left font-bold text-sm">Feature</th>
+                  <th className="border border-foreground p-4 text-center font-bold text-sm">FREE</th>
+                  <th className="border border-foreground p-4 text-center font-bold text-sm">QUICK-START</th>
+                  <th className="border border-foreground p-4 text-center font-bold text-sm">PUBLISH PRO</th>
+                  <th className="border border-foreground p-4 text-center font-bold text-sm">SCALE ELITE</th>
+                  <th className="border border-foreground p-4 text-center font-bold text-sm">AGENCY</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-foreground p-4 text-sm">Build & preview ads</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                </tr>
+                <tr className="bg-background/50">
+                  <td className="border border-foreground p-4 text-sm">Publish ads</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                </tr>
+                <tr>
+                  <td className="border border-foreground p-4 text-sm">Remove watermark</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                </tr>
+                <tr className="bg-background/50">
+                  <td className="border border-foreground p-4 text-sm">AI variants per campaign</td>
+                  <td className="border border-foreground p-4 text-center text-sm">4</td>
+                  <td className="border border-foreground p-4 text-center text-sm">4</td>
+                  <td className="border border-foreground p-4 text-center text-sm">4</td>
+                  <td className="border border-foreground p-4 text-center text-sm">4</td>
+                  <td className="border border-foreground p-4 text-center text-sm">Unlimited</td>
+                </tr>
+                <tr>
+                  <td className="border border-foreground p-4 text-sm">Political & advocacy ads</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                </tr>
+                <tr className="bg-background/50">
+                  <td className="border border-foreground p-4 text-sm">Weekly spend cap</td>
+                  <td className="border border-foreground p-4 text-center text-sm">—</td>
+                  <td className="border border-foreground p-4 text-center text-sm">$300</td>
+                  <td className="border border-foreground p-4 text-center text-sm">None</td>
+                  <td className="border border-foreground p-4 text-center text-sm">None</td>
+                  <td className="border border-foreground p-4 text-center text-sm">None</td>
+                </tr>
+                <tr>
+                  <td className="border border-foreground p-4 text-sm">Service fee on ad spend</td>
+                  <td className="border border-foreground p-4 text-center text-sm">—</td>
+                  <td className="border border-foreground p-4 text-center text-sm">5%</td>
+                  <td className="border border-foreground p-4 text-center text-sm">0%</td>
+                  <td className="border border-foreground p-4 text-center text-sm">5%</td>
+                  <td className="border border-foreground p-4 text-center text-sm">5%</td>
+                </tr>
+                <tr className="bg-background/50">
+                  <td className="border border-foreground p-4 text-sm">Ad account setup</td>
+                  <td className="border border-foreground p-4 text-center text-sm">—</td>
+                  <td className="border border-foreground p-4 text-center text-sm">We manage</td>
+                  <td className="border border-foreground p-4 text-center text-sm">Your own</td>
+                  <td className="border border-foreground p-4 text-center text-sm">Your own</td>
+                  <td className="border border-foreground p-4 text-center text-sm">Your own</td>
+                </tr>
+                <tr>
+                  <td className="border border-foreground p-4 text-sm">Multi-channel publishing</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                </tr>
+                <tr className="bg-background/50">
+                  <td className="border border-foreground p-4 text-sm">Priority support</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                </tr>
+                <tr>
+                  <td className="border border-foreground p-4 text-sm">Team seats</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                </tr>
+                <tr className="bg-background/50">
+                  <td className="border border-foreground p-4 text-sm">White-label platform</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                </tr>
+                <tr>
+                  <td className="border border-foreground p-4 text-sm">API access</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✗</td>
+                  <td className="border border-foreground p-4 text-center">✓</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </section>
   );
