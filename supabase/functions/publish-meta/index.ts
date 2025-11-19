@@ -110,6 +110,7 @@ Deno.serve(async (req) => {
       objective: "OUTCOME_ENGAGEMENT", // Can be customized based on campaign.primary_goal
       status: "PAUSED", // Start paused for safety
       special_ad_categories: "[]",
+      is_adset_budget_sharing_enabled: "false", // Required when using ad set-level budgets
       access_token: token
     });
 
