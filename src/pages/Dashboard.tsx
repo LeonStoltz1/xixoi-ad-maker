@@ -241,15 +241,38 @@ export default function Dashboard() {
       <AppLayout title="Dashboard">
         <GlobalSpendSummary />
 
-        {/* Header */}
-        <div className="flex items-end justify-between flex-wrap gap-6 mt-8 mb-8">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold">Your Campaigns</h2>
-            <p className="text-muted-foreground mt-1">
-              Money-first view of your ad performance
-            </p>
+        {/* Quick-Start Budget Widget */}
+        <QuickStartBudgetWidget />
+
+        {/* POLITICAL MODE HIDDEN - Re-enable later for launch */}
+        {/* {politicalProfile?.hasPoliticalTier && (
+          <div className="p-6 border-2 border-primary bg-primary/5">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Political Ad System</h3>
+                <p className="text-muted-foreground mb-4">
+                  {politicalProfile.adsUsed} of {politicalProfile.adsLimit} political ads generated this month
+                </p>
+                {politicalProfile.candidate && (
+                  <p className="text-sm text-muted-foreground mb-4">
+                    <strong>{politicalProfile.candidate.fullName}</strong> • {politicalProfile.candidate.race}
+                  </p>
+                )}
+              </div>
+              <Button onClick={() => navigate('/political/dashboard')}>
+                View Political Dashboard
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-3 flex-wrap justify-end ml-auto">
+        )} */}
+
+        {/* SECTION 2: Campaign Cards */}
+        <div>
+          <div className="flex items-center justify-between flex-wrap gap-6 mb-4">
+            <h3 className="text-xl font-semibold">
+              Campaigns {searchQuery && `(${filteredCampaigns.length} ${filteredCampaigns.length === 1 ? 'result' : 'results'})`}
+            </h3>
+            <div className="flex items-center gap-3 flex-wrap">
               {campaigns.length > 0 && (
                 <div className="relative w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -268,37 +291,6 @@ export default function Dashboard() {
               </Button>
             </div>
           </div>
-
-          {/* Quick-Start Budget Widget */}
-          <QuickStartBudgetWidget />
-
-          {/* POLITICAL MODE HIDDEN - Re-enable later for launch */}
-          {/* {politicalProfile?.hasPoliticalTier && (
-            <div className="p-6 border-2 border-primary bg-primary/5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">Political Ad System</h3>
-                  <p className="text-muted-foreground mb-4">
-                    {politicalProfile.adsUsed} of {politicalProfile.adsLimit} political ads generated this month
-                  </p>
-                  {politicalProfile.candidate && (
-                    <p className="text-sm text-muted-foreground mb-4">
-                      <strong>{politicalProfile.candidate.fullName}</strong> • {politicalProfile.candidate.race}
-                    </p>
-                  )}
-                </div>
-                <Button onClick={() => navigate('/political/dashboard')}>
-                  View Political Dashboard
-                </Button>
-              </div>
-            </div>
-          )} */}
-
-          {/* SECTION 2: Campaign Cards */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4">
-              Campaigns {searchQuery && `(${filteredCampaigns.length} ${filteredCampaigns.length === 1 ? 'result' : 'results'})`}
-            </h3>
             {campaigns.length === 0 ? (
               <div className="text-center py-20 border-2 border-black">
                 <div className="max-w-md mx-auto">
