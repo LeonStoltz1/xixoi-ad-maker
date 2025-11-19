@@ -339,15 +339,7 @@ export default function TargetingSetup() {
                   Edit Campaign Description
                 </Button>
                 
-                <Button
-                  variant="outline"
-                  onClick={() => navigate('/dashboard')}
-                  className="w-full"
-                  size="lg"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Dashboard
-                </Button>
+                <BackButton to="/dashboard" label="Dashboard" className="flex-1" />
               </div>
 
               <div className="text-xs text-muted-foreground pt-4">
@@ -394,14 +386,7 @@ export default function TargetingSetup() {
       <div className="pt-24 pb-12 px-4">
         <div className="max-w-2xl mx-auto">
         {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/create-campaign')}
-          className="mb-6"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Campaign
-        </Button>
+        <BackButton to="/create-campaign" label="Campaign" className="mb-8" />
 
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">

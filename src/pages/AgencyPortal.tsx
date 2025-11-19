@@ -37,10 +37,9 @@ export default function AgencyPortal() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
-        </Button>
+        <BackButton to="/dashboard" label="Dashboard" className="mb-8" />
+
+        <h1 className="text-3xl font-bold mb-4">Agency Portal</h1>
         
         <Card>
           <CardHeader>

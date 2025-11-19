@@ -142,19 +142,12 @@ export default function VerifyAd() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-6"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
+        <BackButton className="mb-8" />
 
         <Card className="p-8">
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Political Ad Verification</h1>
+              <h1 className="text-3xl font-bold mb-4">Political Ad Verification</h1>
               <p className="text-muted-foreground">
                 Cryptographically verified political advertising
               </p>
