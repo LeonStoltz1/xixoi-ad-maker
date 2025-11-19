@@ -187,11 +187,18 @@ export default function PlatformCredentialsAdmin() {
               <Shield className="w-6 h-6" />
               <h1 className="text-3xl font-bold">Platform API Status</h1>
             </div>
-            <Button asChild>
-              <Link to="/admin/test-meta">
-                Test Meta Publishing
-              </Link>
-            </Button>
+            <div className="flex gap-2">
+              <Button asChild variant="outline">
+                <Link to="/admin/test-meta">
+                  Test Meta Publishing
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/admin/seed-data">
+                  Seed Test Data
+                </Link>
+              </Button>
+            </div>
           </div>
           <p className="text-foreground/80 mb-4">
             Monitoring system-owned master account credentials for <strong>Quick-Start tier</strong> users.

@@ -38,6 +38,7 @@ import PoliticalDashboard from "./pages/political/PoliticalDashboard";
 import VerifyAd from "./pages/political/VerifyAd";
 import PlatformCredentialsAdmin from "./pages/admin/PlatformCredentialsAdmin";
 import TestMetaPublish from "./pages/admin/TestMetaPublish";
+import SeedTestData from "./pages/admin/SeedTestData";
 import ConnectPlatforms from "./pages/ConnectPlatforms";
 
 const queryClient = new QueryClient();
@@ -102,6 +103,7 @@ const App = () => (
           <Route path="/campaign-publish" element={<CampaignPublish />} />
           <Route path="/admin/platform-credentials" element={<PlatformCredentialsAdmin />} />
           <Route path="/admin/test-meta" element={<TestMetaPublish />} />
+          <Route path="/admin/seed-data" element={<SeedTestData />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
