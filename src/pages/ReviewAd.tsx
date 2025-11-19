@@ -145,7 +145,7 @@ export default function ReviewAd() {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="w-full max-w-content mx-auto px-6 pt-[150px] pb-section">
+      <div className="w-full max-w-content mx-auto px-6 pt-[180px] pb-section">
         {/* Progress Steps */}
         <div className="flex items-center justify-center gap-2 mb-12">
           <div className="flex items-center gap-2">
