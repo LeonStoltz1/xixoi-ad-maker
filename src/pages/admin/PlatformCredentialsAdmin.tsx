@@ -105,7 +105,8 @@ export default function PlatformCredentialsAdmin() {
         .from("platform_credentials")
         .update({
           access_token: encryptedData.encrypted,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          status: 'connected'
         })
         .eq("platform", platform)
         .eq("owner_type", "system");
@@ -138,20 +139,26 @@ export default function PlatformCredentialsAdmin() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="container mx-auto p-6 pt-40">
-        <div className="mb-6">
+      <div className="container mx-auto p-6 pt-40 max-w-5xl">
+        <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
             <Shield className="w-6 h-6" />
-            <h1 className="text-3xl font-bold">Platform Credentials</h1>
+            <h1 className="text-3xl font-bold">Master Platform Credentials</h1>
           </div>
-          <p className="text-muted-foreground">
-            Manage master ad platform credentials for xiXoi™ system accounts
+          <p className="text-foreground/80 mb-4">
+            Manage system-owned master account OAuth tokens for Quick-Start tier users. These credentials power all Quick-Start ad publishing.
           </p>
+          <div className="p-4 border-2 border-black bg-background">
+            <p className="text-sm font-medium mb-2">⚠️ Critical Setup Required</p>
+            <p className="text-sm text-foreground/70">
+              All 5 platforms must have valid tokens with "connected" status before Quick-Start tier can publish ads. Update any "pending" credentials below.
+            </p>
+          </div>
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid gap-6 md:grid-cols-2">
           {credentials.length === 0 ? (
-            <Card>
+            <Card className="col-span-2 border-2 border-black">
               <CardHeader>
                 <CardTitle>No Credentials Configured</CardTitle>
                 <CardDescription>
@@ -161,70 +168,67 @@ export default function PlatformCredentialsAdmin() {
             </Card>
           ) : (
             credentials.map((cred) => (
-              <Card key={cred.id}>
+              <Card key={cred.id} className="border-2 border-black">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        {cred.platform.toUpperCase()}
-                        <Badge variant={cred.status === "connected" ? "default" : "secondary"}>
-                          {cred.status}
-                        </Badge>
-                      </CardTitle>
-                      <CardDescription>
-                        Account ID: {cred.platform_account_id}
-                      </CardDescription>
+                    <div className="flex items-center gap-3">
+                      <Key className="w-5 h-5" />
+                      <div>
+                        <CardTitle className="capitalize text-xl">{cred.platform}</CardTitle>
+                        <CardDescription className="text-xs">
+                          System Master Account
+                        </CardDescription>
+                      </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleUpdateToken(cred.platform)}
-                      disabled={updating === cred.platform}
+                    <Badge 
+                      variant={cred.status === "connected" ? "default" : "secondary"}
+                      className="text-xs"
                     >
-                      {updating === cred.platform ? (
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Key className="w-4 h-4" />
-                      )}
-                      <span className="ml-2">Update Token</span>
-                    </Button>
+                      {cred.status}
+                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="font-medium">Created:</span>{" "}
-                      {new Date(cred.created_at).toLocaleDateString()}
+                  <div className="space-y-2 text-sm mb-4">
+                    <div className="flex justify-between">
+                      <span className="text-foreground/60">Account ID:</span>
+                      <span className="font-mono text-xs">{cred.platform_account_id}</span>
                     </div>
-                    <div>
-                      <span className="font-medium">Last Updated:</span>{" "}
-                      {new Date(cred.updated_at).toLocaleDateString()}
+                    <div className="flex justify-between">
+                      <span className="text-foreground/60">Last Updated:</span>
+                      <span>{new Date(cred.updated_at).toLocaleDateString()}</span>
                     </div>
                     {cred.expires_at && (
-                      <div>
-                        <span className="font-medium">Expires:</span>{" "}
-                        {new Date(cred.expires_at).toLocaleDateString()}
+                      <div className="flex justify-between">
+                        <span className="text-foreground/60">Token Expires:</span>
+                        <span>{new Date(cred.expires_at).toLocaleDateString()}</span>
                       </div>
                     )}
                   </div>
+                  <Button
+                    onClick={() => handleUpdateToken(cred.platform)}
+                    disabled={updating === cred.platform}
+                    className="w-full"
+                    variant={cred.status === "pending" ? "default" : "outline"}
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-2 ${updating === cred.platform ? 'animate-spin' : ''}`} />
+                    {updating === cred.platform ? "Updating..." : cred.status === "pending" ? "Add Token" : "Update Token"}
+                  </Button>
                 </CardContent>
               </Card>
             ))
           )}
         </div>
 
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Security Notice</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              All tokens are encrypted at rest using AES-256-GCM encryption. Tokens are only
-              decrypted when needed by edge functions to make API calls to ad platforms. Never
-              share or expose these credentials.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="mt-8 p-6 border-2 border-black bg-background">
+          <h3 className="font-semibold mb-2">🔒 Security Notice</h3>
+          <p className="text-sm text-foreground/70 mb-3">
+            All tokens are encrypted using AES-256-GCM before storage. Only the service role can decrypt and use these credentials for publishing Quick-Start user campaigns.
+          </p>
+          <p className="text-sm text-foreground/70">
+            <strong>Pro/Elite/Agency users</strong> connect their own OAuth accounts and never use these master credentials.
+          </p>
+        </div>
       </div>
     </div>
   );
