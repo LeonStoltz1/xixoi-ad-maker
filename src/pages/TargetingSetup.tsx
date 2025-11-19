@@ -7,6 +7,7 @@ import { Brain, Target, Sparkles, AlertTriangle, Pencil, ArrowLeft } from "lucid
 import { toast } from "sonner";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { invokeWithRetry } from "@/lib/retryWithBackoff";
+import { Header } from "@/components/Header";
 import {
   Dialog,
   DialogContent,
@@ -602,55 +603,8 @@ export default function TargetingSetup() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with Navigation */}
-      <header className="border-b border-foreground/20 bg-black sticky top-0 z-10">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate('/dashboard')} 
-            className="text-white hover:text-white hover:bg-white/10"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </Button>
-          <div className="flex items-center gap-2">
-            <video 
-              src="/xiXoiLogo.mp4" 
-              autoPlay 
-              loop 
-              muted 
-              playsInline
-              className="w-10 h-10 object-contain"
-            />
-            <h1 className="text-lg md:text-xl font-bold text-white">xiXoi™</h1>
-          </div>
-          <div className="w-24"></div> {/* Spacer for centering */}
-        </div>
-      </header>
-
-      {/* Progress Steps */}
-      <div className="bg-muted/30 border-b">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-center gap-2 text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <div className="w-6 h-6 bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold border border-foreground">✓</div>
-              <span>Create Campaign</span>
-            </div>
-            <div className="w-8 h-px bg-primary"></div>
-            <div className="flex items-center gap-2 text-foreground font-semibold">
-              <div className="w-6 h-6 bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold border border-foreground">2</div>
-              <span>Review Targeting</span>
-            </div>
-            <div className="w-8 h-px bg-border"></div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <div className="w-6 h-6 bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold border border-foreground/20">3</div>
-              <span>Publish</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <Header />
+      
       <div className="py-12 px-4">
         <div className="max-w-2xl mx-auto">
         {/* Header */}
