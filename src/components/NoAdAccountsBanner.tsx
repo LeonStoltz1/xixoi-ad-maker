@@ -7,9 +7,9 @@ export function NoAdAccountsBanner() {
       <Info className="h-4 w-4" />
       <AlertTitle>No Setup Required</AlertTitle>
       <AlertDescription>
-        xiXoi™ handles all ad platform accounts for you. You don't need to connect Meta, TikTok, 
-        Google, LinkedIn, or X accounts. We run your campaigns through our verified partner accounts 
-        - just upload your ad and we'll publish it across all platforms you select.
+        xiXoi™ handles all ad platform accounts for you. You don't need to connect Meta accounts. 
+        We run your campaigns through our verified partner accounts - just upload your ad and we'll 
+        publish it to Meta.
       </AlertDescription>
     </Alert>
   );
