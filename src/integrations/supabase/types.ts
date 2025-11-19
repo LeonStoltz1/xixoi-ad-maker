@@ -1115,6 +1115,7 @@ export type Database = {
           id: string
           owner_id: string | null
           owner_type: string | null
+          page_id: string | null
           platform: string
           platform_account_id: string
           refresh_token: string | null
@@ -1130,6 +1131,7 @@ export type Database = {
           id?: string
           owner_id?: string | null
           owner_type?: string | null
+          page_id?: string | null
           platform: string
           platform_account_id: string
           refresh_token?: string | null
@@ -1145,6 +1147,7 @@ export type Database = {
           id?: string
           owner_id?: string | null
           owner_type?: string | null
+          page_id?: string | null
           platform?: string
           platform_account_id?: string
           refresh_token?: string | null

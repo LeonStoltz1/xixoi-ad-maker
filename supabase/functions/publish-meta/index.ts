@@ -180,10 +180,25 @@ Deno.serve(async (req) => {
       a.asset_type === "image" || a.asset_type === "video"
     );
 
+    // Load page ID from credentials
+    const pageId = credentials.pageId;
+    if (!pageId) {
+      console.error("META_PAGE_ID_MISSING: No page_id found in credentials");
+      return new Response(
+        JSON.stringify({ 
+          error: "META_PAGE_ID_MISSING", 
+          message: "A valid Facebook Page ID is required to publish creatives. Please add it in Admin → Platform Credentials." 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log("Using Meta Page ID:", pageId);
+
     const creativeParams = new URLSearchParams({
       name: `${campaign.name} - Creative`,
       object_story_spec: JSON.stringify({
-        page_id: adAccountId.replace("act_", ""), // Extract page ID from account ID
+        page_id: pageId, // Use real Facebook Page ID from credentials
         link_data: {
           link: campaign.landing_url || "https://xixoi.com",
           message: variant.body_copy || campaign.name,

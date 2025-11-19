@@ -5,6 +5,7 @@ export type PlatformCredential = {
   refreshToken?: string | null;
   accountId?: string | null;
   accountName?: string | null;
+  pageId?: string | null;
 };
 
 /**
@@ -48,6 +49,7 @@ export async function getCredentials(
       refreshToken: cred.refresh_token ?? null,
       accountId: cred.platform_account_id ?? null,
       accountName: cred.account_name ?? null,
+      pageId: cred.page_id ?? null,
     };
   }
 
@@ -70,6 +72,7 @@ export async function getCredentials(
     refreshToken: systemCred.refresh_token ?? null,
     accountId: systemCred.platform_account_id ?? null,
     accountName: "xiXoi Master Account",
+    pageId: systemCred.page_id ?? null,
   };
 }
 
