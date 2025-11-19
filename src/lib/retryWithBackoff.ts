@@ -42,6 +42,23 @@ export async function invokeWithRetry<T = any>(
         ? await requestQueue.enqueue<T>(supabase, functionName, body)
         : await supabase.functions.invoke(functionName, { body });
 
+      // Normalize FunctionsHttpError before returning
+      if (error && error instanceof FunctionsHttpError) {
+        let errorBody = null;
+        try {
+          errorBody = await error.context.json();
+        } catch (_) {
+          // Not JSON, use raw error
+        }
+
+        const normalizedError: any = new Error(errorBody?.message || error.message || 'Edge function error');
+        normalizedError.code = errorBody?.error || 'UNKNOWN_EDGE_ERROR';
+        normalizedError.details = errorBody;
+        normalizedError.status = error.context.status;
+
+        return { data, error: normalizedError };
+      }
+
       // If no error or error is not 429, return immediately
       if (!error || (!error.message?.includes('429') && !error.message?.includes('rate limit'))) {
         return { data, error };
