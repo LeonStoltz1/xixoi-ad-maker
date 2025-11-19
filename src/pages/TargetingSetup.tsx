@@ -591,11 +591,11 @@ export default function TargetingSetup() {
   }
 
   const platformOptions = [
-    { id: 'meta', name: 'Meta', description: 'Facebook & Instagram' },
-    { id: 'tiktok', name: 'TikTok', description: 'Short-form video' },
-    { id: 'google', name: 'Google', description: 'Search & Display' },
-    { id: 'linkedin', name: 'LinkedIn', description: 'B2B Professional' },
-    { id: 'x', name: 'X', description: 'Real-time conversations' },
+    { id: 'meta', name: 'Meta', description: 'Facebook & Instagram', disabled: false },
+    { id: 'tiktok', name: 'TikTok', description: 'Short-form video', disabled: true },
+    { id: 'google', name: 'Google', description: 'Search & Display', disabled: true },
+    { id: 'linkedin', name: 'LinkedIn', description: 'B2B Professional', disabled: true },
+    { id: 'x', name: 'X', description: 'Real-time conversations', disabled: true },
   ];
 
   const estimatedReach = Math.floor(selectedBudget * 35);
@@ -736,15 +736,23 @@ export default function TargetingSetup() {
             {platformOptions.map((platform) => (
               <button
                 key={platform.id}
-                onClick={() => togglePlatform(platform.id)}
-                className={`p-4 border-2 transition-all text-left ${
-                  selectedPlatforms.includes(platform.id)
+                onClick={() => !platform.disabled && togglePlatform(platform.id)}
+                disabled={platform.disabled}
+                className={`p-4 border-2 transition-all text-left relative ${
+                  platform.disabled
+                    ? 'border-border/50 bg-muted/30 opacity-60 cursor-not-allowed'
+                    : selectedPlatforms.includes(platform.id)
                     ? 'border-primary bg-primary/10'
                     : 'border-border hover:border-primary/50'
                 }`}
               >
                 <div className="font-semibold text-foreground">{platform.name}</div>
                 <div className="text-sm text-muted-foreground">{platform.description}</div>
+                {platform.disabled && (
+                  <div className="absolute top-2 right-2 text-xs font-semibold text-muted-foreground bg-muted px-2 py-1 rounded border border-border">
+                    Coming Soon
+                  </div>
+                )}
               </button>
             ))}
           </div>
