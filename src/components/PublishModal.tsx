@@ -84,7 +84,7 @@ export function PublishModal({ campaignId, platform, open, onClose }: PublishMod
 
       {showConnectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="rounded-2xl bg-background p-6 max-w-md w-full mx-4 border-2 border-border">
+          <div className="bg-background p-6 max-w-md w-full mx-4 border-2 border-black">
             <h2 className="text-xl font-bold mb-2">Connect Your Ad Account</h2>
             <p className="text-sm text-muted-foreground mb-4">
               To publish from your Pro/Agency tier, you need to connect your {platform.toUpperCase()} account first.

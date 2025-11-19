@@ -737,7 +737,7 @@ export default function TargetingSetup() {
               <button
                 key={platform.id}
                 onClick={() => togglePlatform(platform.id)}
-                className={`p-4 rounded-lg border-2 transition-all text-left ${
+                className={`p-4 border-2 transition-all text-left ${
                   selectedPlatforms.includes(platform.id)
                     ? 'border-primary bg-primary/10'
                     : 'border-border hover:border-primary/50'
@@ -751,7 +751,7 @@ export default function TargetingSetup() {
         </div>
 
         {/* Strategy Reasoning */}
-        <div className="bg-muted/50 rounded-lg p-4 mb-8 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+        <div className="bg-muted/50 p-4 mb-8 animate-fade-in" style={{ animationDelay: '0.5s' }}>
           <p className="text-sm text-muted-foreground italic">
             "{audienceSuggestion.reasoning}"
           </p>
