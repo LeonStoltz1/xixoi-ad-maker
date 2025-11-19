@@ -167,34 +167,49 @@ export const Pricing = () => {
                 <tr className="bg-foreground text-background">
                   <th className="border border-foreground p-4 text-left font-bold text-sm">Feature</th>
                   <th 
-                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors"
+                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors group relative"
                     onClick={() => handlePlanClick("FREE")}
                   >
-                    FREE
+                    <span className="group-hover:opacity-0 transition-opacity">FREE</span>
+                    <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      Select →
+                    </span>
                   </th>
                   <th 
-                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors"
+                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors group relative"
                     onClick={() => handlePlanClick("QUICK-START")}
                   >
-                    QUICK-START
+                    <span className="group-hover:opacity-0 transition-opacity">QUICK-START</span>
+                    <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      Select →
+                    </span>
                   </th>
                   <th 
-                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors"
+                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors group relative"
                     onClick={() => handlePlanClick("PUBLISH PRO")}
                   >
-                    PUBLISH PRO
+                    <span className="group-hover:opacity-0 transition-opacity">PUBLISH PRO</span>
+                    <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      Select →
+                    </span>
                   </th>
                   <th 
-                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors"
+                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors group relative"
                     onClick={() => handlePlanClick("SCALE ELITE")}
                   >
-                    SCALE ELITE
+                    <span className="group-hover:opacity-0 transition-opacity">SCALE ELITE</span>
+                    <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      Select →
+                    </span>
                   </th>
                   <th 
-                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors"
+                    className="border border-foreground p-4 text-center font-bold text-sm cursor-pointer hover:bg-background hover:text-foreground transition-colors group relative"
                     onClick={() => handlePlanClick("AGENCY WHITE-LABEL")}
                   >
-                    AGENCY
+                    <span className="group-hover:opacity-0 transition-opacity">AGENCY</span>
+                    <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      Select →
+                    </span>
                   </th>
                 </tr>
               </thead>
