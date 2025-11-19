@@ -61,7 +61,7 @@ export default function ConnectPlatforms() {
   });
   const [loading, setLoading] = useState(true);
   const [connectingPlatform, setConnectingPlatform] = useState<Platform | null>(null);
-  const [userTier, setUserTier] = useState<string>("free");
+  const [userPlan, setUserPlan] = useState<string>("free");
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -91,15 +91,16 @@ export default function ConnectPlatforms() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("stripe_price_id")
+        .select("plan")
         .eq("id", user.id)
         .single();
 
-      const tier = getTierFromPriceId(profile?.stripe_price_id || null);
-      setUserTier(tier);
+      const plan = profile?.plan || "free";
+      setUserPlan(plan);
 
       // If not Pro tier, redirect to upgrade page
-      if (!isProTier(tier)) {
+      const isProUser = ["pro", "proUnlimited", "elite", "agency"].includes(plan);
+      if (!isProUser) {
         toast.error("Pro tier required to connect your own ad accounts");
         navigate("/dashboard");
         return;
