@@ -267,7 +267,7 @@ export default function Dashboard() {
         )} */}
 
         {/* SECTION 2: Campaign Cards */}
-        <div>
+        <div className="mt-12">
           <div className="flex items-center justify-between flex-wrap gap-6 mb-4">
             <h3 className="text-xl font-semibold">
               Campaigns {searchQuery && `(${filteredCampaigns.length} ${filteredCampaigns.length === 1 ? 'result' : 'results'})`}
