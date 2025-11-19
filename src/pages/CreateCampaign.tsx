@@ -410,27 +410,26 @@ export default function CreateCampaign() {
       );
 
       if (generateError) {
-        console.error('AI generation error:', generateError);
-        console.error('Error details:', JSON.stringify(generateError, null, 2));
-        
-        // Parse error message from multiple possible locations
-        const errorMessage = generateError.message || generateError.error || JSON.stringify(generateError);
-        const errorString = typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage);
-        
-        // Handle political ad upgrade requirement
-        if (errorString.includes('POLITICAL_UPGRADE_REQUIRED') || errorString.includes('Political ads require')) {
+        console.error('Ad generation failed:', generateError);
+
+        // This now works reliably because we normalized it in retryWithBackoff
+        if (
+          generateError?.code === 'POLITICAL_UPGRADE_REQUIRED' ||
+          generateError?.details?.error === 'POLITICAL_UPGRADE_REQUIRED'
+        ) {
           toast({
+            title: "Political Ads Require Verification",
+            description: generateError?.details?.message || generateError?.message || "Upgrade your account to run political or advocacy ads.",
             variant: "destructive",
-            title: "Political Ads Not Available on Free Tier",
-            description: "Political ads require Pro tier ($149/mo) for FEC compliance. Please upgrade or remove political keywords from your description.",
-            duration: 7000
+            duration: 8000,
           });
+
           setLoading(false);
           return;
         }
-        
-        // Handle rate limit and credits exhausted errors
-        if (errorString.includes('429') || errorString.includes('rate limit')) {
+
+        // Handle rate limit errors
+        if (generateError?.code === 'RATE_LIMIT' || generateError?.message?.includes('429') || generateError?.message?.includes('rate limit')) {
           toast({
             variant: "destructive",
             title: "Rate limit reached",
@@ -438,7 +437,10 @@ export default function CreateCampaign() {
           });
           setLoading(false);
           return;
-        } else if (errorString.includes('402') || errorString.includes('credits exhausted')) {
+        }
+
+        // Handle credits exhausted
+        if (generateError?.code === 'CREDITS_EXHAUSTED' || generateError?.message?.includes('402') || generateError?.message?.includes('credits exhausted')) {
           toast({
             variant: "destructive",
             title: "Credits exhausted",
@@ -447,13 +449,14 @@ export default function CreateCampaign() {
           setLoading(false);
           return;
         }
-        
+
         // Generic error handling
         toast({
+          title: "Failed to generate ad variants",
+          description: generateError?.message || "Please try again or contact support if the problem persists.",
           variant: "destructive",
-          title: "Error generating ad",
-          description: errorString.substring(0, 200) || "Failed to generate ad variants. Please try again."
         });
+
         setLoading(false);
         return;
       }

@@ -1,4 +1,4 @@
-import { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient, FunctionsHttpError } from '@supabase/supabase-js';
 import { requestQueue } from './requestQueue';
 
 interface RetryOptions {
@@ -64,6 +64,35 @@ export async function invokeWithRetry<T = any>(
       return { data, error };
     } catch (error: any) {
       lastError = error;
+      
+      // Handle FunctionsHttpError (403/4xx/5xx from edge functions)
+      if (error instanceof FunctionsHttpError) {
+        let body = null;
+        try {
+          body = await error.context.json();
+        } catch (_) {
+          // fallback if not JSON
+        }
+
+        // Normalize into something predictable
+        const normalizedError = new Error(body?.message || error.message || 'Edge function error');
+        (normalizedError as any).code = body?.error || 'UNKNOWN_EDGE_ERROR';
+        (normalizedError as any).details = body;
+        (normalizedError as any).status = error.context.status;
+
+        lastError = normalizedError;
+        
+        // Check if it's a rate limit error
+        if ((normalizedError.message?.includes('429') || normalizedError.message?.includes('rate limit')) && attempt < maxRetries) {
+          console.log(`Rate limit error for ${functionName}, retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+          delayMs = Math.min(delayMs * backoffMultiplier, maxDelayMs);
+          continue;
+        }
+
+        // Not a rate limit error or max retries reached
+        return { data: null, error: normalizedError };
+      }
       
       // Check if it's a rate limit error
       if ((error.message?.includes('429') || error.message?.includes('rate limit')) && attempt < maxRetries) {
