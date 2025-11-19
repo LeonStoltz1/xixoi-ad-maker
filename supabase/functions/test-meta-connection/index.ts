@@ -13,7 +13,19 @@ Deno.serve(async (req) => {
 
   try {
     const supabase = supabaseClient();
-    const { userId, tier } = await req.json();
+    
+    // Parse request body (optional for backward compatibility)
+    let userId = "system";
+    let tier = "quickstart";
+    
+    try {
+      const body = await req.json();
+      if (body.userId) userId = body.userId;
+      if (body.tier) tier = body.tier;
+    } catch {
+      // No body provided, use defaults for system credentials
+      console.log("No request body, testing system credentials");
+    }
 
     console.log("Testing Meta connection - userId:", userId, "tier:", tier);
 
