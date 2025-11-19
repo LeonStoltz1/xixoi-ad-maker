@@ -21,9 +21,9 @@ export function BackButton({ to, label = "Previous page", className = "" }: Back
 
   return (
     <Button
-      variant="outline"
+      variant="ghost"
       onClick={handleClick}
-      className={`border-foreground/20 hover:bg-foreground/5 ${className}`}
+      className={`border border-foreground/30 hover:bg-foreground/10 hover:border-foreground/50 ${className}`}
     >
       <ArrowLeft className="w-4 h-4 mr-2" />
       {label}

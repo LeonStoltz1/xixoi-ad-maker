@@ -129,18 +129,11 @@ export default function VerifyCandidate() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/dashboard')}
-          className="mb-6"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
-        </Button>
+        <BackButton to="/dashboard" label="Dashboard" className="mb-8" />
 
         <Card className="p-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Political Candidate Verification</h1>
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold mb-4">Political Candidate Verification</h1>
             <p className="text-muted-foreground">
               Complete this form to verify your identity and access Political Mode ($99/month).
               All information is encrypted and reviewed by xiXoi compliance team.
