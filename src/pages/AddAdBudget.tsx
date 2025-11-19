@@ -55,9 +55,10 @@ export default function AddAdBudget() {
 
   const platforms = [
     { id: 'meta', name: 'Meta (Facebook/Instagram)' },
-    { id: 'tiktok', name: 'TikTok' },
-    { id: 'google', name: 'Google' },
-    { id: 'linkedin', name: 'LinkedIn' },
+    // TODO: Re-enable other platforms
+    // { id: 'tiktok', name: 'TikTok' },
+    // { id: 'google', name: 'Google' },
+    // { id: 'linkedin', name: 'LinkedIn' },
     { id: 'x', name: 'X (Twitter)' },
   ];
 

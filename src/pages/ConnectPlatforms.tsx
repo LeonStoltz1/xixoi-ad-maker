@@ -23,30 +23,31 @@ const PLATFORMS: {
     description: "Publish to Facebook and Instagram feeds",
     setupGuide: "You'll need a Facebook Business Manager with an active ad account"
   },
-  { 
-    id: "google", 
-    name: "Google Ads", 
-    description: "Publish to Google Search and Display Network",
-    setupGuide: "You'll need a Google Ads account with billing enabled"
-  },
-  { 
-    id: "tiktok", 
-    name: "TikTok Ads", 
-    description: "Publish to TikTok For You feed",
-    setupGuide: "You'll need a TikTok Business account and ad account"
-  },
-  { 
-    id: "linkedin", 
-    name: "LinkedIn Ads", 
-    description: "Publish to LinkedIn professional network",
-    setupGuide: "You'll need a LinkedIn Campaign Manager account"
-  },
-  { 
-    id: "x", 
-    name: "X (Twitter)", 
-    description: "Publish to X timeline and promoted tweets",
-    setupGuide: "You'll need an X Ads account with approved API access"
-  },
+  // TODO: Re-enable other platforms
+  // { 
+  //   id: "google", 
+  //   name: "Google Ads", 
+  //   description: "Publish to Google Search and Display Network",
+  //   setupGuide: "You'll need a Google Ads account with billing enabled"
+  // },
+  // { 
+  //   id: "tiktok", 
+  //   name: "TikTok Ads", 
+  //   description: "Publish to TikTok For You feed",
+  //   setupGuide: "You'll need a TikTok Business account and ad account"
+  // },
+  // { 
+  //   id: "linkedin", 
+  //   name: "LinkedIn Ads", 
+  //   description: "Publish to LinkedIn professional network",
+  //   setupGuide: "You'll need a LinkedIn Campaign Manager account"
+  // },
+  // { 
+  //   id: "x", 
+  //   name: "X (Twitter)", 
+  //   description: "Publish to X timeline and promoted tweets",
+  //   setupGuide: "You'll need an X Ads account with approved API access"
+  // },
 ];
 
 export default function ConnectPlatforms() {

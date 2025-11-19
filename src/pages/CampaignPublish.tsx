@@ -20,9 +20,10 @@ export default function CampaignPublish() {
 
   const platforms = [
     { id: "meta", name: "Meta (Facebook)" },
-    { id: "google", name: "Google Ads" },
-    { id: "tiktok", name: "TikTok Ads" },
-    { id: "linkedin", name: "LinkedIn Ads" },
+    // TODO: Re-enable other platforms
+    // { id: "google", name: "Google Ads" },
+    // { id: "tiktok", name: "TikTok Ads" },
+    // { id: "linkedin", name: "LinkedIn Ads" },
     { id: "x", name: "X (Twitter)" }
   ];
 

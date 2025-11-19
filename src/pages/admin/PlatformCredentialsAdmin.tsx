@@ -22,7 +22,7 @@ interface PlatformHealth {
   error?: string;
 }
 
-const PLATFORMS = ["meta", "google", "tiktok", "linkedin", "x"];
+const PLATFORMS = ["meta"]; // TODO: Re-enable other platforms: "google", "tiktok", "linkedin", "x"
 const HEALTH_CHECK_INTERVAL = 60000; // Check every 60 seconds
 
 export default function PlatformCredentialsAdmin() {
