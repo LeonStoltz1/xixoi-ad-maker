@@ -13,6 +13,7 @@ interface PlatformCredential {
   platform: string;
   platform_account_id: string;
   account_name?: string | null;
+  page_id?: string | null;
   status: string;
 }
 
@@ -95,7 +96,7 @@ export default function PlatformCredentialsAdmin() {
     try {
       const { data, error } = await supabase
         .from("platform_credentials")
-        .select("*")
+        .select("id, platform, platform_account_id, account_name, page_id, status")
         .eq("owner_type", "system")
         .order("platform");
 
@@ -359,6 +360,18 @@ export default function PlatformCredentialsAdmin() {
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-foreground/70">Account ID:</span>
                         <span className="text-xs font-mono">{cred.platform_account_id}</span>
+                      </div>
+                    )}
+
+                    {/* Show Page ID for Meta platform */}
+                    {platform === "meta" && cred && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-foreground/70">Page ID:</span>
+                        {cred.page_id ? (
+                          <span className="text-xs font-mono text-green-600">{cred.page_id}</span>
+                        ) : (
+                          <span className="text-xs text-red-600">Not configured</span>
+                        )}
                       </div>
                     )}
 
