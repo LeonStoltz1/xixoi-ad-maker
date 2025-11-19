@@ -35,6 +35,27 @@ export function AccountPerformanceInsights() {
 
   useEffect(() => {
     loadInsights();
+    
+    // Set up realtime subscription to campaign changes
+    const subscription = supabase
+      .channel('campaign_performance_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'campaigns' }, 
+        () => {
+          loadInsights();
+        }
+      )
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'campaign_performance' },
+        () => {
+          loadInsights();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const loadInsights = async () => {

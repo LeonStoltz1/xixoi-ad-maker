@@ -24,6 +24,21 @@ export function GlobalSpendSummary() {
 
   useEffect(() => {
     loadSpendSummary();
+    
+    // Set up realtime subscription to campaign changes
+    const subscription = supabase
+      .channel('campaign_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'campaigns' }, 
+        () => {
+          loadSpendSummary();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const loadSpendSummary = async () => {
