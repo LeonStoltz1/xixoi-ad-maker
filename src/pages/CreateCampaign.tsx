@@ -33,6 +33,9 @@ export default function CreateCampaign() {
   const [loading, setLoading] = useState(false);
   const [enableABTesting, setEnableABTesting] = useState(false);
   
+  // Progress tracking
+  const [currentStep, setCurrentStep] = useState<'upload' | 'generate' | 'publish'>('upload');
+  
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null);
   const [generatedVariants, setGeneratedVariants] = useState<any[]>([]);
@@ -336,6 +339,7 @@ export default function CreateCampaign() {
     }
 
     setLoading(true);
+    setCurrentStep('generate');
     try {
       // CRITICAL: Only free tier gets watermark
       // Paid tiers (quickstart, pro, elite, agency) get no watermark
@@ -517,7 +521,84 @@ export default function CreateCampaign() {
       </div>
 
       <div className="max-w-2xl mx-auto space-y-8">
-          <p className="text-muted-foreground text-center mb-6">Upload your content and let AI do the rest</p>
+        {/* Progress Indicator */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          {/* Step 1: Upload */}
+          <div className="flex items-center gap-2">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all ${
+              currentStep === 'upload' 
+                ? 'border-foreground bg-foreground text-background' 
+                : generatedVariants.length > 0
+                  ? 'border-foreground bg-foreground text-background'
+                  : 'border-muted-foreground text-muted-foreground'
+            }`}>
+              {generatedVariants.length > 0 ? (
+                <CheckCircle2 className="w-4 h-4" />
+              ) : (
+                <span className="text-sm font-bold">1</span>
+              )}
+            </div>
+            <span className={`text-sm font-medium ${
+              currentStep === 'upload' ? 'text-foreground' : 'text-muted-foreground'
+            }`}>
+              Upload
+            </span>
+          </div>
+
+          {/* Connector Line */}
+          <div className={`w-12 h-0.5 ${
+            generatedVariants.length > 0 ? 'bg-foreground' : 'bg-muted-foreground'
+          }`} />
+
+          {/* Step 2: Generate */}
+          <div className="flex items-center gap-2">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all ${
+              currentStep === 'generate'
+                ? 'border-foreground bg-foreground text-background'
+                : generatedVariants.length > 0 && showPlatformSelection
+                  ? 'border-foreground bg-foreground text-background'
+                  : generatedVariants.length > 0
+                    ? 'border-foreground bg-foreground text-background'
+                    : 'border-muted-foreground text-muted-foreground'
+            }`}>
+              {generatedVariants.length > 0 && showPlatformSelection ? (
+                <CheckCircle2 className="w-4 h-4" />
+              ) : (
+                <span className="text-sm font-bold">2</span>
+              )}
+            </div>
+            <span className={`text-sm font-medium ${
+              currentStep === 'generate' || generatedVariants.length > 0 ? 'text-foreground' : 'text-muted-foreground'
+            }`}>
+              Generate
+            </span>
+          </div>
+
+          {/* Connector Line */}
+          <div className={`w-12 h-0.5 ${
+            showPlatformSelection ? 'bg-foreground' : 'bg-muted-foreground'
+          }`} />
+
+          {/* Step 3: Publish */}
+          <div className="flex items-center gap-2">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all ${
+              currentStep === 'publish'
+                ? 'border-foreground bg-foreground text-background'
+                : showPlatformSelection
+                  ? 'border-foreground text-foreground'
+                  : 'border-muted-foreground text-muted-foreground'
+            }`}>
+              <span className="text-sm font-bold">3</span>
+            </div>
+            <span className={`text-sm font-medium ${
+              currentStep === 'publish' || showPlatformSelection ? 'text-foreground' : 'text-muted-foreground'
+            }`}>
+              Publish
+            </span>
+          </div>
+        </div>
+
+        <p className="text-muted-foreground text-center mb-6">Upload your content and let AI do the rest</p>
 
           <div className="border border-foreground p-8 space-y-6">
             {/* Campaign Name */}
