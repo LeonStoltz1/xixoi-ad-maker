@@ -51,7 +51,7 @@ const plans = [
     subtitle: "/mo + 5% ad spend",
     features: [
       "Everything in Publish Pro",
-      "Higher practical limits & priority human support",
+      "Higher practical limits",
       "Team use and client billing workflows",
       "Dedicated onboarding & account review",
       "Early access to Autonomous AI optimizer (coming soon)",
