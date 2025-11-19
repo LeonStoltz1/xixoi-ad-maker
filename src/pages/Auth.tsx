@@ -158,48 +158,48 @@ export default function Auth() {
         )}
 
         <div className="text-center space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold">xiXoi™</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground">xiXoi™</h1>
+          <p className="text-foreground">
             {isLogin ? "Sign in to your account" : "Create your account"}
           </p>
         </div>
 
-        <form onSubmit={handleAuth} className="space-y-6 border border-foreground p-8">
+        <form onSubmit={handleAuth} className="space-y-6 border border-foreground p-8 bg-background">
           {!isLogin && (
             <div className="space-y-2">
-              <label className="text-sm font-medium uppercase tracking-wide">Full Name</label>
+              <label className="text-sm font-medium uppercase tracking-wide text-foreground">Full Name</label>
               <Input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
                 placeholder="John Doe"
-                className="border-foreground"
+                className="border-foreground bg-background text-foreground"
               />
             </div>
           )}
 
           <div className="space-y-2">
-            <label className="text-sm font-medium uppercase tracking-wide">Email</label>
+            <label className="text-sm font-medium uppercase tracking-wide text-foreground">Email</label>
             <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="you@example.com"
-              className="border-foreground"
+              className="border-foreground bg-background text-foreground"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium uppercase tracking-wide">Password</label>
+            <label className="text-sm font-medium uppercase tracking-wide text-foreground">Password</label>
             <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="••••••••"
-              className="border-foreground"
+              className="border-foreground bg-background text-foreground"
               minLength={6}
             />
           </div>
@@ -212,7 +212,7 @@ export default function Auth() {
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm text-foreground hover:text-foreground/70 transition-colors underline"
             >
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
             </button>
