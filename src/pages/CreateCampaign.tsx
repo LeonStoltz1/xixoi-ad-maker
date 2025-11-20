@@ -898,7 +898,7 @@ export default function CreateCampaign() {
 
         {/* Right column – Live Preview Only */}
         <div className="flex-1 min-w-0">
-          <Card className="w-full lg:max-w-[480px] p-6 lg:sticky lg:top-24">
+          <Card className="w-full p-6 lg:sticky lg:top-24">
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <div>
