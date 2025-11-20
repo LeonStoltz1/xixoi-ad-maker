@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import xixoiLogoVideo from "@/assets/xixoi-logo-final.mp4";
 import { AdminExperienceSwitcher } from "@/components/AdminExperienceSwitcher";
+import { EffectiveTierBadge } from "@/components/EffectiveTierBadge";
 
 type AppLayoutProps = {
   title?: string;
@@ -18,6 +19,7 @@ export function AppLayout({ title, subtitle, showBack, backTo, backLabel = "Back
 
   return (
     <div className="min-h-screen bg-white text-black">
+      <EffectiveTierBadge />
       {/* GLOBAL HEADER */}
       <header className="fixed top-0 left-0 right-0 z-30 border-b border-neutral-800 bg-black">
         <div className="mx-auto flex h-24 max-w-6xl items-center justify-between px-4">
