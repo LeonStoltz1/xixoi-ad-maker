@@ -24,7 +24,7 @@ export const Hero = () => {
             Paid Advertising<br />for Every Human.
           </h1>
           <p className="text-lg md:text-xl pt-tight opacity-70">
-            And soon, robots too.
+            And soon, humanoids too.
           </p>
           <p className="text-base md:text-lg pt-2">
             Launch ads instantly on Meta, TikTok, Google, LinkedIn, and X.<br />
