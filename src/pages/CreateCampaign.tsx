@@ -216,11 +216,12 @@ export default function CreateCampaign() {
 
   return (
     <AppLayout title="Create Campaign">
-      <div className="flex flex-col lg:flex-row gap-8 justify-center items-start">
-        {/* Left: Controls */}
-        <div className="space-y-6 w-[375px] min-w-[375px] max-w-[375px]">
-          {/* Upload Section */}
-          <Card className="p-3 w-full">
+      <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-start lg:justify-center lg:gap-16 xl:gap-24">
+        {/* Left column – Controls */}
+        <div className="w-[375px] shrink-0 -mr-px lg:mr-0">
+          <div className="space-y-6">
+            {/* Upload Section */}
+            <Card className="p-3 w-full overflow-hidden">
             <Label className="text-sm font-semibold mb-2 block">Upload Your Content</Label>
             
             {/* Upload Type Selector */}
@@ -310,8 +311,8 @@ export default function CreateCampaign() {
             )}
           </Card>
 
-          {/* Campaign Details */}
-          <Card className="p-3 space-y-2 w-full">
+            {/* Campaign Details */}
+            <Card className="p-3 space-y-2 w-full overflow-hidden">
             <div>
               <Label htmlFor="campaign-name">Campaign Name (Optional)</Label>
               <Input
@@ -334,8 +335,8 @@ export default function CreateCampaign() {
             </div>
           </Card>
 
-          {/* Contact Section */}
-          <Card className="p-3 w-full">
+            {/* Contact Section */}
+            <Card className="p-3 w-full overflow-hidden">
             <CampaignContactSection
               primaryGoal={primaryGoal}
               contactPhone={contactPhone}
@@ -370,9 +371,9 @@ export default function CreateCampaign() {
             </Button>
           )}
 
-          {/* Edit Section (after generation) */}
-          {hasGenerated && (
-            <Card className="p-3 space-y-2 w-full">
+            {/* Edit Section (after generation) */}
+            {hasGenerated && (
+              <Card className="p-3 space-y-2 w-full overflow-hidden">
               <Label className="text-sm font-semibold">Edit Your Ad</Label>
               
               <div>
@@ -416,20 +417,21 @@ export default function CreateCampaign() {
               >
                 Continue to Publishing →
               </Button>
-            </Card>
-          )}
+              </Card>
+            )}
+          </div>
         </div>
 
-        {/* Right: Live Preview */}
-        <div className="lg:sticky lg:top-24 h-fit w-[375px] min-w-[375px] max-w-[375px]">
-          <div className="mb-4">
-            <h2 className="text-xl font-semibold mb-1">Live Preview</h2>
-            <p className="text-sm text-muted-foreground">See your ad as you build it</p>
-          </div>
-          
-          {/* Instagram-style preview */}
-          <div className="w-full">
-            <Card className="overflow-hidden border-2 w-full">
+        {/* Right column – Live Preview */}
+        <div className="w-[375px] shrink-0">
+          <div className="sticky top-6">
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold mb-1">Live Preview</h2>
+              <p className="text-sm text-muted-foreground">See your ad as you build it</p>
+            </div>
+            
+            {/* Instagram-style preview */}
+            <Card className="w-full overflow-hidden border-2">
               {/* Instagram header */}
               <div className="p-3 flex items-center gap-2 border-b bg-background">
                 <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-semibold">
