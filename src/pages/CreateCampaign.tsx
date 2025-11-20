@@ -181,7 +181,7 @@ export default function CreateCampaign() {
 
   const handleLocationChange = (value: string) => {
     // Validate location input (max 100 chars, basic sanitization)
-    const sanitized = value.trim().slice(0, 100);
+    const sanitized = value.slice(0, 100);
     setTargetLocation(sanitized);
     setManualOverrides(prev => ({ ...prev, location: true }));
   };
