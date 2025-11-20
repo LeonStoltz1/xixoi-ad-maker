@@ -463,7 +463,8 @@ export default function CreateCampaign() {
 
   return (
     <AppLayout title="Create Campaign">
-      <div className="flex flex-col md:flex-row items-start justify-center gap-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row items-start justify-center gap-8 max-w-7xl mx-auto">
         {/* Left column – All Controls and Targeting */}
         <Card className="w-full md:w-[450px] shrink-0 p-6">
           <div className="space-y-6">
@@ -1013,6 +1014,7 @@ export default function CreateCampaign() {
               </div>
             </Card>
         </Card>
+        </div>
       </div>
     </AppLayout>
   );
