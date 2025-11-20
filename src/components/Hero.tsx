@@ -21,7 +21,7 @@ export const Hero = () => {
       <div className="w-full max-w-content mx-auto text-center">
         <div className="space-y-tight">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight font-heading">
-            Paid Advertising<br />for Every Human.
+            Paid Advertising<br />for Every Humanoid.
           </h1>
           <p className="text-lg md:text-xl pt-tight opacity-70">
             And soon, robots too.
