@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { linkUserToAffiliate } from "@/lib/affiliateTracking";
 import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -143,9 +143,8 @@ export default function Auth() {
   const planDetails = getPlanDetails(planParam);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="flex items-center justify-center px-6 py-12 mt-32">
+    <AppLayout>
+      <div className="flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md space-y-8">
         {planDetails && (
           <div className="border-2 border-primary bg-primary/5 p-4 text-center space-y-1">
@@ -221,6 +220,6 @@ export default function Auth() {
       </div>
       </div>
       <Footer />
-    </div>
+    </AppLayout>
   );
 }

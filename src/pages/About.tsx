@@ -1,13 +1,10 @@
-import { Header } from "@/components/Header";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { Footer } from "@/components/Footer";
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-      
-      <main className="flex-1 container max-w-4xl mx-auto px-6 py-24">
-        <h1 className="text-4xl font-bold mb-8 text-foreground">About xiXoi™</h1>
+    <AppLayout title="About xiXoi™">
+      <main className="flex-1 container max-w-4xl mx-auto">
         
         <div className="space-y-8 text-foreground">
           <section>
@@ -118,7 +115,7 @@ const About = () => {
       </main>
 
       <Footer />
-    </div>
+    </AppLayout>
   );
 };
 
