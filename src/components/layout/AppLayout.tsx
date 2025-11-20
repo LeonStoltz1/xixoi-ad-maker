@@ -22,14 +22,6 @@ export function AppLayout({ title, subtitle, showBack, backTo, backLabel = "Back
         <div className="mx-auto flex h-24 max-w-6xl items-center justify-between px-4">
           {/* Logo + brand */}
           <Link to="/" className="flex items-center gap-3 text-white">
-            <video 
-              src={xixoiLogoVideo} 
-              autoPlay 
-              loop 
-              muted 
-              playsInline
-              className="h-27 w-auto"
-            />
             <div className="flex flex-col leading-tight">
               <span className="text-xs text-neutral-400">PRONOUNCED</span>
               <span className="text-sm font-semibold tracking-[0.25em]">
