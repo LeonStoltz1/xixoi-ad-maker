@@ -66,6 +66,12 @@ export default function CreateCampaign() {
     audience: false
   });
   const [customAudience, setCustomAudience] = useState('');
+  const [undoSnapshot, setUndoSnapshot] = useState<{
+    location: string;
+    budget: number;
+    audience: string;
+    overrides: { location: boolean; budget: boolean; audience: boolean };
+  } | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -196,14 +202,49 @@ export default function CreateCampaign() {
     if (selectedTargetingIndex === null) return;
     const selected = targetingOptions[selectedTargetingIndex];
     
+    // Save current state for undo
+    setUndoSnapshot({
+      location: targetLocation,
+      budget: dailyBudget,
+      audience: customAudience,
+      overrides: { ...manualOverrides }
+    });
+    
+    // Reset to AI values
     setTargetLocation(selected.suggestedLocation);
     setDailyBudget(selected.suggestedBudget);
     setCustomAudience(selected.audienceSummary);
     setManualOverrides({ location: false, budget: false, audience: false });
     
-    toast({
+    const { dismiss } = toast({
       title: "Reset to AI suggestions",
-      description: "All fields restored to AI-recommended values"
+      description: "All fields restored to AI-recommended values",
+      action: (
+        <button
+          onClick={() => {
+            handleUndo();
+            dismiss();
+          }}
+          className="px-3 py-1.5 text-sm font-medium bg-white text-black border border-black rounded hover:bg-black hover:text-white transition-colors"
+        >
+          Undo
+        </button>
+      )
+    });
+  };
+
+  const handleUndo = () => {
+    if (!undoSnapshot) return;
+    
+    setTargetLocation(undoSnapshot.location);
+    setDailyBudget(undoSnapshot.budget);
+    setCustomAudience(undoSnapshot.audience);
+    setManualOverrides(undoSnapshot.overrides);
+    setUndoSnapshot(null);
+    
+    toast({
+      title: "✓ Undo successful",
+      description: "Manual edits restored"
     });
   };
 
