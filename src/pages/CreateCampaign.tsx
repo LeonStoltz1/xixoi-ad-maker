@@ -216,9 +216,9 @@ export default function CreateCampaign() {
 
   return (
     <AppLayout title="Create Campaign">
-      <div className="flex flex-col lg:flex-row gap-8 justify-center">
+      <div className="flex flex-col lg:flex-row gap-8 justify-center items-start">
         {/* Left: Controls */}
-        <div className="space-y-6 w-full lg:w-[375px]">
+        <div className="space-y-6 w-full lg:w-[375px] lg:shrink-0">
           {/* Upload Section */}
           <Card className="p-3">
             <Label className="text-sm font-semibold mb-2 block">Upload Your Content</Label>
@@ -421,14 +421,14 @@ export default function CreateCampaign() {
         </div>
 
         {/* Right: Live Preview */}
-        <div className="lg:sticky lg:top-24 h-fit w-full lg:w-[375px]">
+        <div className="lg:sticky lg:top-24 h-fit w-full lg:w-[375px] lg:shrink-0">
           <div className="mb-4">
             <h2 className="text-xl font-semibold mb-1">Live Preview</h2>
             <p className="text-sm text-muted-foreground">See your ad as you build it</p>
           </div>
           
           {/* Instagram-style preview */}
-          <div className="mx-auto" style={{ maxWidth: '375px' }}>
+          <div className="w-full">
             <Card className="overflow-hidden border-2">
               {/* Instagram header */}
               <div className="p-3 flex items-center gap-2 border-b bg-background">
