@@ -534,6 +534,7 @@ export default function CreateCampaign() {
             ? targetingOptions[selectedTargetingIndex].audienceSummary 
             : 'General'),
           daily_budget: dailyBudget,
+          meta_sub_platforms: metaSubPlatforms, // CRITICAL: Store platform selections to prevent fund mismanagement
         })
         .select()
         .single();
