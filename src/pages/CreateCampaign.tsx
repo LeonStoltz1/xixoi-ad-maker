@@ -462,11 +462,14 @@ export default function CreateCampaign() {
   };
 
   return (
-    <AppLayout title="Create Campaign">
-      <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row items-start justify-center gap-8 max-w-7xl mx-auto">
-        {/* Left column – All Controls and Targeting */}
-        <Card className="w-full md:w-[450px] shrink-0 p-6">
+    <AppLayout>
+      <section className="space-y-6">
+        <h1 className="text-3xl font-semibold tracking-tight">Create Campaign</h1>
+
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between min-w-0">
+          {/* Left column – All Controls and Targeting */}
+          <div className="flex-1 min-w-0">
+            <Card className="w-full p-6">
           <div className="space-y-6">
             {/* Upload Section */}
             <div>
@@ -891,9 +894,11 @@ export default function CreateCampaign() {
             )}
           </div>
         </Card>
+          </div>
 
         {/* Right column – Live Preview Only */}
-        <Card className="w-full md:w-[450px] shrink-0 p-6 md:sticky md:top-24">
+        <div className="flex-1 min-w-0">
+          <Card className="w-full lg:max-w-[480px] p-6 lg:sticky lg:top-24">
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <div>
@@ -1014,8 +1019,9 @@ export default function CreateCampaign() {
               </div>
             </Card>
         </Card>
+          </div>
         </div>
-      </div>
+      </section>
     </AppLayout>
   );
 }
