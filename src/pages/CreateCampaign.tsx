@@ -19,6 +19,7 @@ export default function CreateCampaign() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const { tier: effectiveTier } = useEffectiveTier();
   
   // Upload state
@@ -610,6 +611,21 @@ export default function CreateCampaign() {
     setPreviewUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  const handleTogglePreview = () => {
+    const newShowPreview = !showMobilePreview;
+    setShowMobilePreview(newShowPreview);
+    
+    // If showing preview, scroll to it smoothly after a brief delay to allow render
+    if (newShowPreview && previewRef.current) {
+      setTimeout(() => {
+        previewRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 100);
     }
   };
 
@@ -1253,7 +1269,10 @@ export default function CreateCampaign() {
           </div>
 
         {/* Right column – Live Preview Only */}
-        <div className={`w-full lg:w-1/2 lg:flex-shrink-0 lg:sticky lg:top-24 lg:self-start ${showMobilePreview ? 'block' : 'hidden lg:block'}`}>
+        <div 
+          ref={previewRef}
+          className={`w-full lg:w-1/2 lg:flex-shrink-0 lg:sticky lg:top-24 lg:self-start transition-all duration-300 ${showMobilePreview ? 'block animate-fade-in' : 'hidden lg:block'}`}
+        >
           <Card className="w-full p-6">
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
@@ -1397,8 +1416,8 @@ export default function CreateCampaign() {
 
       {/* Mobile Preview Toggle FAB */}
       <Button
-        onClick={() => setShowMobilePreview(!showMobilePreview)}
-        className="lg:hidden fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50"
+        onClick={handleTogglePreview}
+        className="lg:hidden fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 transition-transform hover:scale-110"
         size="icon"
       >
         {showMobilePreview ? (
