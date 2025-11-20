@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Upload, Image, Video, FileText, ShieldCheck, AlertCircle, CheckCircle2, Info, Home } from "lucide-react";
+import { ArrowLeft, Upload, Image, Video, FileText, ShieldCheck, AlertCircle, CheckCircle2, Info, Home, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { detectAdCategory, checkHousingCompliance, checkEmploymentCompliance, checkCreditCompliance, getComplianceGuide, type ComplianceIssue } from "@/utils/adCompliance";
