@@ -307,8 +307,136 @@ export default function Influencers() {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* Marketing Resources */}
       <section className="py-20 px-6 bg-muted/30">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">Marketing Resources</h2>
+            <p className="text-xl text-muted-foreground">Ready-to-use promotional materials for affiliates</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            {/* Pre-Written Social Posts */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Social Media Posts</CardTitle>
+                <CardDescription>Copy and paste these posts to your social channels</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="text-sm font-mono mb-2">
+                    "Just discovered xiXoi™ - creates professional ads in 60 seconds using AI. No design skills needed. 
+                    Perfect for small businesses and creators. Try it: [your-link]"
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    navigator.clipboard.writeText("Just discovered xiXoi™ - creates professional ads in 60 seconds using AI. No design skills needed. Perfect for small businesses and creators.");
+                  }}>
+                    Copy Post
+                  </Button>
+                </div>
+                
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="text-sm font-mono mb-2">
+                    "Stop wasting time on ad creation. xiXoi™ uses AI to generate Meta, TikTok, and Google ads automatically. 
+                    Upload your product → AI creates the ads → Publish instantly. Get started: [your-link]"
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    navigator.clipboard.writeText("Stop wasting time on ad creation. xiXoi™ uses AI to generate Meta, TikTok, and Google ads automatically. Upload your product → AI creates the ads → Publish instantly.");
+                  }}>
+                    Copy Post
+                  </Button>
+                </div>
+
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="text-sm font-mono mb-2">
+                    "AI-powered advertising for every human. xiXoi™ automates your entire ad workflow - from creative generation 
+                    to multi-platform publishing. No marketing degree required: [your-link]"
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    navigator.clipboard.writeText("AI-powered advertising for every human. xiXoi™ automates your entire ad workflow - from creative generation to multi-platform publishing. No marketing degree required.");
+                  }}>
+                    Copy Post
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Email Templates */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Email Templates</CardTitle>
+                <CardDescription>Professional email copy ready to send</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="text-xs font-semibold mb-2">Subject: Create Professional Ads in 60 Seconds</p>
+                  <p className="text-sm font-mono mb-2">
+                    Hey [Name],<br/><br/>
+                    I wanted to share xiXoi™ with you - it's an AI platform that creates professional ads in under a minute.<br/><br/>
+                    Upload your product image → AI generates ad copy and variants → Publish to Meta, TikTok, Google instantly.<br/><br/>
+                    No design skills. No marketing degree. Just results.<br/><br/>
+                    Try it here: [your-link]
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    navigator.clipboard.writeText("Hey [Name],\n\nI wanted to share xiXoi™ with you - it's an AI platform that creates professional ads in under a minute.\n\nUpload your product image → AI generates ad copy and variants → Publish to Meta, TikTok, Google instantly.\n\nNo design skills. No marketing degree. Just results.\n\nTry it here: [your-link]");
+                  }}>
+                    Copy Email
+                  </Button>
+                </div>
+
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="text-xs font-semibold mb-2">Subject: Stop Paying Agencies for Ad Creation</p>
+                  <p className="text-sm font-mono mb-2">
+                    Hi [Name],<br/><br/>
+                    Paying $2,000-$5,000/month for ad creation? xiXoi™ does it for $49-$149/month using AI.<br/><br/>
+                    • Generate unlimited ad variants<br/>
+                    • Auto-optimize targeting<br/>
+                    • Publish to 5 platforms instantly<br/><br/>
+                    See it in action: [your-link]
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    navigator.clipboard.writeText("Hi [Name],\n\nPaying $2,000-$5,000/month for ad creation? xiXoi™ does it for $49-$149/month using AI.\n\n• Generate unlimited ad variants\n• Auto-optimize targeting\n• Publish to 5 platforms instantly\n\nSee it in action: [your-link]");
+                  }}>
+                    Copy Email
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Banner Graphics */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Banner Graphics & Assets</CardTitle>
+              <CardDescription>Coming soon: downloadable banners, social graphics, and brand assets</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-6 bg-muted rounded-lg text-center">
+                  <p className="text-sm font-semibold mb-1">1200x628 Social Banner</p>
+                  <p className="text-xs text-muted-foreground mb-3">Perfect for Facebook, LinkedIn, Twitter</p>
+                  <Button size="sm" variant="outline" disabled>Coming Soon</Button>
+                </div>
+                
+                <div className="p-6 bg-muted rounded-lg text-center">
+                  <p className="text-sm font-semibold mb-1">1080x1080 Instagram Square</p>
+                  <p className="text-xs text-muted-foreground mb-3">Instagram feed and carousel posts</p>
+                  <Button size="sm" variant="outline" disabled>Coming Soon</Button>
+                </div>
+                
+                <div className="p-6 bg-muted rounded-lg text-center">
+                  <p className="text-sm font-semibold mb-1">1080x1920 Story Format</p>
+                  <p className="text-xs text-muted-foreground mb-3">Instagram, TikTok, Facebook Stories</p>
+                  <Button size="sm" variant="outline" disabled>Coming Soon</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-20 px-6">
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4">Frequently Asked Questions</h2>
@@ -409,7 +537,8 @@ export default function Influencers() {
                 Do you provide marketing materials?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Yes! We provide banners, social media graphics, email templates, and pre-written copy you can use. 
+                Yes! Scroll up to the Marketing Resources section to find pre-written social media posts, email templates, 
+                and promotional copy you can use immediately. Downloadable banner graphics and brand assets are coming soon. 
                 You can also create your own content - many affiliates find success with video reviews, tutorials, 
                 or blog posts about how xiXoi™ helps businesses create better ads.
               </AccordionContent>
