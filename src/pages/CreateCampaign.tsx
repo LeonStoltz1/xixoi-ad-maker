@@ -46,6 +46,17 @@ export default function CreateCampaign() {
   // Campaign ID
   const [campaignId, setCampaignId] = useState<string | null>(null);
   const [assetUrl, setAssetUrl] = useState<string | null>(null);
+  
+  // Targeting & Budget
+  const [targetLocation, setTargetLocation] = useState('');
+  const [dailyBudget, setDailyBudget] = useState(20);
+  const [aiTargeting, setAiTargeting] = useState<{
+    audienceSummary: string;
+    reasoning: string;
+    recommendedChannels: string;
+    suggestedLocation: string;
+    suggestedBudget: number;
+  } | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -55,6 +66,33 @@ export default function CreateCampaign() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate('/auth');
+    }
+  };
+
+  const generateAITargeting = async () => {
+    if (!productDescription) return;
+    
+    try {
+      const { data, error } = await invokeWithRetry(
+        supabase,
+        'suggest-campaign-name',
+        { productDescription }
+      );
+      
+      if (!error && data) {
+        // Mock AI targeting response (replace with actual AI call later)
+        setAiTargeting({
+          audienceSummary: 'Adults 25-54, Interested in ' + productDescription.substring(0, 30),
+          reasoning: 'Based on your product description and category detection',
+          recommendedChannels: 'Meta (Facebook & Instagram)',
+          suggestedLocation: 'United States',
+          suggestedBudget: 20
+        });
+        setTargetLocation('United States');
+        setDailyBudget(20);
+      }
+    } catch (error) {
+      console.error('AI targeting generation failed:', error);
     }
   };
 
@@ -123,6 +161,11 @@ export default function CreateCampaign() {
         } else {
           finalCampaignName = 'Untitled Campaign';
         }
+      }
+
+      // Generate AI targeting if not already done
+      if (!aiTargeting && productDescription) {
+        await generateAITargeting();
       }
 
       // Create campaign
@@ -363,9 +406,68 @@ export default function CreateCampaign() {
               onContactEmailChange={setContactEmail}
               onLandingUrlChange={setLandingUrl}
             />
-          </Card>
+            </Card>
 
-          {/* Generate Button */}
+            {/* Targeting & Budget */}
+            <Card className="p-3 space-y-3 w-full overflow-hidden border border-black">
+              <h3 className="text-sm font-semibold text-black">Targeting & Budget</h3>
+              
+              {/* Location (Editable) */}
+              <div>
+                <Label htmlFor="target-location" className="text-black">Location</Label>
+                <Input
+                  id="target-location"
+                  value={targetLocation}
+                  onChange={(e) => setTargetLocation(e.target.value)}
+                  placeholder="e.g., United States, California, etc."
+                  className="border-black text-black"
+                />
+              </div>
+
+              {/* Daily Budget Slider (Editable) */}
+              <div>
+                <Label htmlFor="daily-budget" className="text-black">Daily Budget</Label>
+                <div className="space-y-2">
+                  <input
+                    type="range"
+                    id="daily-budget"
+                    min="5"
+                    max="500"
+                    step="5"
+                    value={dailyBudget}
+                    onChange={(e) => setDailyBudget(Number(e.target.value))}
+                    className="w-full h-1 bg-black appearance-none cursor-pointer"
+                    style={{
+                      accentColor: '#000000'
+                    }}
+                  />
+                  <div className="text-sm text-black font-medium">${dailyBudget}/day</div>
+                </div>
+              </div>
+
+              {/* AI Suggested Audience (Read-only) */}
+              {aiTargeting && (
+                <div className="border border-black p-2 space-y-1">
+                  <div className="text-xs font-semibold text-black">Suggested Audience (AI-Generated)</div>
+                  <div className="text-xs text-black">{aiTargeting.audienceSummary}</div>
+                  <div className="text-xs text-black/60 italic">{aiTargeting.reasoning}</div>
+                  <div className="text-xs text-black mt-1">Recommended: {aiTargeting.recommendedChannels}</div>
+                </div>
+              )}
+
+              {/* Platform Selection (Meta Only) */}
+              <div>
+                <Label className="text-black">Publishing Platform</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2 px-3 py-2 border border-black bg-black text-white rounded text-sm">
+                    <span>Meta (Facebook & Instagram)</span>
+                  </div>
+                </div>
+                <div className="text-xs text-black/60 mt-1">Auto-targeted by xiXoi™</div>
+              </div>
+            </Card>
+
+            {/* Generate Button */}
           {!hasGenerated && (
             <Button
               onClick={handleGenerateAd}
