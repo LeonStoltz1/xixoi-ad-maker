@@ -3,10 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAffiliate } from '../hooks/useAffiliate';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Copy, DollarSign, Users, TrendingUp } from 'lucide-react';
+import { Copy, DollarSign, Users, TrendingUp, Target } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Footer } from '@/components/Footer';
+import { Progress } from '@/components/ui/progress';
+import { getNextReferralMilestone, getNextEarningsMilestone } from '@/lib/affiliateMilestones';
 
 const AffiliatesPage = () => {
   const navigate = useNavigate();
@@ -330,6 +332,69 @@ const AffiliatesPage = () => {
                   ).toFixed(2)}
                 </div>
               </div>
+            </div>
+
+            {/* Milestone Progress */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              {(() => {
+                const referralProgress = getNextReferralMilestone(referrals.length);
+                return (
+                  <div className="bg-card border border-border p-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-medium flex items-center gap-2">
+                        <Target className="w-4 h-4 text-primary" />
+                        Referral Milestone Progress
+                      </h3>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{referralProgress.label}</span>
+                        <span className="font-medium">{Math.round(referralProgress.percentage)}%</span>
+                      </div>
+                      <Progress value={referralProgress.percentage} className="h-2" />
+                      {referralProgress.achieved ? (
+                        <p className="text-xs text-primary font-medium mt-2">
+                          🎉 {referralProgress.label}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {referralProgress.next - referralProgress.current} more referral{referralProgress.next - referralProgress.current !== 1 ? 's' : ''} to unlock next milestone
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+              
+              {(() => {
+                const earningsProgress = getNextEarningsMilestone(Number(affiliate.total_earned ?? 0));
+                return (
+                  <div className="bg-card border border-border p-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-medium flex items-center gap-2">
+                        <Target className="w-4 h-4 text-primary" />
+                        Earnings Milestone Progress
+                      </h3>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{earningsProgress.label}</span>
+                        <span className="font-medium">{Math.round(earningsProgress.percentage)}%</span>
+                      </div>
+                      <Progress value={earningsProgress.percentage} className="h-2" />
+                      {earningsProgress.achieved ? (
+                        <p className="text-xs text-primary font-medium mt-2">
+                          🎉 {earningsProgress.label}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground mt-2">
+                          ${(earningsProgress.next - earningsProgress.current).toFixed(2)} more to unlock next milestone
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Request Payout */}
