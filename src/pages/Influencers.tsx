@@ -105,7 +105,7 @@ export default function Influencers() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Earn 20% commission every month your referrals stay subscribed. Request payouts anytime you reach $100.
+                  Earn 20% commission every month your referrals stay subscribed. Automatic monthly payouts for $100+ earnings. Below $100? Request payout when closing account.
                 </p>
               </CardContent>
             </Card>
@@ -297,12 +297,12 @@ export default function Influencers() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Check className="w-5 h-5 text-primary" />
-                  Fast Monthly Payouts
+                  Automatic Monthly Payouts
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Request payouts anytime you reach $100. We process payments quickly via Stripe Connect to your bank account.
+                  Earn $100+ monthly? We automatically process payments via Stripe Connect to your bank account. Simple, reliable, no requests needed.
                 </p>
               </CardContent>
             </Card>
@@ -563,9 +563,10 @@ That's it. The entire process took less than two minutes. If you want to try xiX
                 When and how do I get paid?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                You can request a payout anytime your balance reaches $100 or more. We process payouts via Stripe Connect, 
-                which deposits directly into your bank account. Most payments are processed within 3-5 business days of your 
-                payout request. You'll receive an email confirmation when your payout is processed.
+                Payouts are automatic every month if you've earned $100 or more. We process payments via Stripe Connect, 
+                which deposits directly into your bank account within 3-5 business days. If your monthly earnings are below $100, 
+                you can request a payout when closing your affiliate account. This policy helps us cover Stripe transaction fees 
+                and ensures efficient payment processing for all affiliates.
               </AccordionContent>
             </AccordionItem>
 
