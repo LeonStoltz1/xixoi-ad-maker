@@ -587,7 +587,7 @@ export default function CreateCampaign() {
             ) : (
               <div className="space-y-3">
                 <div>
-                  <Label htmlFor="campaign-name-text">Ad Header (Required)</Label>
+                  <Label htmlFor="campaign-name-text">Campaign Name (Required)</Label>
                   <Input
                     id="campaign-name-text"
                     value={campaignName}
@@ -595,6 +595,19 @@ export default function CreateCampaign() {
                     placeholder="e.g., Summer Sale 2024"
                   />
                 </div>
+
+                <div>
+                  <Label htmlFor="headline-text">Headline (Optional)</Label>
+                  <Input
+                    id="headline-text"
+                    value={headline}
+                    onChange={(e) => setHeadline(e.target.value)}
+                    placeholder="e.g., Live your life unapologetically"
+                    maxLength={40}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">{headline.length}/40 characters</p>
+                </div>
+
                 <div>
                   <Label htmlFor="description-text">Product/Service Description *</Label>
                   <Textarea
@@ -613,13 +626,25 @@ export default function CreateCampaign() {
             {uploadType !== 'text' && (
               <div className="space-y-3">
                 <div>
-                  <Label htmlFor="campaign-name">Ad Header (Required)</Label>
+                  <Label htmlFor="campaign-name">Campaign Name (Required)</Label>
                   <Input
                     id="campaign-name"
                     value={campaignName}
                     onChange={(e) => setCampaignName(e.target.value)}
                     placeholder="e.g., Summer Sale 2024"
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="headline">Headline (Optional)</Label>
+                  <Input
+                    id="headline"
+                    value={headline}
+                    onChange={(e) => setHeadline(e.target.value)}
+                    placeholder="e.g., Live your life unapologetically"
+                    maxLength={40}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">{headline.length}/40 characters</p>
                 </div>
 
                 <div>
