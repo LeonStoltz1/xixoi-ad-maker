@@ -7,15 +7,15 @@ export const UploadSection = () => {
         <div className="grid grid-cols-3 gap-8 mb-tight">
           <div className="flex flex-col items-center gap-3">
             <Image className="w-12 h-12 md:w-16 md:h-16 stroke-[1]" />
-            <span className="text-xs md:text-sm">Image</span>
+            <span className="text-xs md:text-sm">Static Ad</span>
           </div>
           <div className="flex flex-col items-center gap-3">
             <Video className="w-12 h-12 md:w-16 md:h-16 stroke-[1]" />
-            <span className="text-xs md:text-sm">Video</span>
+            <span className="text-xs md:text-sm">Video Ad</span>
           </div>
           <div className="flex flex-col items-center gap-3">
             <FileText className="w-12 h-12 md:w-16 md:h-16 stroke-[1]" />
-            <span className="text-xs md:text-sm">Text</span>
+            <span className="text-xs md:text-sm">Text Ad</span>
           </div>
         </div>
         
