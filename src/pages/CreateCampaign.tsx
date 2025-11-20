@@ -995,26 +995,43 @@ export default function CreateCampaign() {
                 </div>
               )}
               
-              {/* Content */}
-              <div className="p-3 space-y-2 bg-background">
+              {/* Content - Editable */}
+              <div className="p-3 space-y-3 bg-background">
                 <div>
-                  <p className="font-semibold text-sm leading-tight">
-                    {useCustomCopy 
-                      ? (customHeadline || "Your custom headline...") 
-                      : (headline || "Your headline will appear here")}
-                  </p>
+                  <Label htmlFor="preview-headline" className="text-xs text-muted-foreground mb-1 block">Headline</Label>
+                  <Input
+                    id="preview-headline"
+                    value={headline}
+                    onChange={(e) => setHeadline(e.target.value)}
+                    placeholder="Your headline will appear here"
+                    className="font-semibold text-sm h-auto py-1 px-2 border-dashed"
+                    maxLength={40}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">{headline.length}/40</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground leading-snug">
-                    {useCustomCopy 
-                      ? (customBodyCopy || "Your custom ad copy...") 
-                      : (bodyCopy || productDescription || "Your ad copy will appear here as you type...")}
-                  </p>
+                  <Label htmlFor="preview-body" className="text-xs text-muted-foreground mb-1 block">Body Copy</Label>
+                  <Textarea
+                    id="preview-body"
+                    value={bodyCopy}
+                    onChange={(e) => setBodyCopy(e.target.value)}
+                    placeholder="Your ad copy will appear here..."
+                    className="text-sm min-h-[60px] border-dashed resize-none"
+                    maxLength={125}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">{bodyCopy.length}/125</p>
                 </div>
                 <div className="pt-1">
-                  <Button size="sm" className="w-full h-9 text-sm font-semibold">
-                    {useCustomCopy ? customCtaText : ctaText}
-                  </Button>
+                  <Label htmlFor="preview-cta" className="text-xs text-muted-foreground mb-1 block">Call-to-Action</Label>
+                  <Input
+                    id="preview-cta"
+                    value={ctaText}
+                    onChange={(e) => setCtaText(e.target.value)}
+                    placeholder="Learn More"
+                    className="text-center font-semibold border-dashed h-9"
+                    maxLength={20}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">{ctaText.length}/20</p>
                 </div>
               </div>
             </Card>
