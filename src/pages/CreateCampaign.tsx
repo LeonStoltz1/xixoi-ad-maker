@@ -218,7 +218,7 @@ export default function CreateCampaign() {
     <AppLayout title="Create Campaign">
       <div className="flex flex-col lg:flex-row gap-8 justify-center items-start">
         {/* Left: Controls */}
-        <div className="space-y-6 w-full lg:w-[375px] lg:min-w-[375px] lg:max-w-[375px]">
+        <div className="space-y-6 w-[375px] min-w-[375px] max-w-[375px]">
           {/* Upload Section */}
           <Card className="p-3">
             <Label className="text-sm font-semibold mb-2 block">Upload Your Content</Label>
@@ -421,7 +421,7 @@ export default function CreateCampaign() {
         </div>
 
         {/* Right: Live Preview */}
-        <div className="lg:sticky lg:top-24 h-fit w-full lg:w-[375px] lg:min-w-[375px] lg:max-w-[375px]">
+        <div className="lg:sticky lg:top-24 h-fit w-[375px] min-w-[375px] max-w-[375px]">
           <div className="mb-4">
             <h2 className="text-xl font-semibold mb-1">Live Preview</h2>
             <p className="text-sm text-muted-foreground">See your ad as you build it</p>
