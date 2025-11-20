@@ -642,42 +642,6 @@ export default function CreateCampaign() {
               />
             </div>
 
-            {/* Upload Type Selection */}
-            <div className="space-y-3">
-              <label className="text-sm font-medium uppercase tracking-wide">Upload Type</label>
-              <div className="grid grid-cols-3 gap-3">
-                <button
-                  onClick={() => setUploadType('image')}
-                  className={`border-2 p-6 flex flex-col items-center gap-3 transition-all ${
-                    uploadType === 'image' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
-                  }`}
-                >
-                  <Image className="w-8 h-8" />
-                  <span className="text-sm font-medium">Image</span>
-                </button>
-                
-                <button
-                  onClick={() => setUploadType('video')}
-                  className={`border-2 p-6 flex flex-col items-center gap-3 transition-all ${
-                    uploadType === 'video' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
-                  }`}
-                >
-                  <Video className="w-8 h-8" />
-                  <span className="text-sm font-medium">Video</span>
-                </button>
-                
-                <button
-                  onClick={() => setUploadType('text')}
-                  className={`border-2 p-6 flex flex-col items-center gap-3 transition-all ${
-                    uploadType === 'text' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
-                  }`}
-                >
-                  <FileText className="w-8 h-8" />
-                  <span className="text-sm font-medium">Text</span>
-                </button>
-              </div>
-            </div>
-
             {/* Content Input - Always show description */}
             <div className="space-y-4">
               {/* Real Estate Mode Toggle (only for realtors in realtor view mode) */}
@@ -838,6 +802,42 @@ export default function CreateCampaign() {
                   </details>
                 </div>
               )}
+            </div>
+
+            {/* Upload Type Selection */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium uppercase tracking-wide">Upload Type</label>
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  onClick={() => setUploadType('image')}
+                  className={`border-2 p-6 flex flex-col items-center gap-3 transition-all ${
+                    uploadType === 'image' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
+                  }`}
+                >
+                  <Image className="w-8 h-8" />
+                  <span className="text-sm font-medium">Image</span>
+                </button>
+                
+                <button
+                  onClick={() => setUploadType('video')}
+                  className={`border-2 p-6 flex flex-col items-center gap-3 transition-all ${
+                    uploadType === 'video' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
+                  }`}
+                >
+                  <Video className="w-8 h-8" />
+                  <span className="text-sm font-medium">Video</span>
+                </button>
+                
+                <button
+                  onClick={() => setUploadType('text')}
+                  className={`border-2 p-6 flex flex-col items-center gap-3 transition-all ${
+                    uploadType === 'text' ? 'border-foreground bg-foreground/5' : 'border-foreground/20 hover:border-foreground/50'
+                  }`}
+                >
+                  <FileText className="w-8 h-8" />
+                  <span className="text-sm font-medium">Text</span>
+                </button>
+              </div>
             </div>
 
             {(uploadType === 'image' || uploadType === 'video') && (
