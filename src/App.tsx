@@ -41,6 +41,7 @@ import VerifyAd from "./pages/political/VerifyAd";
 import PlatformCredentialsAdmin from "./pages/admin/PlatformCredentialsAdmin";
 import TestMetaPublish from "./pages/admin/TestMetaPublish";
 import SeedTestData from "./pages/admin/SeedTestData";
+import TierTestingChecklist from "./pages/admin/TierTestingChecklist";
 import ConnectPlatforms from "./pages/ConnectPlatforms";
 import CustomerIntake from "./pages/CustomerIntake";
 
@@ -109,6 +110,7 @@ const App = () => (
           <Route path="/admin/platform-credentials" element={<PlatformCredentialsAdmin />} />
           <Route path="/admin/test-meta" element={<TestMetaPublish />} />
           <Route path="/admin/seed-data" element={<SeedTestData />} />
+          <Route path="/admin/tier-testing" element={<TierTestingChecklist />} />
           <Route path="/customer-intake" element={<CustomerIntake />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
