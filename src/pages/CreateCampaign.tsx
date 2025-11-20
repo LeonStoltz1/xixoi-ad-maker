@@ -84,6 +84,17 @@ export default function CreateCampaign() {
     checkAuth();
   }, []);
 
+  // Auto-generate targeting when product description changes
+  useEffect(() => {
+    if (!productDescription || productDescription.trim().length < 10) return;
+    
+    const timeoutId = setTimeout(() => {
+      generateAITargeting();
+    }, 1000); // 1 second debounce
+    
+    return () => clearTimeout(timeoutId);
+  }, [productDescription]);
+
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -938,7 +949,7 @@ export default function CreateCampaign() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground leading-snug">
-                    {bodyCopy || "Your ad copy will appear here as you type..."}
+                    {bodyCopy || productDescription || "Your ad copy will appear here as you type..."}
                   </p>
                 </div>
                 <div className="pt-1">
