@@ -30,14 +30,29 @@ serve(async (req) => {
       );
     }
 
-    const systemPrompt = `You are a marketing expert who creates compelling, concise campaign names. 
-Generate a short, memorable campaign name (3-5 words max) based on the product/service description.
-The name should be professional, attention-grabbing, and clearly communicate the value proposition.
-Return ONLY the campaign name, nothing else.`;
+    const systemPrompt = `You are a marketing expert who creates clear, searchable campaign names following a standard filing system.
 
-    const userPrompt = `Product/Service: ${description}${productType ? `\nType: ${productType}` : ''}
+CRITICAL FORMAT REQUIREMENTS:
+- Use this exact format: "YYYY-MM-DD | Category | 3-5 Keywords"
+- Date format must be YYYY-MM-DD (e.g., 2025-11-20)
+- Category must be one word describing the business type (e.g., Restaurant, Realtor, Fitness, Retail, Service, Tech, Healthcare, etc.)
+- Keywords must be 3-5 descriptive words that capture the product/service essence
+- Total name should be under 60 characters
+- Use title case for category and keywords
+- Use vertical bar | as separators with spaces
 
-Generate a compelling campaign name for this product/service.`;
+EXAMPLES:
+"2025-11-20 | Headphones | Premium Noise-Canceling Audio"
+"2025-11-20 | Restaurant | Italian Dinner Special Promo"
+"2025-11-20 | Realtor | Luxury Downtown Condo Listing"
+"2025-11-20 | Fitness | Summer Bootcamp Early Bird"
+
+Return ONLY the campaign name in this format, nothing else.`;
+
+    const userPrompt = `Today's date: ${new Date().toISOString().split('T')[0]}
+Product/Service: ${description}${productType ? `\nType: ${productType}` : ''}
+
+Generate a searchable campaign name following the exact format specified.`;
 
     console.log('Calling Lovable AI for campaign name suggestion...');
 

@@ -306,6 +306,60 @@ export default function CreateCampaign() {
       return;
     }
 
+    // Auto-suggest campaign name if empty
+    if (!campaignName.trim() && textContent.trim()) {
+      console.log('Campaign name empty, auto-suggesting...');
+      setSuggestingName(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('suggest-campaign-name', {
+          body: { 
+            description: textContent,
+            productType: adCategory 
+          }
+        });
+
+        if (error) {
+          console.error('Error auto-suggesting name:', error);
+          toast({
+            title: "Campaign name required",
+            description: "Please enter a campaign name before continuing.",
+            variant: "destructive"
+          });
+          setSuggestingName(false);
+          return;
+        }
+
+        if (data?.suggestedName) {
+          setCampaignName(data.suggestedName);
+          toast({
+            title: "Campaign name auto-generated",
+            description: "AI created a searchable name based on your description.",
+          });
+        }
+      } catch (error: any) {
+        console.error('Error auto-suggesting campaign name:', error);
+        toast({
+          title: "Campaign name required",
+          description: "Please enter a campaign name before continuing.",
+          variant: "destructive"
+        });
+        setSuggestingName(false);
+        return;
+      } finally {
+        setSuggestingName(false);
+      }
+    }
+
+    // Validate campaign name is present
+    if (!campaignName.trim()) {
+      toast({
+        title: "Campaign name required",
+        description: "Every campaign must have a name for easy searching and organization.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Check user plan and enforce tier limits
     const { data: profile } = await supabase
       .from('profiles')
@@ -348,7 +402,7 @@ export default function CreateCampaign() {
       // Create campaign with media rights confirmation and optional real estate data
       const campaignData: any = {
         user_id: user.id,
-        name: campaignName || 'Untitled Campaign',
+        name: campaignName.trim(), // Name is now guaranteed to exist
         status: 'draft',
         has_watermark: hasWatermark,
         media_rights_confirmed_at: new Date().toISOString(),
@@ -603,7 +657,7 @@ export default function CreateCampaign() {
           <div className="border border-foreground p-8 space-y-6">
             {/* Campaign Name */}
             <div className="space-y-2">
-              <label className="text-sm font-medium uppercase tracking-wide">Campaign Name</label>
+              <label className="text-sm font-medium uppercase tracking-wide">Campaign Name *</label>
               <div className="flex gap-2">
                 <Input
                   value={campaignName}
@@ -622,7 +676,7 @@ export default function CreateCampaign() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Add your description below, then click "AI Suggest" for a campaign name
+                Required. If left empty, AI will auto-generate a searchable name based on your description (Format: Date | Category | Keywords)
               </p>
             </div>
 
