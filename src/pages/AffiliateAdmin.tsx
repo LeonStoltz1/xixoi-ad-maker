@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { PlayCircle, Ban, Mail } from "lucide-react";
-import { Header } from "@/components/Header";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 interface Affiliate {
   id: string;
@@ -138,12 +138,10 @@ export default function AffiliateAdmin() {
   const totalPending = totalEarnings - totalPaid;
 
   return (
-    <div className="min-h-screen bg-background py-12 px-6 pt-40">
-      <Header />
+    <AppLayout title="Affiliate Management" showBack backTo="/dashboard">
       <div className="container mx-auto max-w-6xl">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl md:text-4xl font-bold">Affiliate Management</h1>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => navigate('/payouts')}>
                 View Payouts
@@ -286,6 +284,6 @@ export default function AffiliateAdmin() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AppLayout>
   );
 }

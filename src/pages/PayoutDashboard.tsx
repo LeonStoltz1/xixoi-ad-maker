@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { ExportPayouts } from "@/components/ExportPayouts";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 interface Payout {
   id: string;
@@ -41,9 +42,8 @@ export default function PayoutDashboard() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <AppLayout title="Payout Dashboard" showBack backTo="/dashboard">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold">Payout Dashboard</h1>
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => navigate('/payout-settings')}>
             Settings
@@ -107,6 +107,6 @@ export default function PayoutDashboard() {
         <p>* Affiliate earns 20% lifetime on full MRR</p>
         <p>* Agency earns 10% on upgrade delta only</p>
       </div>
-    </div>
+    </AppLayout>
   );
 }
