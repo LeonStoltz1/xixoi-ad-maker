@@ -87,16 +87,17 @@ export function CampaignContactSection({
       {/* Conditional fields based on goal */}
       {primaryGoal === 'website' && (
         <div className="space-y-2">
-          <Label htmlFor="landing-url">Landing Page URL *</Label>
+          <Label htmlFor="landing-url">Landing Page URL * (Required by Meta)</Label>
           <Input
             id="landing-url"
             type="url"
             value={landingUrl || ''}
             onChange={(e) => onLandingUrlChange(e.target.value)}
             placeholder="https://example.com/landing-page"
+            required
           />
           <p className="text-xs text-muted-foreground">
-            Where should the ad take people when they click
+            Where your ad will take people when they click
           </p>
         </div>
       )}

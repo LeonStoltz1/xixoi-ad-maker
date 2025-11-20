@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Upload, Image as ImageIcon, Video as VideoIcon, FileText, X, Loader2, Sparkles, RefreshCw } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Upload, Image as ImageIcon, Video as VideoIcon, FileText, X, Loader2, Sparkles, RefreshCw, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { invokeWithRetry } from "@/lib/retryWithBackoff";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -331,10 +332,51 @@ export default function CreateCampaign() {
   };
 
   const handleGenerateAd = async () => {
+    // Validate Campaign Name
+    if (!campaignName.trim()) {
+      toast({
+        title: "Campaign name required",
+        description: "Please enter a name for your campaign",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate Headline (required by Meta)
+    if (!headline.trim()) {
+      toast({
+        title: "Headline required",
+        description: "Please enter a headline for your ad (required by Meta)",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate Body Copy (required by Meta)
+    if (!bodyCopy.trim()) {
+      toast({
+        title: "Body copy required",
+        description: "Please enter the ad description (required by Meta)",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate Product Description
     if (!productDescription.trim()) {
       toast({
         title: "Description required",
         description: "Please describe your product or service",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate Landing URL when website goal is selected
+    if (primaryGoal === 'website' && !landingUrl?.trim()) {
+      toast({
+        title: "Landing URL required",
+        description: "Please enter your website URL (required by Meta)",
         variant: "destructive"
       });
       return;
@@ -505,6 +547,14 @@ export default function CreateCampaign() {
           <div className="flex-1 min-w-0">
             <Card className="w-full p-6">
           <div className="space-y-6">
+            {/* Meta Requirements Info */}
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                <strong>Meta Requirements:</strong> Campaign Name, Headline, Body Copy, and Landing URL are required by Meta to publish your ad. Product Description helps our AI understand your offering.
+              </AlertDescription>
+            </Alert>
+
             {/* Upload Section */}
             <div>
             <Label className="text-sm font-semibold mb-2 block">Upload Your Content</Label>
@@ -587,25 +637,42 @@ export default function CreateCampaign() {
             ) : (
               <div className="space-y-3">
                 <div>
-                  <Label htmlFor="campaign-name-text">Campaign Name (Required)</Label>
+                  <Label htmlFor="campaign-name-text">Campaign Name *</Label>
                   <Input
                     id="campaign-name-text"
                     value={campaignName}
                     onChange={(e) => setCampaignName(e.target.value)}
                     placeholder="e.g., Summer Sale 2024"
+                    required
                   />
+                  <p className="text-xs text-muted-foreground mt-1">Internal name for your campaign</p>
                 </div>
 
                 <div>
-                  <Label htmlFor="headline-text">Headline (Optional)</Label>
+                  <Label htmlFor="headline-text">Headline *</Label>
                   <Input
                     id="headline-text"
                     value={headline}
                     onChange={(e) => setHeadline(e.target.value)}
                     placeholder="e.g., Live your life unapologetically"
                     maxLength={40}
+                    required
                   />
-                  <p className="text-xs text-muted-foreground mt-1">{headline.length}/40 characters</p>
+                  <p className="text-xs text-muted-foreground mt-1">{headline.length}/40 characters - Main headline shown to customers</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="body-copy-text">Body Copy *</Label>
+                  <Textarea
+                    id="body-copy-text"
+                    value={bodyCopy}
+                    onChange={(e) => setBodyCopy(e.target.value)}
+                    placeholder="e.g., Discover our latest collection designed for modern living..."
+                    maxLength={125}
+                    rows={3}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">{bodyCopy.length}/125 characters - Description shown with your ad</p>
                 </div>
 
                 <div>
@@ -626,25 +693,42 @@ export default function CreateCampaign() {
             {uploadType !== 'text' && (
               <div className="space-y-3">
                 <div>
-                  <Label htmlFor="campaign-name">Campaign Name (Required)</Label>
+                  <Label htmlFor="campaign-name">Campaign Name *</Label>
                   <Input
                     id="campaign-name"
                     value={campaignName}
                     onChange={(e) => setCampaignName(e.target.value)}
                     placeholder="e.g., Summer Sale 2024"
+                    required
                   />
+                  <p className="text-xs text-muted-foreground mt-1">Internal name for your campaign</p>
                 </div>
 
                 <div>
-                  <Label htmlFor="headline">Headline (Optional)</Label>
+                  <Label htmlFor="headline">Headline *</Label>
                   <Input
                     id="headline"
                     value={headline}
                     onChange={(e) => setHeadline(e.target.value)}
                     placeholder="e.g., Live your life unapologetically"
                     maxLength={40}
+                    required
                   />
-                  <p className="text-xs text-muted-foreground mt-1">{headline.length}/40 characters</p>
+                  <p className="text-xs text-muted-foreground mt-1">{headline.length}/40 characters - Main headline shown to customers</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="body-copy">Body Copy *</Label>
+                  <Textarea
+                    id="body-copy"
+                    value={bodyCopy}
+                    onChange={(e) => setBodyCopy(e.target.value)}
+                    placeholder="e.g., Discover our latest collection designed for modern living..."
+                    maxLength={125}
+                    rows={3}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">{bodyCopy.length}/125 characters - Description shown with your ad</p>
                 </div>
 
                 <div>
