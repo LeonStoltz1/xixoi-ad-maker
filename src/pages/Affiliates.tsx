@@ -3,18 +3,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAffiliate } from '../hooks/useAffiliate';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Copy, DollarSign, Users, TrendingUp, Target } from 'lucide-react';
+import { Copy, DollarSign, Users, TrendingUp, Target, Award } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Footer } from '@/components/Footer';
 import { Progress } from '@/components/ui/progress';
 import { getNextReferralMilestone, getNextEarningsMilestone } from '@/lib/affiliateMilestones';
+import { getMilestoneConfig } from '@/lib/milestoneConfig';
+import { format } from 'date-fns';
 
 const AffiliatesPage = () => {
   const navigate = useNavigate();
   const { affiliate, loading, error, createAffiliate } = useAffiliate();
   const [referrals, setReferrals] = useState<any[]>([]);
   const [payouts, setPayouts] = useState<any[]>([]);
+  const [milestones, setMilestones] = useState<any[]>([]);
   const [isRequestingPayout, setIsRequestingPayout] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
@@ -76,6 +79,13 @@ const AffiliatesPage = () => {
         .eq('affiliate_id', affiliate.id)
         .order('requested_at', { ascending: false });
       setPayouts(payoutsData ?? []);
+
+      const { data: milestonesData } = await (supabase as any)
+        .from('affiliate_milestones')
+        .select('*')
+        .eq('affiliate_id', affiliate.id)
+        .order('achieved_at', { ascending: false });
+      setMilestones(milestonesData ?? []);
     };
     
     fetchData();
@@ -396,6 +406,43 @@ const AffiliatesPage = () => {
                 );
               })()}
             </div>
+
+            {/* Achievement Badges */}
+            {milestones.length > 0 && (
+              <div className="bg-card border border-border p-6 mb-6">
+                <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-primary" />
+                  Milestones Achieved
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {milestones.map((milestone) => {
+                    const config = getMilestoneConfig(milestone.milestone_type);
+                    const IconComponent = config.icon;
+                    return (
+                      <div
+                        key={milestone.id}
+                        className="bg-gradient-to-br from-primary/10 to-background border-2 border-primary/20 p-4 rounded-lg hover:border-primary/40 transition-colors"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-lg bg-background ${config.color}`}>
+                            <IconComponent className="w-5 h-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-sm mb-1">{config.label}</h3>
+                            <p className="text-xs text-muted-foreground mb-2">
+                              {config.description}
+                            </p>
+                            <p className="text-xs text-primary font-medium">
+                              Achieved {format(new Date(milestone.achieved_at), 'MMM d, yyyy')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Request Payout */}
             <div className="bg-card border border-border p-6 mb-6">
