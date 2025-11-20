@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import xixoiLogo from "@/assets/xixoi-logo.png";
+import xixoiLogoVideo from "@/assets/xixoi-logo.mp4";
 
 type AppLayoutProps = {
   title?: string;
@@ -22,7 +22,14 @@ export function AppLayout({ title, subtitle, showBack, backTo, backLabel = "Back
         <div className="mx-auto flex h-24 max-w-6xl items-center justify-between px-4">
           {/* Logo + brand */}
           <Link to="/" className="flex items-center gap-3 text-white">
-            <img src={xixoiLogo} alt="xiXoi" className="h-12 w-auto" />
+            <video 
+              src={xixoiLogoVideo} 
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+              className="h-12 w-auto"
+            />
             <div className="flex flex-col leading-tight">
               <span className="text-xs text-neutral-400">PRONOUNCED</span>
               <span className="text-sm font-semibold tracking-[0.25em]">
