@@ -465,10 +465,10 @@ export default function CreateCampaign() {
     <AppLayout title="Create Campaign">
       <div className="flex flex-row items-start justify-center gap-8 xl:gap-16">
         {/* Left column – Controls */}
-        <div className="w-[375px] shrink-0">
+        <Card className="w-[375px] shrink-0 p-6">
           <div className="space-y-6">
             {/* Upload Section */}
-            <Card className="p-3 w-full overflow-hidden">
+            <div>
             <Label className="text-sm font-semibold mb-2 block">Upload Your Content</Label>
             
             {/* Upload Type Selector */}
@@ -568,12 +568,12 @@ export default function CreateCampaign() {
                   />
                 </div>
               </div>
-            )}
-          </Card>
+              )}
+            </div>
 
             {/* Campaign Details - Only show for image/video uploads */}
             {uploadType !== 'text' && (
-              <Card className="p-3 space-y-2 w-full overflow-hidden">
+              <div className="space-y-3">
                 <div>
                   <Label htmlFor="campaign-name">Ad Header (Required)</Label>
                   <Input
@@ -592,13 +592,13 @@ export default function CreateCampaign() {
                     onChange={(e) => setProductDescription(e.target.value)}
                     placeholder="Describe what you're advertising..."
                     rows={4}
-                  />
-                </div>
-              </Card>
+                />
+              </div>
+            </div>
             )}
 
             {/* Contact Section */}
-            <Card className="p-3 w-full overflow-hidden">
+            <div>
             <CampaignContactSection
               primaryGoal={primaryGoal}
               contactPhone={contactPhone}
@@ -609,7 +609,7 @@ export default function CreateCampaign() {
               onContactEmailChange={setContactEmail}
               onLandingUrlChange={setLandingUrl}
             />
-            </Card>
+            </div>
 
             {/* Generate Button */}
           {!hasGenerated && (
@@ -635,7 +635,7 @@ export default function CreateCampaign() {
 
             {/* Edit Section (after generation) */}
             {hasGenerated && (
-              <Card className="p-3 space-y-2 w-full overflow-hidden">
+              <div className="space-y-2">
               <Label className="text-sm font-semibold">Edit Your Ad</Label>
               
               <div>
@@ -679,13 +679,13 @@ export default function CreateCampaign() {
               >
                 Continue to Publishing →
               </Button>
-              </Card>
+              </div>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Right column – Live Preview */}
-        <div className="w-[375px] shrink-0">
+        <Card className="w-[375px] shrink-0 p-6">
           <div className="sticky top-6">
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
@@ -810,7 +810,7 @@ export default function CreateCampaign() {
           
           {/* AI Targeting Suggestions - outside sticky wrapper */}
           {productDescription && productDescription.trim().length >= 10 && (
-            <Card className="p-3 space-y-3 w-full overflow-hidden border border-black mt-4">
+            <div className="p-3 space-y-3 w-full overflow-hidden border border-black mt-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-semibold text-black">AI Targeting</h3>
@@ -1012,9 +1012,9 @@ export default function CreateCampaign() {
                   </div>
                 </div>
               </div>
-            </Card>
+            </div>
           )}
-        </div>
+        </Card>
       </div>
     </AppLayout>
   );
