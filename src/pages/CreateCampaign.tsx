@@ -192,6 +192,21 @@ export default function CreateCampaign() {
     }
   };
 
+  const resetAllToAI = () => {
+    if (selectedTargetingIndex === null) return;
+    const selected = targetingOptions[selectedTargetingIndex];
+    
+    setTargetLocation(selected.suggestedLocation);
+    setDailyBudget(selected.suggestedBudget);
+    setCustomAudience(selected.audienceSummary);
+    setManualOverrides({ location: false, budget: false, audience: false });
+    
+    toast({
+      title: "Reset to AI suggestions",
+      description: "All fields restored to AI-recommended values"
+    });
+  };
+
   const handleFileSelect = (file: File) => {
     const maxSize = uploadType === 'video' ? 200 * 1024 * 1024 : 5 * 1024 * 1024;
     if (file.size > maxSize) {
@@ -518,9 +533,18 @@ export default function CreateCampaign() {
                     const overrideCount = Object.values(manualOverrides).filter(Boolean).length;
                     if (overrideCount > 0) {
                       return (
-                        <span className="px-2 py-0.5 bg-yellow-100 border border-yellow-600 text-yellow-800 text-xs font-medium rounded">
-                          {overrideCount} field{overrideCount > 1 ? 's' : ''} customized
-                        </span>
+                        <>
+                          <span className="px-2 py-0.5 bg-yellow-100 border border-yellow-600 text-yellow-800 text-xs font-medium rounded">
+                            {overrideCount} field{overrideCount > 1 ? 's' : ''} customized
+                          </span>
+                          <button
+                            type="button"
+                            onClick={resetAllToAI}
+                            className="px-2 py-0.5 bg-black text-white text-xs font-medium rounded hover:bg-black/80 transition-colors"
+                          >
+                            Reset All
+                          </button>
+                        </>
                       );
                     }
                     return null;
