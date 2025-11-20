@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { DollarSign, Users, TrendingUp, Check, Zap, Gift } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { BannerDownload } from "@/components/BannerDownload";
 
 export default function Influencers() {
   const navigate = useNavigate();
@@ -408,27 +409,27 @@ export default function Influencers() {
           <Card>
             <CardHeader>
               <CardTitle>Banner Graphics & Assets</CardTitle>
-              <CardDescription>Coming soon: downloadable banners, social graphics, and brand assets</CardDescription>
+              <CardDescription>AI-generated affiliate banners ready to download</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-6 bg-muted rounded-lg text-center">
-                  <p className="text-sm font-semibold mb-1">1200x628 Social Banner</p>
-                  <p className="text-xs text-muted-foreground mb-3">Perfect for Facebook, LinkedIn, Twitter</p>
-                  <Button size="sm" variant="outline" disabled>Coming Soon</Button>
-                </div>
+                <BannerDownload 
+                  size="1200x628"
+                  title="1200x628 Social Banner"
+                  description="Perfect for Facebook, LinkedIn, Twitter"
+                />
                 
-                <div className="p-6 bg-muted rounded-lg text-center">
-                  <p className="text-sm font-semibold mb-1">1080x1080 Instagram Square</p>
-                  <p className="text-xs text-muted-foreground mb-3">Instagram feed and carousel posts</p>
-                  <Button size="sm" variant="outline" disabled>Coming Soon</Button>
-                </div>
+                <BannerDownload 
+                  size="1080x1080"
+                  title="1080x1080 Instagram Square"
+                  description="Instagram feed and carousel posts"
+                />
                 
-                <div className="p-6 bg-muted rounded-lg text-center">
-                  <p className="text-sm font-semibold mb-1">1080x1920 Story Format</p>
-                  <p className="text-xs text-muted-foreground mb-3">Instagram, TikTok, Facebook Stories</p>
-                  <Button size="sm" variant="outline" disabled>Coming Soon</Button>
-                </div>
+                <BannerDownload 
+                  size="1080x1920"
+                  title="1080x1920 Story Format"
+                  description="Instagram, TikTok, Facebook Stories"
+                />
               </div>
             </CardContent>
           </Card>

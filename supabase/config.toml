@@ -119,3 +119,6 @@ verify_jwt = false
 [functions.x-oauth-callback]
 verify_jwt = false
 
+[functions.generate-affiliate-banner]
+verify_jwt = false
+
