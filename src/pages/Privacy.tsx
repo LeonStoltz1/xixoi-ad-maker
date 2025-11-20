@@ -1,12 +1,10 @@
 import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 const Privacy = () => {
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
-      <main className="max-w-[720px] mx-auto px-6 py-24">
-        <h1 className="text-3xl md:text-4xl font-bold mb-8">Privacy Policy</h1>
+    <AppLayout title="Privacy Policy">
+      <main className="max-w-[720px] mx-auto">
         <p className="text-sm text-black/60 mb-12">Last updated: {new Date().toLocaleDateString()}</p>
 
         <section className="space-y-8">
@@ -114,7 +112,7 @@ const Privacy = () => {
         </section>
       </main>
       <Footer />
-    </div>
+    </AppLayout>
   );
 };
 
