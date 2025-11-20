@@ -31,7 +31,7 @@ export function AppLayout({ title, subtitle, showBack, backTo, backLabel = "Back
               className="h-20 w-auto"
             />
             <div className="flex items-center gap-2">
-              <div className="h-10 w-px bg-neutral-600"></div>
+              <div className="h-full w-px bg-neutral-600"></div>
               <div className="flex flex-col leading-tight">
                 <span className="text-[9px] text-neutral-400">PRONOUNCED</span>
                 <span className="text-[10.5px] font-semibold tracking-[0.25em]">
