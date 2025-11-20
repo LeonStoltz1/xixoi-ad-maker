@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import xixoiLogo from "@/assets/xixoi-logo.png";
 
 type AppLayoutProps = {
   title?: string;
@@ -18,10 +19,10 @@ export function AppLayout({ title, subtitle, showBack, backTo, backLabel = "Back
     <div className="min-h-screen bg-white text-black">
       {/* GLOBAL HEADER */}
       <header className="fixed top-0 left-0 right-0 z-30 border-b border-neutral-800 bg-black">
-        <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4">
+        <div className="mx-auto flex h-24 max-w-6xl items-center justify-between px-4">
           {/* Logo + brand */}
           <Link to="/" className="flex items-center gap-3 text-white">
-            <div className="h-10 w-28 bg-neutral-900" />
+            <img src={xixoiLogo} alt="xiXoi" className="h-12 w-auto" />
             <div className="flex flex-col leading-tight">
               <span className="text-xs text-neutral-400">PRONOUNCED</span>
               <span className="text-sm font-semibold tracking-[0.25em]">
@@ -49,7 +50,7 @@ export function AppLayout({ title, subtitle, showBack, backTo, backLabel = "Back
       </header>
 
       {/* PAGE CONTENT — padding-top MUST be taller than header */}
-      <main className="mx-auto max-w-6xl px-4 pt-24 pb-10">
+      <main className="mx-auto max-w-6xl px-4 pt-28 pb-10">
         {/* Standardized back nav */}
         {showBack && (
           <button
