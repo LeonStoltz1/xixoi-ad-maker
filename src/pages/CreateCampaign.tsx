@@ -13,6 +13,7 @@ import { invokeWithRetry } from "@/lib/retryWithBackoff";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { CampaignContactSection } from "@/components/CampaignContactSection";
 import { useEffectiveTier } from "@/hooks/useEffectiveTier";
+import { getMinimumDailySpend } from "@/lib/spendEngine";
 
 export default function CreateCampaign() {
   const navigate = useNavigate();
@@ -781,7 +782,7 @@ export default function CreateCampaign() {
                 </div>
 
                 <div>
-                  <Label htmlFor="description-text">Product/Service Description *</Label>
+                  <Label htmlFor="description-text">Tell us what your product or service does for your audience and how much it costs if you want to let your audience know</Label>
                   <Textarea
                     id="description-text"
                     value={productDescription}
@@ -877,7 +878,7 @@ export default function CreateCampaign() {
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Product/Service Description *</Label>
+                  <Label htmlFor="description">Tell us what your product or service does for your audience and how much it costs if you want to let your audience know</Label>
                   <Textarea
                     id="description"
                     value={productDescription}
@@ -1184,6 +1185,19 @@ export default function CreateCampaign() {
                         <span>Weekly: ${(dailyBudget * 7).toFixed(0)}</span>
                         <span>Monthly: ${(dailyBudget * 30).toFixed(0)}</span>
                       </div>
+                      {(() => {
+                        const selectedPlatforms: Array<'meta'> = [];
+                        if (metaSubPlatforms.facebook || metaSubPlatforms.instagram) {
+                          selectedPlatforms.push('meta');
+                        }
+                        const minDaily = getMinimumDailySpend(selectedPlatforms);
+                        return dailyBudget < minDaily && selectedPlatforms.length > 0 ? (
+                          <div className="flex items-start gap-1 text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                            <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
+                            <span>Meta requires ${minDaily}/day minimum. You can still proceed, but ads may not deliver optimally.</span>
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
                   </div>
                 </div>
