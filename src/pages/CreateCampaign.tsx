@@ -763,7 +763,7 @@ export default function CreateCampaign() {
                   {uploadType === 'video' ? (
                     <video
                       src={previewUrl || assetUrl || ''}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       controls
                       muted
                       loop
@@ -772,7 +772,7 @@ export default function CreateCampaign() {
                     <img
                       src={previewUrl || assetUrl || ''}
                       alt="Ad creative"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   )}
                   {effectiveTier === 'free' && (
