@@ -64,8 +64,18 @@ export const Header = () => {
   const logoDestination = isAuthenticated ? "/dashboard" : "/";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-32 bg-black border-b border-white/20">
-      <div className="mx-auto px-6 h-full flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-50 h-32 bg-black border-b border-white/20 overflow-hidden">
+      {/* Background Banner Video */}
+      <video 
+        src="/header-banner.mp4" 
+        autoPlay 
+        loop 
+        muted 
+        playsInline
+        poster="/header-banner.jpg"
+        className="absolute inset-0 w-full h-full object-cover opacity-40"
+      />
+      <div className="relative mx-auto px-6 h-full flex items-center justify-between">
         {/* Logo - Left Side */}
         <Link to={logoDestination} className="flex items-center gap-3 text-white group">
           <video 
