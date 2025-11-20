@@ -28,7 +28,7 @@ export function AppLayout({ title, subtitle, showBack, backTo, backLabel = "Back
               loop 
               muted 
               playsInline
-              className="h-36 w-auto"
+              className="h-27 w-auto"
             />
             <div className="flex flex-col leading-tight">
               <span className="text-xs text-neutral-400">PRONOUNCED</span>
