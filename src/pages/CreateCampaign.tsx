@@ -503,20 +503,18 @@ export default function CreateCampaign() {
                     <Upload className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
                     <p className="text-xs font-medium mb-1">Drop your {uploadType} here or click to browse</p>
                     <p className="text-xs text-muted-foreground">
-                      {uploadType === 'video' ? 'MP4, MOV (max 200MB)' : 'JPG, PNG (max 5MB)'}
+                      {uploadType === 'image' ? 'JPG or PNG up to 5MB' : 'MP4 or MOV up to 200MB'}
                     </p>
                   </div>
                 ) : (
                   <div className="relative">
-                    {uploadType === 'image' && previewUrl && (
-                      <img src={previewUrl} alt="Preview" className="w-full rounded-lg" />
-                    )}
-                    {uploadType === 'video' && previewUrl && (
+                    {uploadType === 'video' && previewUrl ? (
                       <video src={previewUrl} controls className="w-full rounded-lg" />
-                    )}
-                    <div className="flex gap-2 mt-3">
-                      <Button type="button" variant="outline" size="sm" onClick={handleReplaceImage} className="flex-1">
-                        <RefreshCw className="w-4 h-4 mr-2" />
+                    ) : previewUrl ? (
+                      <img src={previewUrl} alt="Preview" className="w-full rounded-lg" />
+                    ) : null}
+                    <div className="flex gap-2 mt-2">
+                      <Button type="button" variant="outline" size="sm" onClick={handleReplaceImage}>
                         Replace
                       </Button>
                       <Button type="button" variant="outline" size="sm" onClick={handleRemoveImage}>
@@ -534,38 +532,55 @@ export default function CreateCampaign() {
                 />
               </div>
             ) : (
-              <Textarea
-                value={textContent}
-                onChange={(e) => setTextContent(e.target.value)}
-                placeholder="Enter your ad text here..."
-                rows={6}
-              />
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="campaign-name-text">Ad Header (Required)</Label>
+                  <Input
+                    id="campaign-name-text"
+                    value={campaignName}
+                    onChange={(e) => setCampaignName(e.target.value)}
+                    placeholder="e.g., Summer Sale 2024"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description-text">Product/Service Description *</Label>
+                  <Textarea
+                    id="description-text"
+                    value={productDescription}
+                    onChange={(e) => setProductDescription(e.target.value)}
+                    placeholder="Describe what you're advertising..."
+                    rows={6}
+                  />
+                </div>
+              </div>
             )}
           </Card>
 
-            {/* Campaign Details */}
-            <Card className="p-3 space-y-2 w-full overflow-hidden">
-            <div>
-              <Label htmlFor="campaign-name">Ad Header (Required)</Label>
-              <Input
-                id="campaign-name"
-                value={campaignName}
-                onChange={(e) => setCampaignName(e.target.value)}
-                placeholder="e.g., Summer Sale 2024"
-              />
-            </div>
+            {/* Campaign Details - Only show for image/video uploads */}
+            {uploadType !== 'text' && (
+              <Card className="p-3 space-y-2 w-full overflow-hidden">
+                <div>
+                  <Label htmlFor="campaign-name">Ad Header (Required)</Label>
+                  <Input
+                    id="campaign-name"
+                    value={campaignName}
+                    onChange={(e) => setCampaignName(e.target.value)}
+                    placeholder="e.g., Summer Sale 2024"
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="description">Product/Service Description *</Label>
-              <Textarea
-                id="description"
-                value={productDescription}
-                onChange={(e) => setProductDescription(e.target.value)}
-                placeholder="Describe what you're advertising..."
-                rows={4}
-              />
-            </div>
-          </Card>
+                <div>
+                  <Label htmlFor="description">Product/Service Description *</Label>
+                  <Textarea
+                    id="description"
+                    value={productDescription}
+                    onChange={(e) => setProductDescription(e.target.value)}
+                    placeholder="Describe what you're advertising..."
+                    rows={4}
+                  />
+                </div>
+              </Card>
+            )}
 
             {/* Contact Section */}
             <Card className="p-3 w-full overflow-hidden">
