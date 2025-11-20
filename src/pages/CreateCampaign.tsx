@@ -220,8 +220,8 @@ export default function CreateCampaign() {
         {/* Left: Controls */}
         <div className="space-y-6">
           {/* Upload Section */}
-          <Card className="p-6">
-            <Label className="text-base font-semibold mb-4 block">Upload Your Content</Label>
+          <Card className="p-4">
+            <Label className="text-sm font-semibold mb-3 block">Upload Your Content</Label>
             
             {/* Upload Type Selector */}
             <div className="flex gap-2 mb-4">
@@ -311,7 +311,7 @@ export default function CreateCampaign() {
           </Card>
 
           {/* Campaign Details */}
-          <Card className="p-6 space-y-4">
+          <Card className="p-4 space-y-3">
             <div>
               <Label htmlFor="campaign-name">Campaign Name (Optional)</Label>
               <Input
@@ -335,7 +335,7 @@ export default function CreateCampaign() {
           </Card>
 
           {/* Contact Section */}
-          <Card className="p-6">
+          <Card className="p-4">
             <CampaignContactSection
               primaryGoal={primaryGoal}
               contactPhone={contactPhone}
@@ -372,8 +372,8 @@ export default function CreateCampaign() {
 
           {/* Edit Section (after generation) */}
           {hasGenerated && (
-            <Card className="p-6 space-y-4">
-              <Label className="text-base font-semibold">Edit Your Ad</Label>
+            <Card className="p-4 space-y-3">
+              <Label className="text-sm font-semibold">Edit Your Ad</Label>
               
               <div>
                 <Label htmlFor="headline">Headline</Label>
