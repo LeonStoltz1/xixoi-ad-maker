@@ -463,9 +463,9 @@ export default function CreateCampaign() {
 
   return (
     <AppLayout title="Create Campaign">
-      <div className="flex flex-col lg:flex-row items-start justify-center gap-8">
+      <div className="flex flex-col md:flex-row items-start justify-center gap-8 max-w-7xl mx-auto">
         {/* Left column – All Controls and Targeting */}
-        <Card className="w-full lg:w-[450px] shrink-0 p-6">
+        <Card className="w-full md:w-[450px] shrink-0 p-6">
           <div className="space-y-6">
             {/* Upload Section */}
             <div>
@@ -892,8 +892,7 @@ export default function CreateCampaign() {
         </Card>
 
         {/* Right column – Live Preview Only */}
-        <Card className="w-full lg:w-[450px] shrink-0 p-6 lg:sticky lg:top-6">
-          <div className="sticky top-6">
+        <Card className="w-full md:w-[450px] shrink-0 p-6 md:sticky md:top-24">
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <div>
@@ -1013,7 +1012,6 @@ export default function CreateCampaign() {
                 </div>
               </div>
             </Card>
-          </div>
         </Card>
       </div>
     </AppLayout>
