@@ -1,5 +1,8 @@
 project_id = "kkpbwuzxunefujucrbfr"
 
+[functions.send-affiliate-milestone]
+verify_jwt = false
+
 [functions.generate-ad-variants]
 verify_jwt = false
 
