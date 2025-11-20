@@ -314,7 +314,7 @@ export default function CreateCampaign() {
             {/* Campaign Details */}
             <Card className="p-3 space-y-2 w-full overflow-hidden">
             <div>
-              <Label htmlFor="campaign-name">Campaign Header (Optional)</Label>
+              <Label htmlFor="campaign-name">Ad Header (Optional)</Label>
               <Input
                 id="campaign-name"
                 value={campaignName}
