@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { size } = await req.json();
+    const { size, customHeadline, customSubheadline } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -35,28 +35,63 @@ serve(async (req) => {
     let prompt = '';
     let dimensions = { width: 1200, height: 628 };
 
+    // Use custom text if provided, otherwise use defaults
+    const headline = customHeadline || 'xiXoi™ Affiliate Program';
+    const subheadline = customSubheadline || 'Earn 20% Lifetime Commission';
+
+    // CRITICAL BRAND GUIDELINES: xiXoi™ logo must remain unchanged
+    const brandGuidelines = `
+    CRITICAL REQUIREMENTS - DO NOT MODIFY:
+    - The xiXoi™ logo must be preserved exactly as-is with correct trademark symbol
+    - Logo positioning and size must remain consistent
+    - Logo must be clearly visible and legible
+    - Do not alter, distort, or recreate the xiXoi™ logo
+    - Logo color must remain as specified in brand guidelines
+    `;
+
     // Set prompt and dimensions based on size
     if (size === '1200x628') {
       dimensions = { width: 1200, height: 628 };
-      prompt = `Create a professional social media banner (1200x628) for xiXoi™ Affiliate Program. 
+      prompt = `${brandGuidelines}
+      Create a professional social media banner (1200x628) for xiXoi™ Affiliate Program.
       Design should be modern, clean, and bold with black/white color scheme and purple accent (#9b87f5).
-      Include: "xiXoi™ Affiliate Program" as headline, "Earn 20% Lifetime Commission" as subheading.
+      
+      Include the following text:
+      - Headline: "${headline}"
+      - Subheadline: "${subheadline}"
+      
       Add visual elements: dollar signs, growth charts, or abstract patterns.
-      Style: minimalist, high-contrast, tech-forward, suitable for Facebook/LinkedIn/Twitter.`;
+      Style: minimalist, high-contrast, tech-forward, suitable for Facebook/LinkedIn/Twitter.
+      
+      CRITICAL: Maintain the xiXoi™ logo exactly as designed - do not modify it.`;
     } else if (size === '1080x1080') {
       dimensions = { width: 1080, height: 1080 };
-      prompt = `Create a professional square Instagram post (1080x1080) for xiXoi™ Affiliate Program.
+      prompt = `${brandGuidelines}
+      Create a professional square Instagram post (1080x1080) for xiXoi™ Affiliate Program.
       Design should be modern, clean, and bold with black/white color scheme and purple accent (#9b87f5).
-      Include: "xiXoi™" logo-style text at top, "Affiliate Program" below, "20% Commission" prominently displayed.
+      
+      Include the following text:
+      - Headline: "${headline}"
+      - Subheadline: "${subheadline}"
+      
       Add visual elements: upward trending arrows, percentage symbols, or geometric patterns.
-      Style: minimalist, high-contrast, Instagram-optimized, eye-catching.`;
+      Style: minimalist, high-contrast, Instagram-optimized, eye-catching.
+      
+      CRITICAL: Maintain the xiXoi™ logo exactly as designed - do not modify it.`;
     } else if (size === '1080x1920') {
       dimensions = { width: 1080, height: 1920 };
-      prompt = `Create a professional vertical story format (1080x1920) for xiXoi™ Affiliate Program.
+      prompt = `${brandGuidelines}
+      Create a professional vertical story format (1080x1920) for xiXoi™ Affiliate Program.
       Design should be modern, clean, and bold with black/white color scheme and purple accent (#9b87f5).
-      Include: "Join xiXoi™" at top, "Affiliate Program" in middle, "Earn 20% Forever" at bottom.
+      
+      Include the following text:
+      - Headline: "${headline}"
+      - Subheadline: "${subheadline}"
+      
       Add visual elements: vertical growth bars, currency symbols, or flowing abstract lines.
-      Style: minimalist, high-contrast, story-optimized for Instagram/TikTok/Facebook.`;
+      Style: minimalist, high-contrast, story-optimized for Instagram/TikTok/Facebook.
+      
+      CRITICAL: Maintain the xiXoi™ logo exactly as designed - do not modify it.`;
     }
 
     console.log(`Generating ${size} banner with prompt:`, prompt);
