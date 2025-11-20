@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Upload, Image as ImageIcon, Video as VideoIcon, FileText, X, Loader2, Sparkles, RefreshCw, AlertCircle, Info } from "lucide-react";
+import { Upload, Image as ImageIcon, Video as VideoIcon, FileText, X, Loader2, Sparkles, RefreshCw, AlertCircle, Info, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { invokeWithRetry } from "@/lib/retryWithBackoff";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -49,6 +49,9 @@ export default function CreateCampaign() {
   const [customHeadline, setCustomHeadline] = useState("");
   const [customBodyCopy, setCustomBodyCopy] = useState("");
   const [customCtaText, setCustomCtaText] = useState("Learn More");
+  
+  // Mobile preview visibility
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
   
   // AI Suggestions
   const [aiSuggestions, setAiSuggestions] = useState<{
@@ -1250,7 +1253,7 @@ export default function CreateCampaign() {
           </div>
 
         {/* Right column – Live Preview Only */}
-        <div className="w-full lg:w-1/2 lg:flex-shrink-0">
+        <div className={`w-full lg:w-1/2 lg:flex-shrink-0 ${showMobilePreview ? 'block' : 'hidden lg:block'}`}>
           <div className="lg:sticky lg:top-24">
             <Card className="w-full p-6">
             <div className="mb-4">
@@ -1393,6 +1396,20 @@ export default function CreateCampaign() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Preview Toggle FAB */}
+      <Button
+        onClick={() => setShowMobilePreview(!showMobilePreview)}
+        className="lg:hidden fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50"
+        size="icon"
+      >
+        {showMobilePreview ? (
+          <EyeOff className="h-6 w-6" />
+        ) : (
+          <Eye className="h-6 w-6" />
+        )}
+      </Button>
+
       </section>
     </AppLayout>
   );
