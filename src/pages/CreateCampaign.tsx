@@ -49,6 +49,16 @@ export default function CreateCampaign() {
   const [customBodyCopy, setCustomBodyCopy] = useState("");
   const [customCtaText, setCustomCtaText] = useState("Learn More");
   
+  // AI Suggestions
+  const [aiSuggestions, setAiSuggestions] = useState<{
+    recommendedCTA: string;
+    headline: string;
+    bodyCopy: string;
+    suggestedURL: string;
+    reasoning: string;
+  } | null>(null);
+  const [generatingSuggestions, setGeneratingSuggestions] = useState(false);
+  
   // Campaign ID
   const [campaignId, setCampaignId] = useState<string | null>(null);
   const [assetUrl, setAssetUrl] = useState<string | null>(null);
@@ -152,6 +162,64 @@ export default function CreateCampaign() {
       setGeneratingTargeting(false);
     }
   };
+
+  // Generate AI content suggestions
+  const generateAISuggestions = async () => {
+    if (!productDescription || productDescription.trim().length < 20) return;
+    
+    setGeneratingSuggestions(true);
+    
+    try {
+      const { data, error } = await invokeWithRetry(
+        supabase,
+        'suggest-ad-content',
+        { 
+          productDescription,
+          currentCTA: primaryGoal 
+        }
+      );
+      
+      if (error) {
+        console.error('AI content suggestion failed:', error);
+        return;
+      }
+      
+      if (data) {
+        setAiSuggestions(data);
+        
+        // Auto-fill fields if they're empty
+        if (!headline && data.headline) {
+          setHeadline(data.headline);
+        }
+        if (!bodyCopy && data.bodyCopy) {
+          setBodyCopy(data.bodyCopy);
+        }
+        if (!landingUrl && data.suggestedURL && primaryGoal === 'website') {
+          setLandingUrl(data.suggestedURL);
+        }
+        
+        toast({
+          title: "✨ AI suggestions ready",
+          description: data.reasoning || "Content suggestions generated"
+        });
+      }
+    } catch (error) {
+      console.error('AI suggestion generation error:', error);
+    } finally {
+      setGeneratingSuggestions(false);
+    }
+  };
+
+  // Auto-generate content suggestions when product description changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (productDescription && productDescription.trim().length >= 20) {
+        generateAISuggestions();
+      }
+    }, 2000); // Debounce 2 seconds after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [productDescription]);
 
   // Auto-generate targeting when product description changes
   useEffect(() => {
@@ -649,7 +717,21 @@ export default function CreateCampaign() {
                 </div>
 
                 <div>
-                  <Label htmlFor="headline-text">Headline *</Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label htmlFor="headline-text">Headline *</Label>
+                    {aiSuggestions?.headline && headline !== aiSuggestions.headline && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setHeadline(aiSuggestions.headline)}
+                        className="h-7 text-xs"
+                      >
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        Use AI
+                      </Button>
+                    )}
+                  </div>
                   <Input
                     id="headline-text"
                     value={headline}
@@ -659,10 +741,27 @@ export default function CreateCampaign() {
                     required
                   />
                   <p className="text-xs text-muted-foreground mt-1">{headline.length}/40 characters - Main headline shown to customers</p>
+                  {aiSuggestions?.headline && (
+                    <p className="text-xs text-primary/70 mt-1">💡 AI suggests: "{aiSuggestions.headline}"</p>
+                  )}
                 </div>
 
                 <div>
-                  <Label htmlFor="body-copy-text">Body Copy *</Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label htmlFor="body-copy-text">Body Copy *</Label>
+                    {aiSuggestions?.bodyCopy && bodyCopy !== aiSuggestions.bodyCopy && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setBodyCopy(aiSuggestions.bodyCopy)}
+                        className="h-7 text-xs"
+                      >
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        Use AI
+                      </Button>
+                    )}
+                  </div>
                   <Textarea
                     id="body-copy-text"
                     value={bodyCopy}
@@ -673,6 +772,9 @@ export default function CreateCampaign() {
                     required
                   />
                   <p className="text-xs text-muted-foreground mt-1">{bodyCopy.length}/125 characters - Description shown with your ad</p>
+                  {aiSuggestions?.bodyCopy && (
+                    <p className="text-xs text-primary/70 mt-1">💡 AI suggests: "{aiSuggestions.bodyCopy}"</p>
+                  )}
                 </div>
 
                 <div>
@@ -684,6 +786,12 @@ export default function CreateCampaign() {
                     placeholder="Describe what you're advertising..."
                     rows={6}
                   />
+                  {generatingSuggestions && (
+                    <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      AI is analyzing your description...
+                    </div>
+                  )}
                 </div>
               </div>
               )}
@@ -705,7 +813,21 @@ export default function CreateCampaign() {
                 </div>
 
                 <div>
-                  <Label htmlFor="headline">Headline *</Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label htmlFor="headline">Headline *</Label>
+                    {aiSuggestions?.headline && headline !== aiSuggestions.headline && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setHeadline(aiSuggestions.headline)}
+                        className="h-7 text-xs"
+                      >
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        Use AI
+                      </Button>
+                    )}
+                  </div>
                   <Input
                     id="headline"
                     value={headline}
@@ -715,10 +837,27 @@ export default function CreateCampaign() {
                     required
                   />
                   <p className="text-xs text-muted-foreground mt-1">{headline.length}/40 characters - Main headline shown to customers</p>
+                  {aiSuggestions?.headline && (
+                    <p className="text-xs text-primary/70 mt-1">💡 AI suggests: "{aiSuggestions.headline}"</p>
+                  )}
                 </div>
 
                 <div>
-                  <Label htmlFor="body-copy">Body Copy *</Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label htmlFor="body-copy">Body Copy *</Label>
+                    {aiSuggestions?.bodyCopy && bodyCopy !== aiSuggestions.bodyCopy && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setBodyCopy(aiSuggestions.bodyCopy)}
+                        className="h-7 text-xs"
+                      >
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        Use AI
+                      </Button>
+                    )}
+                  </div>
                   <Textarea
                     id="body-copy"
                     value={bodyCopy}
@@ -729,6 +868,9 @@ export default function CreateCampaign() {
                     required
                   />
                   <p className="text-xs text-muted-foreground mt-1">{bodyCopy.length}/125 characters - Description shown with your ad</p>
+                  {aiSuggestions?.bodyCopy && (
+                    <p className="text-xs text-primary/70 mt-1">💡 AI suggests: "{aiSuggestions.bodyCopy}"</p>
+                  )}
                 </div>
 
                 <div>
@@ -740,8 +882,43 @@ export default function CreateCampaign() {
                     placeholder="Describe what you're advertising..."
                     rows={4}
                 />
+                {generatingSuggestions && (
+                  <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    AI is analyzing your description...
+                  </div>
+                )}
               </div>
             </div>
+            )}
+
+            {/* AI CTA Recommendation */}
+            {aiSuggestions?.recommendedCTA && (
+              <Alert className="bg-primary/5 border-primary/20">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <AlertDescription>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">
+                      🎯 AI recommends: {aiSuggestions.recommendedCTA === 'website' ? 'Visit my website' : 
+                         aiSuggestions.recommendedCTA === 'calls' ? 'Call my phone' :
+                         aiSuggestions.recommendedCTA === 'email' ? 'Send me an email' :
+                         aiSuggestions.recommendedCTA === 'messages' ? 'Message me' : 'Fill out lead form'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{aiSuggestions.reasoning}</p>
+                    {primaryGoal !== aiSuggestions.recommendedCTA && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setPrimaryGoal(aiSuggestions.recommendedCTA)}
+                        className="h-7 text-xs mt-2"
+                      >
+                        Use this recommendation
+                      </Button>
+                    )}
+                  </div>
+                </AlertDescription>
+              </Alert>
             )}
 
             {/* Contact Section */}
@@ -751,6 +928,7 @@ export default function CreateCampaign() {
               contactPhone={contactPhone}
               contactEmail={contactEmail}
               landingUrl={landingUrl}
+              suggestedUrl={aiSuggestions?.suggestedURL}
               onPrimaryGoalChange={setPrimaryGoal}
               onContactPhoneChange={setContactPhone}
               onContactEmailChange={setContactEmail}

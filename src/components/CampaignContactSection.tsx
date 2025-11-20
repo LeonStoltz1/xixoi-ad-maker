@@ -11,6 +11,7 @@ interface CampaignContactSectionProps {
   contactPhone: string | null;
   contactEmail: string | null;
   landingUrl: string | null;
+  suggestedUrl?: string;
   onPrimaryGoalChange: (value: string) => void;
   onContactPhoneChange: (value: string) => void;
   onContactEmailChange: (value: string) => void;
@@ -22,6 +23,7 @@ export function CampaignContactSection({
   contactPhone,
   contactEmail,
   landingUrl,
+  suggestedUrl,
   onPrimaryGoalChange,
   onContactPhoneChange,
   onContactEmailChange,
@@ -99,6 +101,11 @@ export function CampaignContactSection({
           <p className="text-xs text-muted-foreground">
             Where your ad will take people when they click
           </p>
+          {suggestedUrl && landingUrl !== suggestedUrl && (
+            <p className="text-xs text-primary/70">
+              💡 AI suggests: {suggestedUrl}
+            </p>
+          )}
         </div>
       )}
 
