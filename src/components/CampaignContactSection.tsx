@@ -86,7 +86,7 @@ export function CampaignContactSection({
 
       {/* Conditional fields based on goal */}
       {primaryGoal === 'website' && (
-        <div className="space-y-2 pl-6 border-l-2 border-primary/20">
+        <div className="space-y-2">
           <Label htmlFor="landing-url">Landing Page URL *</Label>
           <Input
             id="landing-url"
@@ -102,7 +102,7 @@ export function CampaignContactSection({
       )}
 
       {primaryGoal === 'calls' && (
-        <div className="space-y-2 pl-6 border-l-2 border-primary/20">
+        <div className="space-y-2">
           <Label htmlFor="contact-phone">Phone Number *</Label>
           <div className="flex gap-2">
             <div className="w-20 flex items-center justify-center border bg-muted text-sm font-medium">
@@ -126,7 +126,7 @@ export function CampaignContactSection({
       )}
 
       {primaryGoal === 'email' && (
-        <div className="space-y-2 pl-6 border-l-2 border-primary/20">
+        <div className="space-y-2">
           <Label htmlFor="contact-email">Contact Email *</Label>
           <Input
             id="contact-email"
@@ -142,7 +142,7 @@ export function CampaignContactSection({
       )}
 
       {primaryGoal === 'messages' && (
-        <div className="space-y-2 pl-6 border-l-2 border-primary/20">
+        <div className="space-y-2">
           <Label htmlFor="contact-phone-msg">Phone Number (with country code) *</Label>
           <Input
             id="contact-phone-msg"
@@ -158,7 +158,7 @@ export function CampaignContactSection({
       )}
 
       {primaryGoal === 'lead_form' && (
-        <div className="space-y-2 pl-6 border-l-2 border-primary/20">
+        <div className="space-y-2">
           <Label htmlFor="landing-url-form">Landing Page URL *</Label>
           <Input
             id="landing-url-form"
