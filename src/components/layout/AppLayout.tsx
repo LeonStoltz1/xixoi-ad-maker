@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import xixoiLogoVideo from "@/assets/xixoi-logo-final.mp4";
 import { AdminExperienceSwitcher } from "@/components/AdminExperienceSwitcher";
 import { EffectiveTierBadge } from "@/components/EffectiveTierBadge";
+import { supabase } from "@/integrations/supabase/client";
 
 type AppLayoutProps = {
   title?: string;
@@ -16,6 +17,11 @@ type AppLayoutProps = {
 
 export function AppLayout({ title, subtitle, showBack, backTo, backLabel = "Back", children }: AppLayoutProps) {
   const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -56,9 +62,12 @@ export function AppLayout({ title, subtitle, showBack, backTo, backLabel = "Back
             <Link to="/upgrade" className="px-3 py-1">
               Upgrade
             </Link>
-            <Link to="/sign-out" className="px-3 py-1">
+            <button 
+              onClick={handleSignOut}
+              className="px-3 py-1 hover:text-white/80 transition-colors"
+            >
               Sign Out
-            </Link>
+            </button>
           </nav>
         </div>
       </header>
