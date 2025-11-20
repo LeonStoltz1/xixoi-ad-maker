@@ -512,7 +512,20 @@ export default function CreateCampaign() {
             {/* Targeting & Budget */}
             <Card className="p-3 space-y-3 w-full overflow-hidden border border-black">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-black">Targeting & Budget</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-black">Targeting & Budget</h3>
+                  {(() => {
+                    const overrideCount = Object.values(manualOverrides).filter(Boolean).length;
+                    if (overrideCount > 0) {
+                      return (
+                        <span className="px-2 py-0.5 bg-yellow-100 border border-yellow-600 text-yellow-800 text-xs font-medium rounded">
+                          {overrideCount} field{overrideCount > 1 ? 's' : ''} customized
+                        </span>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
                 {generatingTargeting && (
                   <div className="flex items-center gap-2 text-xs text-black/60">
                     <Loader2 className="h-3 w-3 animate-spin" />
