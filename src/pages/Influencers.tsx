@@ -10,13 +10,13 @@ export default function Influencers() {
   const navigate = useNavigate();
 
   return (
-    <AppLayout title="Join the xiXoi™ Influencer Program">
+    <AppLayout title="Join the xiXoi™ Affiliate Program">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5 py-24 px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold font-heading">
-              Join the xiXoi™ <span className="text-primary">Influencer Program</span>
+              Join the xiXoi™ <span className="text-primary">Affiliate Program</span>
             </h1>
             <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto">
               Earn 20% lifetime recurring commission on every customer you refer. No caps. No limits.
@@ -216,7 +216,7 @@ export default function Influencers() {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4">Why Partner with xiXoi™?</h2>
-            <p className="text-xl text-muted-foreground">Built for influencers who want to maximize earnings</p>
+            <p className="text-xl text-muted-foreground">Built for affiliates who want to maximize earnings</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -436,7 +436,7 @@ export default function Influencers() {
             Ready to Start Earning?
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join hundreds of influencers earning passive income by promoting xiXoi™. 
+            Join hundreds of affiliates earning passive income by promoting xiXoi™. 
             Get your unique referral link in 30 seconds.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

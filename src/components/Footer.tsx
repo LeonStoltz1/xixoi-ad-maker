@@ -9,7 +9,7 @@ const footerLinks = {
     { label: "About", href: "/#about" },
     { label: "Blog", href: "/#blog" },
     { label: "Careers", href: "/#careers" },
-    { label: "For Influencers", href: "/influencers" },
+    { label: "Affiliate Program", href: "/influencers" },
     { label: "Leaderboard", href: "/leaderboard" },
     { label: "Contact", href: "mailto:info@stoltzone.com" }
   ],
