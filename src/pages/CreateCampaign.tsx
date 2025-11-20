@@ -463,9 +463,9 @@ export default function CreateCampaign() {
 
   return (
     <AppLayout title="Create Campaign">
-      <div className="flex flex-row items-start justify-center gap-8 xl:gap-16">
-        {/* Left column – Controls */}
-        <Card className="w-[375px] shrink-0 p-6">
+      <div className="flex flex-col lg:flex-row items-start justify-center gap-8">
+        {/* Left column – All Controls and Targeting */}
+        <Card className="w-full lg:w-[450px] shrink-0 p-6">
           <div className="space-y-6">
             {/* Upload Section */}
             <div>
@@ -681,11 +681,218 @@ export default function CreateCampaign() {
               </Button>
               </div>
             )}
+            
+            {/* AI Targeting Section - moved from right column */}
+            {productDescription && productDescription.trim().length >= 10 && (
+              <div className="space-y-3 pt-6 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-black">AI Targeting</h3>
+                    {(() => {
+                      const overrideCount = Object.values(manualOverrides).filter(Boolean).length;
+                      if (overrideCount > 0) {
+                        return (
+                          <>
+                            <span className="px-2 py-0.5 bg-yellow-100 border border-yellow-600 text-yellow-800 text-xs font-medium rounded">
+                              {overrideCount} edited
+                            </span>
+                            <button
+                              type="button"
+                              onClick={resetAllToAI}
+                              className="px-2 py-0.5 bg-black text-white text-xs font-medium rounded hover:bg-black/80 transition-colors"
+                            >
+                              Reset
+                            </button>
+                          </>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
+                  {generatingTargeting && (
+                    <div className="flex items-center gap-2 text-xs text-black/60">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    </div>
+                  )}
+                </div>
+                
+                {/* AI Targeting Strategies */}
+                {targetingOptions.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-xs font-semibold text-black">Strategies</div>
+                    {targetingOptions.map((option, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => handleSelectTargeting(index)}
+                        className={`w-full border p-2 text-left transition-all ${
+                          selectedTargetingIndex === index 
+                            ? 'border-black bg-black text-white' 
+                            : 'border-black bg-white text-black hover:bg-black/5'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="text-xs font-semibold">
+                            #{index + 1}
+                          </div>
+                          <div className={`text-xs ${
+                            selectedTargetingIndex === index ? 'text-white' : 'text-black'
+                          }`}>
+                            {Math.round(option.confidence * 100)}%
+                          </div>
+                        </div>
+                        <div className={`text-xs ${
+                          selectedTargetingIndex === index ? 'text-white' : 'text-black'
+                        }`}>
+                          {option.audienceSummary}
+                        </div>
+                        <div className={`text-xs mt-1 ${
+                          selectedTargetingIndex === index ? 'text-white/90' : 'text-black/70'
+                        }`}>
+                          ${option.suggestedBudget}/day • {option.suggestedLocation}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Location */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label htmlFor="target-location" className="text-black text-xs">Location</Label>
+                    {manualOverrides.location && selectedTargetingIndex !== null && (
+                      <button
+                        type="button"
+                        onClick={() => resetToAISuggestion('location')}
+                        className="text-xs text-black/60 hover:text-black underline"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                  <Input
+                    id="target-location"
+                    value={targetLocation}
+                    onChange={(e) => handleLocationChange(e.target.value)}
+                    placeholder="e.g., United States"
+                    className={`border-black text-black text-sm ${manualOverrides.location ? 'bg-yellow-50' : ''}`}
+                    maxLength={100}
+                  />
+                  {manualOverrides.location && (
+                    <div className="text-xs text-black/60 mt-1">✏️ Edited</div>
+                  )}
+                </div>
+
+                {/* Audience */}
+                {selectedTargetingIndex !== null && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label htmlFor="custom-audience" className="text-black text-xs">Audience</Label>
+                      {manualOverrides.audience && (
+                        <button
+                          type="button"
+                          onClick={() => resetToAISuggestion('audience')}
+                          className="text-xs text-black/60 hover:text-black underline"
+                        >
+                          Reset
+                        </button>
+                      )}
+                    </div>
+                    <Textarea
+                      id="custom-audience"
+                      value={customAudience}
+                      onChange={(e) => handleAudienceChange(e.target.value)}
+                      placeholder="Describe your target audience..."
+                      rows={2}
+                      className={`border-black text-black text-xs ${manualOverrides.audience ? 'bg-yellow-50' : ''}`}
+                      maxLength={300}
+                    />
+                    {manualOverrides.audience && (
+                      <div className="text-xs text-black/60 mt-1">✏️ Edited</div>
+                    )}
+                  </div>
+                )}
+
+                {/* Budget */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label htmlFor="daily-budget" className="text-black text-xs">Daily Budget</Label>
+                    {manualOverrides.budget && selectedTargetingIndex !== null && (
+                      <button
+                        type="button"
+                        onClick={() => resetToAISuggestion('budget')}
+                        className="text-xs text-black/60 hover:text-black underline"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <input
+                      type="range"
+                      id="daily-budget"
+                      min="5"
+                      max="500"
+                      step="5"
+                      value={dailyBudget}
+                      onChange={(e) => handleBudgetChange(Number(e.target.value))}
+                      className={`w-full h-1 appearance-none cursor-pointer ${
+                        manualOverrides.budget ? 'bg-yellow-600' : 'bg-black'
+                      }`}
+                      style={{
+                        accentColor: manualOverrides.budget ? '#ca8a04' : '#000000'
+                      }}
+                    />
+                    <div className="flex items-center justify-between">
+                      <div className={`text-sm font-medium ${manualOverrides.budget ? 'text-yellow-700' : 'text-black'}`}>
+                        ${dailyBudget}/day
+                      </div>
+                      {manualOverrides.budget && (
+                        <div className="text-xs text-black/60">✏️ Edited</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Platform Selection */}
+                <div>
+                  <Label className="text-black text-xs">Platform</Label>
+                  <div className="mt-2 p-2 border border-black rounded">
+                    <div className="font-semibold text-xs mb-2">Meta</div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="facebook"
+                          checked={metaSubPlatforms.facebook}
+                          onChange={(e) => setMetaSubPlatforms(prev => ({...prev, facebook: e.target.checked}))}
+                          className="w-3 h-3 cursor-pointer"
+                        />
+                        <label htmlFor="facebook" className="text-xs cursor-pointer">Facebook</label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="instagram"
+                          checked={metaSubPlatforms.instagram}
+                          onChange={(e) => setMetaSubPlatforms(prev => ({...prev, instagram: e.target.checked}))}
+                          className="w-3 h-3 cursor-pointer"
+                        />
+                        <label htmlFor="instagram" className="text-xs cursor-pointer">Instagram</label>
+                      </div>
+                      {!metaSubPlatforms.facebook && !metaSubPlatforms.instagram && (
+                        <p className="text-xs text-destructive">Select at least one</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </Card>
 
-        {/* Right column – Live Preview */}
-        <Card className="w-[375px] shrink-0 p-6">
+        {/* Right column – Live Preview Only */}
+        <Card className="w-full lg:w-[450px] shrink-0 p-6 lg:sticky lg:top-6">
           <div className="sticky top-6">
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
@@ -807,213 +1014,6 @@ export default function CreateCampaign() {
               </div>
             </Card>
           </div>
-          
-          {/* AI Targeting Suggestions - outside sticky wrapper */}
-          {productDescription && productDescription.trim().length >= 10 && (
-            <div className="p-3 space-y-3 w-full overflow-hidden border border-black mt-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold text-black">AI Targeting</h3>
-                  {(() => {
-                    const overrideCount = Object.values(manualOverrides).filter(Boolean).length;
-                    if (overrideCount > 0) {
-                      return (
-                        <>
-                          <span className="px-2 py-0.5 bg-yellow-100 border border-yellow-600 text-yellow-800 text-xs font-medium rounded">
-                            {overrideCount} edited
-                          </span>
-                          <button
-                            type="button"
-                            onClick={resetAllToAI}
-                            className="px-2 py-0.5 bg-black text-white text-xs font-medium rounded hover:bg-black/80 transition-colors"
-                          >
-                            Reset
-                          </button>
-                        </>
-                      );
-                    }
-                    return null;
-                  })()}
-                </div>
-                {generatingTargeting && (
-                  <div className="flex items-center gap-2 text-xs text-black/60">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  </div>
-                )}
-              </div>
-              
-              {/* AI Targeting Strategies */}
-              {targetingOptions.length > 0 && (
-                <div className="space-y-2">
-                  <div className="text-xs font-semibold text-black">Strategies</div>
-                  {targetingOptions.map((option, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => handleSelectTargeting(index)}
-                      className={`w-full border p-2 text-left transition-all ${
-                        selectedTargetingIndex === index 
-                          ? 'border-black bg-black text-white' 
-                          : 'border-black bg-white text-black hover:bg-black/5'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="text-xs font-semibold">
-                          #{index + 1}
-                        </div>
-                        <div className={`text-xs ${
-                          selectedTargetingIndex === index ? 'text-white' : 'text-black'
-                        }`}>
-                          {Math.round(option.confidence * 100)}%
-                        </div>
-                      </div>
-                      <div className={`text-xs ${
-                        selectedTargetingIndex === index ? 'text-white' : 'text-black'
-                      }`}>
-                        {option.audienceSummary}
-                      </div>
-                      <div className={`text-xs mt-1 ${
-                        selectedTargetingIndex === index ? 'text-white/90' : 'text-black/70'
-                      }`}>
-                        ${option.suggestedBudget}/day • {option.suggestedLocation}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Location */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <Label htmlFor="target-location" className="text-black text-xs">Location</Label>
-                  {manualOverrides.location && selectedTargetingIndex !== null && (
-                    <button
-                      type="button"
-                      onClick={() => resetToAISuggestion('location')}
-                      className="text-xs text-black/60 hover:text-black underline"
-                    >
-                      Reset
-                    </button>
-                  )}
-                </div>
-                <Input
-                  id="target-location"
-                  value={targetLocation}
-                  onChange={(e) => handleLocationChange(e.target.value)}
-                  placeholder="e.g., United States"
-                  className={`border-black text-black text-sm ${manualOverrides.location ? 'bg-yellow-50' : ''}`}
-                  maxLength={100}
-                />
-                {manualOverrides.location && (
-                  <div className="text-xs text-black/60 mt-1">✏️ Edited</div>
-                )}
-              </div>
-
-              {/* Audience */}
-              {selectedTargetingIndex !== null && (
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <Label htmlFor="custom-audience" className="text-black text-xs">Audience</Label>
-                    {manualOverrides.audience && (
-                      <button
-                        type="button"
-                        onClick={() => resetToAISuggestion('audience')}
-                        className="text-xs text-black/60 hover:text-black underline"
-                      >
-                        Reset
-                      </button>
-                    )}
-                  </div>
-                  <Textarea
-                    id="custom-audience"
-                    value={customAudience}
-                    onChange={(e) => handleAudienceChange(e.target.value)}
-                    placeholder="Describe your target audience..."
-                    rows={2}
-                    className={`border-black text-black text-xs ${manualOverrides.audience ? 'bg-yellow-50' : ''}`}
-                    maxLength={300}
-                  />
-                  {manualOverrides.audience && (
-                    <div className="text-xs text-black/60 mt-1">✏️ Edited</div>
-                  )}
-                </div>
-              )}
-
-              {/* Budget */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <Label htmlFor="daily-budget" className="text-black text-xs">Daily Budget</Label>
-                  {manualOverrides.budget && selectedTargetingIndex !== null && (
-                    <button
-                      type="button"
-                      onClick={() => resetToAISuggestion('budget')}
-                      className="text-xs text-black/60 hover:text-black underline"
-                    >
-                      Reset
-                    </button>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <input
-                    type="range"
-                    id="daily-budget"
-                    min="5"
-                    max="500"
-                    step="5"
-                    value={dailyBudget}
-                    onChange={(e) => handleBudgetChange(Number(e.target.value))}
-                    className={`w-full h-1 appearance-none cursor-pointer ${
-                      manualOverrides.budget ? 'bg-yellow-600' : 'bg-black'
-                    }`}
-                    style={{
-                      accentColor: manualOverrides.budget ? '#ca8a04' : '#000000'
-                    }}
-                  />
-                  <div className="flex items-center justify-between">
-                    <div className={`text-sm font-medium ${manualOverrides.budget ? 'text-yellow-700' : 'text-black'}`}>
-                      ${dailyBudget}/day
-                    </div>
-                    {manualOverrides.budget && (
-                      <div className="text-xs text-black/60">✏️ Edited</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Platform Selection */}
-              <div>
-                <Label className="text-black text-xs">Platform</Label>
-                <div className="mt-2 p-2 border border-black rounded">
-                  <div className="font-semibold text-xs mb-2">Meta</div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="facebook"
-                        checked={metaSubPlatforms.facebook}
-                        onChange={(e) => setMetaSubPlatforms(prev => ({...prev, facebook: e.target.checked}))}
-                        className="w-3 h-3 cursor-pointer"
-                      />
-                      <label htmlFor="facebook" className="text-xs cursor-pointer">Facebook</label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="instagram"
-                        checked={metaSubPlatforms.instagram}
-                        onChange={(e) => setMetaSubPlatforms(prev => ({...prev, instagram: e.target.checked}))}
-                        className="w-3 h-3 cursor-pointer"
-                      />
-                      <label htmlFor="instagram" className="text-xs cursor-pointer">Instagram</label>
-                    </div>
-                    {!metaSubPlatforms.facebook && !metaSubPlatforms.instagram && (
-                      <p className="text-xs text-destructive">Select at least one</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </Card>
       </div>
     </AppLayout>
