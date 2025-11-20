@@ -122,3 +122,6 @@ verify_jwt = false
 [functions.generate-affiliate-banner]
 verify_jwt = false
 
+[functions.process-monthly-payouts]
+verify_jwt = false
+
