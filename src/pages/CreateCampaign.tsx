@@ -218,7 +218,7 @@ export default function CreateCampaign() {
     <AppLayout title="Create Campaign">
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Left: Controls */}
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-[375px]">
           {/* Upload Section */}
           <Card className="p-3">
             <Label className="text-sm font-semibold mb-2 block">Upload Your Content</Label>
