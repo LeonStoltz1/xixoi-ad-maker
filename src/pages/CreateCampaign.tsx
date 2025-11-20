@@ -42,6 +42,7 @@ export default function CreateCampaign() {
   const [ctaText, setCtaText] = useState("Learn More");
   const [generating, setGenerating] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
+  const [generatingTargeting, setGeneratingTargeting] = useState(false);
   
   // Campaign ID
   const [campaignId, setCampaignId] = useState<string | null>(null);
@@ -70,31 +71,54 @@ export default function CreateCampaign() {
   };
 
   const generateAITargeting = async () => {
-    if (!productDescription) return;
+    if (!productDescription || productDescription.trim().length < 10) return;
+    
+    setGeneratingTargeting(true);
     
     try {
       const { data, error } = await invokeWithRetry(
         supabase,
-        'suggest-campaign-name',
+        'generate-targeting',
         { productDescription }
       );
       
-      if (!error && data) {
-        // Mock AI targeting response (replace with actual AI call later)
-        setAiTargeting({
-          audienceSummary: 'Adults 25-54, Interested in ' + productDescription.substring(0, 30),
-          reasoning: 'Based on your product description and category detection',
-          recommendedChannels: 'Meta (Facebook & Instagram)',
-          suggestedLocation: 'United States',
-          suggestedBudget: 20
+      if (error) {
+        console.error('AI targeting generation failed:', error);
+        toast({
+          title: "Targeting generation failed",
+          description: error.message || "Could not generate targeting suggestions",
+          variant: "destructive"
         });
-        setTargetLocation('United States');
-        setDailyBudget(20);
+        return;
+      }
+      
+      if (data?.targeting) {
+        setAiTargeting(data.targeting);
+        setTargetLocation(data.targeting.suggestedLocation);
+        setDailyBudget(data.targeting.suggestedBudget);
+        
+        toast({
+          title: "✨ AI Targeting Generated",
+          description: "Audience and budget predictions ready"
+        });
       }
     } catch (error) {
-      console.error('AI targeting generation failed:', error);
+      console.error('AI targeting generation error:', error);
+    } finally {
+      setGeneratingTargeting(false);
     }
   };
+
+  // Auto-generate targeting when product description changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (productDescription && productDescription.trim().length >= 10 && !aiTargeting) {
+        generateAITargeting();
+      }
+    }, 1500); // Debounce 1.5 seconds after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [productDescription]);
 
   const handleFileSelect = (file: File) => {
     const maxSize = uploadType === 'video' ? 200 * 1024 * 1024 : 5 * 1024 * 1024;
@@ -410,7 +434,15 @@ export default function CreateCampaign() {
 
             {/* Targeting & Budget */}
             <Card className="p-3 space-y-3 w-full overflow-hidden border border-black">
-              <h3 className="text-sm font-semibold text-black">Targeting & Budget</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-black">Targeting & Budget</h3>
+                {generatingTargeting && (
+                  <div className="flex items-center gap-2 text-xs text-black/60">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Generating predictions...</span>
+                  </div>
+                )}
+              </div>
               
               {/* Location (Editable) */}
               <div>
