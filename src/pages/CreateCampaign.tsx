@@ -163,27 +163,39 @@ export default function CreateCampaign() {
     return () => clearTimeout(timer);
   }, [productDescription]);
 
-  // Auto-generate ad when user finishes typing description
+  // Auto-generate ad when user completes required fields
   useEffect(() => {
     const timer = setTimeout(() => {
       // Only auto-generate if:
       // 1. Description has sufficient content
       // 2. Required files are uploaded (unless text mode)
       // 3. At least one platform is selected
-      // 4. Ad hasn't been generated yet
-      // 5. Not currently generating
+      // 4. At least one contact method provided (phone, email, or URL)
+      // 5. Ad hasn't been generated yet
+      // 6. Not currently generating
       const hasValidDescription = productDescription && productDescription.trim().length >= 20;
       const hasRequiredUpload = uploadType === 'text' || uploadedFile !== null;
       const hasPlatformSelected = metaSubPlatforms.facebook || metaSubPlatforms.instagram;
+      const hasContactInfo = contactPhone || contactEmail || landingUrl;
       
-      if (hasValidDescription && hasRequiredUpload && hasPlatformSelected && !hasGenerated && !generating) {
-        console.log('Auto-triggering ad generation...');
+      if (hasValidDescription && hasRequiredUpload && hasPlatformSelected && hasContactInfo && !hasGenerated && !generating) {
+        console.log('Auto-triggering ad generation - all required fields complete');
         handleGenerateAd();
       }
-    }, 2000); // Wait 2 seconds after user stops typing
+    }, 2000); // Wait 2 seconds after user stops typing/interacting
 
     return () => clearTimeout(timer);
-  }, [productDescription, uploadedFile, uploadType, metaSubPlatforms, hasGenerated, generating]);
+  }, [
+    productDescription, 
+    uploadedFile, 
+    uploadType, 
+    metaSubPlatforms, 
+    contactPhone,
+    contactEmail,
+    landingUrl,
+    hasGenerated, 
+    generating
+  ]);
 
   const handleSelectTargeting = (index: number) => {
     setSelectedTargetingIndex(index);
