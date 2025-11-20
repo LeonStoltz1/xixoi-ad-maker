@@ -318,7 +318,7 @@ export default function Influencers() {
             <p className="text-xl text-muted-foreground">Ready-to-use promotional materials for affiliates</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             {/* Pre-Written Social Posts */}
             <Card>
               <CardHeader>
@@ -406,6 +406,86 @@ export default function Influencers() {
                     toast.success("Email template copied to clipboard!");
                   }}>
                     Copy Email
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Video Scripts / Teleprompter Copy */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Video Scripts</CardTitle>
+                <CardDescription>Teleprompter-ready scripts for video reviews</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="text-xs font-semibold mb-2">60-Second Product Demo Script</p>
+                  <p className="text-sm font-mono mb-3 whitespace-pre-line">
+                    "Hey everyone, I want to show you xiXoi - it's honestly the fastest way to create professional ads I've ever seen.
+                    
+Watch this: I upload a product photo, add a quick description, and xiXoi's AI instantly generates four different ad variants optimized for Meta, TikTok, Google, and LinkedIn.
+
+It even suggests the perfect audience, location targeting, and daily budget based on my product. No design skills needed. No marketing degree required.
+
+The whole process takes about 60 seconds from upload to publishing live ads.
+
+If you're spending hours on ad creation or paying agencies thousands per month, check out xiXoi. Link in my bio."
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    navigator.clipboard.writeText("Hey everyone, I want to show you xiXoi - it's honestly the fastest way to create professional ads I've ever seen.\n\nWatch this: I upload a product photo, add a quick description, and xiXoi's AI instantly generates four different ad variants optimized for Meta, TikTok, Google, and LinkedIn.\n\nIt even suggests the perfect audience, location targeting, and daily budget based on my product. No design skills needed. No marketing degree required.\n\nThe whole process takes about 60 seconds from upload to publishing live ads.\n\nIf you're spending hours on ad creation or paying agencies thousands per month, check out xiXoi. Link in my bio.");
+                    toast.success("Video script copied to clipboard!");
+                  }}>
+                    Copy Script
+                  </Button>
+                </div>
+
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="text-xs font-semibold mb-2">2-Minute Review Script</p>
+                  <p className="text-sm font-mono mb-3 whitespace-pre-line">
+                    "Today I'm reviewing xiXoi, an AI-powered advertising platform that promises to create and publish ads in under 60 seconds. Let's see if it lives up to the hype.
+
+First impression: the interface is incredibly clean. No overwhelming dashboards or confusing menus. Just upload your product, describe what you're selling, and let the AI do the work.
+
+I uploaded a product photo and wrote a two-sentence description. Within seconds, xiXoi generated four completely different ad variants - each one optimized for different platforms. The copy is actually good. Not generic AI slop, but real marketing copy that sounds natural.
+
+Here's what impressed me: it automatically detects my product type, suggests targeting options, recommends a daily budget, and even shows me which platforms will perform best. Everything is auto-optimized.
+
+Pricing starts at $49/month for their Quick-Start tier with a $300 weekly ad spend cap. Pro tier is $149/month with unlimited spend and full control over your own ad accounts.
+
+Bottom line: if you're a small business owner, creator, or entrepreneur who needs professional ads without hiring an agency, xiXoi is worth checking out. Link in description."
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    navigator.clipboard.writeText("Today I'm reviewing xiXoi, an AI-powered advertising platform that promises to create and publish ads in under 60 seconds. Let's see if it lives up to the hype.\n\nFirst impression: the interface is incredibly clean. No overwhelming dashboards or confusing menus. Just upload your product, describe what you're selling, and let the AI do the work.\n\nI uploaded a product photo and wrote a two-sentence description. Within seconds, xiXoi generated four completely different ad variants - each one optimized for different platforms. The copy is actually good. Not generic AI slop, but real marketing copy that sounds natural.\n\nHere's what impressed me: it automatically detects my product type, suggests targeting options, recommends a daily budget, and even shows me which platforms will perform best. Everything is auto-optimized.\n\nPricing starts at $49/month for their Quick-Start tier with a $300 weekly ad spend cap. Pro tier is $149/month with unlimited spend and full control over your own ad accounts.\n\nBottom line: if you're a small business owner, creator, or entrepreneur who needs professional ads without hiring an agency, xiXoi is worth checking out. Link in description.");
+                    toast.success("Video script copied to clipboard!");
+                  }}>
+                    Copy Script
+                  </Button>
+                </div>
+
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="text-xs font-semibold mb-2">Tutorial Walkthrough Script</p>
+                  <p className="text-sm font-mono mb-3 whitespace-pre-line">
+                    "In this tutorial, I'll walk you through creating your first ad campaign with xiXoi from start to finish.
+
+Step one: Upload your content. You can upload an image, video, or just describe your product in text. I'm using a product photo here.
+
+Step two: Add a brief description of what you're selling. Just a sentence or two about the product, price, and key features.
+
+Step three: Review the AI-generated variants. xiXoi creates four different versions automatically - each with unique copy, headlines, and CTAs optimized for different platforms.
+
+Step four: xiXoi suggests targeting options based on your product. Location, audience demographics, and daily budget are all auto-filled. You can adjust these if needed.
+
+Step five: Select your platforms. Choose Meta, TikTok, Google, LinkedIn - or all of them. xiXoi publishes to all selected platforms simultaneously.
+
+Step six: Review and publish. One click and your ads go live across all platforms.
+
+That's it. The entire process took less than two minutes. If you want to try xiXoi yourself, use my affiliate link in the description to get started."
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    navigator.clipboard.writeText("In this tutorial, I'll walk you through creating your first ad campaign with xiXoi from start to finish.\n\nStep one: Upload your content. You can upload an image, video, or just describe your product in text. I'm using a product photo here.\n\nStep two: Add a brief description of what you're selling. Just a sentence or two about the product, price, and key features.\n\nStep three: Review the AI-generated variants. xiXoi creates four different versions automatically - each with unique copy, headlines, and CTAs optimized for different platforms.\n\nStep four: xiXoi suggests targeting options based on your product. Location, audience demographics, and daily budget are all auto-filled. You can adjust these if needed.\n\nStep five: Select your platforms. Choose Meta, TikTok, Google, LinkedIn - or all of them. xiXoi publishes to all selected platforms simultaneously.\n\nStep six: Review and publish. One click and your ads go live across all platforms.\n\nThat's it. The entire process took less than two minutes. If you want to try xiXoi yourself, use my affiliate link in the description to get started.");
+                    toast.success("Video script copied to clipboard!");
+                  }}>
+                    Copy Script
                   </Button>
                 </div>
               </CardContent>
