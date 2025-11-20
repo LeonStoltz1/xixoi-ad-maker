@@ -220,11 +220,11 @@ export default function CreateCampaign() {
         {/* Left: Controls */}
         <div className="space-y-6">
           {/* Upload Section */}
-          <Card className="p-4">
-            <Label className="text-sm font-semibold mb-3 block">Upload Your Content</Label>
+          <Card className="p-3">
+            <Label className="text-sm font-semibold mb-2 block">Upload Your Content</Label>
             
             {/* Upload Type Selector */}
-            <div className="flex gap-2 mb-4">
+            <div className="flex gap-2 mb-3">
               <Button
                 type="button"
                 variant={uploadType === 'image' ? 'default' : 'outline'}
@@ -259,7 +259,7 @@ export default function CreateCampaign() {
               <div>
                 {!uploadedFile ? (
                   <div
-                    className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
                       isDragging ? 'border-primary bg-primary/5' : 'border-border hover:border-primary'
                     }`}
                     onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -267,8 +267,8 @@ export default function CreateCampaign() {
                     onDrop={handleDrop}
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-sm font-medium mb-1">Drop your {uploadType} here or click to browse</p>
+                    <Upload className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
+                    <p className="text-xs font-medium mb-1">Drop your {uploadType} here or click to browse</p>
                     <p className="text-xs text-muted-foreground">
                       {uploadType === 'video' ? 'MP4, MOV (max 200MB)' : 'JPG, PNG (max 5MB)'}
                     </p>
@@ -311,7 +311,7 @@ export default function CreateCampaign() {
           </Card>
 
           {/* Campaign Details */}
-          <Card className="p-4 space-y-3">
+          <Card className="p-3 space-y-2">
             <div>
               <Label htmlFor="campaign-name">Campaign Name (Optional)</Label>
               <Input
@@ -335,7 +335,7 @@ export default function CreateCampaign() {
           </Card>
 
           {/* Contact Section */}
-          <Card className="p-4">
+          <Card className="p-3">
             <CampaignContactSection
               primaryGoal={primaryGoal}
               contactPhone={contactPhone}
@@ -372,7 +372,7 @@ export default function CreateCampaign() {
 
           {/* Edit Section (after generation) */}
           {hasGenerated && (
-            <Card className="p-4 space-y-3">
+            <Card className="p-3 space-y-2">
               <Label className="text-sm font-semibold">Edit Your Ad</Label>
               
               <div>
