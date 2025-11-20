@@ -195,6 +195,36 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_overrides: {
+        Row: {
+          created_at: string | null
+          id: string
+          override_political_mode: boolean | null
+          override_realtor_mode: boolean | null
+          override_tier: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          override_political_mode?: boolean | null
+          override_realtor_mode?: boolean | null
+          override_tier?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          override_political_mode?: boolean | null
+          override_realtor_mode?: boolean | null
+          override_tier?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       affiliate_banners: {
         Row: {
           created_at: string | null

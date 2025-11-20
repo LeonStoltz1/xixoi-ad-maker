@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import xixoiLogoVideo from "@/assets/xixoi-logo-final.mp4";
+import { AdminExperienceSwitcher } from "@/components/AdminExperienceSwitcher";
 
 type AppLayoutProps = {
   title?: string;
@@ -43,6 +44,7 @@ export function AppLayout({ title, subtitle, showBack, backTo, backLabel = "Back
 
           {/* Right-side nav */}
           <nav className="flex items-center gap-3 text-sm font-medium text-white">
+            <AdminExperienceSwitcher />
             <Link to="/admin" className="rounded border border-neutral-600 px-3 py-1">
               Admin
             </Link>
