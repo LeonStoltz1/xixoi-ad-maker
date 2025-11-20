@@ -60,6 +60,12 @@ export default function CreateCampaign() {
     confidence: number;
   }>>([]);
   const [selectedTargetingIndex, setSelectedTargetingIndex] = useState<number | null>(null);
+  const [manualOverrides, setManualOverrides] = useState({
+    location: false,
+    budget: false,
+    audience: false
+  });
+  const [customAudience, setCustomAudience] = useState('');
 
   useEffect(() => {
     checkAuth();
@@ -101,6 +107,10 @@ export default function CreateCampaign() {
         // Apply first option's values
         setTargetLocation(data.options[0].suggestedLocation);
         setDailyBudget(data.options[0].suggestedBudget);
+        setCustomAudience(data.options[0].audienceSummary);
+        
+        // Reset manual overrides
+        setManualOverrides({ location: false, budget: false, audience: false });
         
         toast({
           title: "✨ 3 Targeting Strategies Generated",
@@ -128,8 +138,58 @@ export default function CreateCampaign() {
   const handleSelectTargeting = (index: number) => {
     setSelectedTargetingIndex(index);
     const selected = targetingOptions[index];
-    setTargetLocation(selected.suggestedLocation);
-    setDailyBudget(selected.suggestedBudget);
+    
+    // Only update fields that haven't been manually overridden
+    if (!manualOverrides.location) {
+      setTargetLocation(selected.suggestedLocation);
+    }
+    if (!manualOverrides.budget) {
+      setDailyBudget(selected.suggestedBudget);
+    }
+    if (!manualOverrides.audience) {
+      setCustomAudience(selected.audienceSummary);
+    }
+  };
+
+  const handleLocationChange = (value: string) => {
+    // Validate location input (max 100 chars, basic sanitization)
+    const sanitized = value.trim().slice(0, 100);
+    setTargetLocation(sanitized);
+    setManualOverrides(prev => ({ ...prev, location: true }));
+  };
+
+  const handleBudgetChange = (value: number) => {
+    // Validate budget is within allowed range
+    const validated = Math.max(5, Math.min(500, value));
+    setDailyBudget(validated);
+    setManualOverrides(prev => ({ ...prev, budget: true }));
+  };
+
+  const handleAudienceChange = (value: string) => {
+    // Validate audience input (max 100 chars, basic sanitization)
+    const sanitized = value.trim().slice(0, 100);
+    setCustomAudience(sanitized);
+    setManualOverrides(prev => ({ ...prev, audience: true }));
+  };
+
+  const resetToAISuggestion = (field: 'location' | 'budget' | 'audience') => {
+    if (selectedTargetingIndex === null) return;
+    const selected = targetingOptions[selectedTargetingIndex];
+    
+    switch (field) {
+      case 'location':
+        setTargetLocation(selected.suggestedLocation);
+        setManualOverrides(prev => ({ ...prev, location: false }));
+        break;
+      case 'budget':
+        setDailyBudget(selected.suggestedBudget);
+        setManualOverrides(prev => ({ ...prev, budget: false }));
+        break;
+      case 'audience':
+        setCustomAudience(selected.audienceSummary);
+        setManualOverrides(prev => ({ ...prev, audience: false }));
+        break;
+    }
   };
 
   const handleFileSelect = (file: File) => {
@@ -235,9 +295,9 @@ export default function CreateCampaign() {
           contact_email: contactEmail,
           landing_url: landingUrl,
           target_location: targetLocation || 'United States',
-          target_audience: selectedTargetingIndex !== null && targetingOptions[selectedTargetingIndex] 
+          target_audience: customAudience || (selectedTargetingIndex !== null && targetingOptions[selectedTargetingIndex] 
             ? targetingOptions[selectedTargetingIndex].audienceSummary 
-            : 'General',
+            : 'General'),
           daily_budget: dailyBudget,
         })
         .select()
@@ -463,19 +523,74 @@ export default function CreateCampaign() {
               
               {/* Location (Editable) */}
               <div>
-                <Label htmlFor="target-location" className="text-black">Location</Label>
+                <div className="flex items-center justify-between mb-1">
+                  <Label htmlFor="target-location" className="text-black text-xs">Location</Label>
+                  {manualOverrides.location && selectedTargetingIndex !== null && (
+                    <button
+                      type="button"
+                      onClick={() => resetToAISuggestion('location')}
+                      className="text-xs text-black/60 hover:text-black underline"
+                    >
+                      Reset to AI
+                    </button>
+                  )}
+                </div>
                 <Input
                   id="target-location"
                   value={targetLocation}
-                  onChange={(e) => setTargetLocation(e.target.value)}
+                  onChange={(e) => handleLocationChange(e.target.value)}
                   placeholder="e.g., United States, California, etc."
-                  className="border-black text-black"
+                  className={`border-black text-black ${manualOverrides.location ? 'bg-yellow-50' : ''}`}
+                  maxLength={100}
                 />
+                {manualOverrides.location && (
+                  <div className="text-xs text-black/60 mt-1">✏️ Manually edited</div>
+                )}
               </div>
+
+              {/* Audience (Editable) */}
+              {selectedTargetingIndex !== null && (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label htmlFor="custom-audience" className="text-black text-xs">Target Audience</Label>
+                    {manualOverrides.audience && (
+                      <button
+                        type="button"
+                        onClick={() => resetToAISuggestion('audience')}
+                        className="text-xs text-black/60 hover:text-black underline"
+                      >
+                        Reset to AI
+                      </button>
+                    )}
+                  </div>
+                  <Input
+                    id="custom-audience"
+                    value={customAudience}
+                    onChange={(e) => handleAudienceChange(e.target.value)}
+                    placeholder="e.g., Women 25-45, Health-Conscious"
+                    className={`border-black text-black ${manualOverrides.audience ? 'bg-yellow-50' : ''}`}
+                    maxLength={100}
+                  />
+                  {manualOverrides.audience && (
+                    <div className="text-xs text-black/60 mt-1">✏️ Manually edited</div>
+                  )}
+                </div>
+              )}
 
               {/* Daily Budget Slider (Editable) */}
               <div>
-                <Label htmlFor="daily-budget" className="text-black">Daily Budget</Label>
+                <div className="flex items-center justify-between mb-1">
+                  <Label htmlFor="daily-budget" className="text-black text-xs">Daily Budget</Label>
+                  {manualOverrides.budget && selectedTargetingIndex !== null && (
+                    <button
+                      type="button"
+                      onClick={() => resetToAISuggestion('budget')}
+                      className="text-xs text-black/60 hover:text-black underline"
+                    >
+                      Reset to AI
+                    </button>
+                  )}
+                </div>
                 <div className="space-y-2">
                   <input
                     type="range"
@@ -484,13 +599,22 @@ export default function CreateCampaign() {
                     max="500"
                     step="5"
                     value={dailyBudget}
-                    onChange={(e) => setDailyBudget(Number(e.target.value))}
-                    className="w-full h-1 bg-black appearance-none cursor-pointer"
+                    onChange={(e) => handleBudgetChange(Number(e.target.value))}
+                    className={`w-full h-1 appearance-none cursor-pointer ${
+                      manualOverrides.budget ? 'bg-yellow-600' : 'bg-black'
+                    }`}
                     style={{
-                      accentColor: '#000000'
+                      accentColor: manualOverrides.budget ? '#ca8a04' : '#000000'
                     }}
                   />
-                  <div className="text-sm text-black font-medium">${dailyBudget}/day</div>
+                  <div className="flex items-center justify-between">
+                    <div className={`text-sm font-medium ${manualOverrides.budget ? 'text-yellow-700' : 'text-black'}`}>
+                      ${dailyBudget}/day
+                    </div>
+                    {manualOverrides.budget && (
+                      <div className="text-xs text-black/60">✏️ Manually edited</div>
+                    )}
+                  </div>
                 </div>
               </div>
 
