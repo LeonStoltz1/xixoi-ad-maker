@@ -109,6 +109,22 @@ export default function CreateCampaign() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Auto-generate campaign name if not provided
+      let finalCampaignName = campaignName.trim();
+      if (!finalCampaignName) {
+        const { data: nameData, error: nameError } = await invokeWithRetry(
+          supabase,
+          'suggest-campaign-name',
+          { productDescription }
+        );
+        if (!nameError && nameData?.suggestedName) {
+          finalCampaignName = nameData.suggestedName;
+          setCampaignName(finalCampaignName);
+        } else {
+          finalCampaignName = 'Untitled Campaign';
+        }
+      }
+
       // Create campaign
       let uploadedAssetUrl = null;
       
@@ -134,7 +150,7 @@ export default function CreateCampaign() {
         .from('campaigns')
         .insert({
           user_id: user.id,
-          name: campaignName || 'Untitled Campaign',
+          name: finalCampaignName,
           primary_goal: primaryGoal,
           contact_phone: contactPhone,
           contact_email: contactEmail,
@@ -314,7 +330,7 @@ export default function CreateCampaign() {
             {/* Campaign Details */}
             <Card className="p-3 space-y-2 w-full overflow-hidden">
             <div>
-              <Label htmlFor="campaign-name">Ad Header (Optional)</Label>
+              <Label htmlFor="campaign-name">Ad Header (Required)</Label>
               <Input
                 id="campaign-name"
                 value={campaignName}
