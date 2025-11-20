@@ -128,3 +128,6 @@ verify_jwt = false
 [functions.send-affiliate-balance-notification]
 verify_jwt = false
 
+[functions.send-affiliate-welcome]
+verify_jwt = false
+
