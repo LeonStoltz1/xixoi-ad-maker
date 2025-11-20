@@ -222,6 +222,35 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_milestones: {
+        Row: {
+          achieved_at: string | null
+          affiliate_id: string
+          id: string
+          milestone_type: string
+        }
+        Insert: {
+          achieved_at?: string | null
+          affiliate_id: string
+          id?: string
+          milestone_type: string
+        }
+        Update: {
+          achieved_at?: string | null
+          affiliate_id?: string
+          id?: string
+          milestone_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_milestones_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       affiliate_payouts: {
         Row: {
           admin_note: string | null
