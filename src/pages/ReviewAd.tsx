@@ -156,69 +156,97 @@ export default function ReviewAd() {
       backTo={`/targeting/${campaignId}`}
       backLabel="Targeting"
     >
-      <div className="space-y-8">
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Ad Preview</h2>
-          <div className="space-y-4">
-            {imageUrl && (
-              <div className="relative w-full aspect-video bg-muted overflow-hidden rounded-lg">
-                <img src={imageUrl} alt="Ad creative" className="w-full h-full object-cover" />
-                {hasWatermark && userPlan === 'free' && (
-                  <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                    Powered by xiXoi™
-                  </div>
-                )}
-              </div>
-            )}
-            <div className="space-y-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Headline</p>
-                <p className="font-semibold">{editedHeadline}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Body</p>
-                <p className="text-sm">{editedBody}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Call-to-Action</p>
-                <Button size="sm" variant="default" className="mt-1">{editedCta}</Button>
-              </div>
-            </div>
+      <div className="grid gap-8 lg:grid-cols-[400px_1fr]">
+        {/* Instagram-Style Mobile Ad Preview */}
+        <div>
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold mb-1">Ad Preview</h2>
+            <p className="text-sm text-muted-foreground">Scaled to Instagram mobile dimensions (375px)</p>
           </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Edit Ad Content</h2>
-            <Button variant="ghost" size="sm" onClick={() => setIsEditing(!isEditing)}>
-              {isEditing ? (<><Check className="w-4 h-4 mr-2" />Done Editing</>) : (<><Pencil className="w-4 h-4 mr-2" />Edit</>)}
-            </Button>
+          
+          {/* Instagram Mobile Container */}
+          <div className="mx-auto" style={{ maxWidth: '375px' }}>
+            <Card className="overflow-hidden border-2">
+              {/* Instagram-style header */}
+              <div className="p-3 flex items-center gap-2 border-b bg-background">
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-semibold">
+                  Ad
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold leading-tight">{campaign?.name || 'Sponsored'}</p>
+                  <p className="text-xs text-muted-foreground">Sponsored</p>
+                </div>
+              </div>
+              
+              {/* Image with 1:1 aspect ratio (Instagram feed standard) */}
+              {imageUrl && (
+                <div className="relative w-full aspect-square bg-muted">
+                  <img
+                    src={imageUrl}
+                    alt="Ad creative"
+                    className="w-full h-full object-cover"
+                  />
+                  {hasWatermark && userPlan === 'free' && (
+                    <div className="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] px-2 py-0.5 rounded">
+                      Powered by xiXoi™
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Content area - Instagram style */}
+              <div className="p-3 space-y-2 bg-background">
+                <div>
+                  <p className="font-semibold text-sm leading-tight">{editedHeadline}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground leading-snug">{editedBody}</p>
+                </div>
+                <div className="pt-1">
+                  <Button size="sm" className="w-full h-9 text-sm font-semibold">
+                    {editedCta}
+                  </Button>
+                </div>
+              </div>
+            </Card>
           </div>
+        </div>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="headline">Headline</Label>
-              <Input id="headline" value={editedHeadline} onChange={(e) => setEditedHeadline(e.target.value)} disabled={!isEditing} maxLength={40} />
-              <p className="text-xs text-muted-foreground">{editedHeadline.length}/40 characters</p>
+        {/* Edit & Compliance Section */}
+        <div className="space-y-6">
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Edit Ad Content</h2>
+              <Button variant="ghost" size="sm" onClick={() => setIsEditing(!isEditing)}>
+                {isEditing ? (<><Check className="w-4 h-4 mr-2" />Done Editing</>) : (<><Pencil className="w-4 h-4 mr-2" />Edit</>)}
+              </Button>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="body">Body Copy</Label>
-              <Textarea id="body" value={editedBody} onChange={(e) => setEditedBody(e.target.value)} disabled={!isEditing} rows={4} maxLength={125} />
-              <p className="text-xs text-muted-foreground">{editedBody.length}/125 characters</p>
-            </div>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="headline">Headline</Label>
+                <Input id="headline" value={editedHeadline} onChange={(e) => setEditedHeadline(e.target.value)} disabled={!isEditing} maxLength={40} />
+                <p className="text-xs text-muted-foreground">{editedHeadline.length}/40 characters</p>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="cta">Call-to-Action</Label>
-              <Input id="cta" value={editedCta} onChange={(e) => setEditedCta(e.target.value)} disabled={!isEditing} maxLength={30} />
-              <p className="text-xs text-muted-foreground">{editedCta.length}/30 characters</p>
-            </div>
-          </div>
-        </Card>
+              <div className="space-y-2">
+                <Label htmlFor="body">Body Copy</Label>
+                <Textarea id="body" value={editedBody} onChange={(e) => setEditedBody(e.target.value)} disabled={!isEditing} rows={4} maxLength={125} />
+                <p className="text-xs text-muted-foreground">{editedBody.length}/125 characters</p>
+              </div>
 
-        {complianceIssues.length > 0 && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+              <div className="space-y-2">
+                <Label htmlFor="cta">Call-to-Action</Label>
+                <Input id="cta" value={editedCta} onChange={(e) => setEditedCta(e.target.value)} disabled={!isEditing} maxLength={30} />
+                <p className="text-xs text-muted-foreground">{editedCta.length}/30 characters</p>
+              </div>
+            </div>
+          </Card>
+
+          {complianceIssues.length > 0 && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               <p className="font-semibold mb-2">Compliance Issues Found:</p>
               <ul className="list-disc list-inside space-y-1">
@@ -242,6 +270,7 @@ export default function ReviewAd() {
             {checking ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Checking...</>) : 'Check Compliance'}
           </Button>
           <Button onClick={handlePublish} disabled={!isApproved} className="flex-1">Continue to Publish</Button>
+        </div>
         </div>
       </div>
     </AppLayout>
