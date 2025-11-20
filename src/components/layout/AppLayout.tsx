@@ -23,7 +23,7 @@ export function AppLayout({ title, subtitle, showBack, backTo, backLabel = "Back
       <UnifiedHeader />
 
       {/* PAGE CONTENT — padding-top adjusted for h-32 header */}
-      <main className="mx-auto max-w-6xl px-4 pt-36 pb-10">
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-36 pb-10">
         {/* Standardized back nav */}
         {showBack && (
           <button
