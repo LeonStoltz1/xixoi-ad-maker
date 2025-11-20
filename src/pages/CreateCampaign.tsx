@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Upload, Image as ImageIcon, Video as VideoIcon, FileText, X, Loader2, Sparkles, RefreshCw, AlertCircle } from "lucide-react";
+import { Upload, Image as ImageIcon, Video as VideoIcon, FileText, X, Loader2, Sparkles, RefreshCw, AlertCircle, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { invokeWithRetry } from "@/lib/retryWithBackoff";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -1232,6 +1232,14 @@ export default function CreateCampaign() {
                       {!metaSubPlatforms.facebook && !metaSubPlatforms.instagram && (
                         <p className="text-xs text-destructive">Select at least one</p>
                       )}
+                      <Alert className="mt-3 bg-muted/50 border-muted-foreground/20">
+                        <div className="flex gap-2 items-start">
+                          <Info className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
+                          <p className="text-xs text-muted-foreground">
+                            Meta uses a unified budget system—you'll pay the same daily rate whether you advertise on Facebook only, Instagram only, or both. We recommend keeping both checked for maximum reach at no extra cost.
+                          </p>
+                        </div>
+                      </Alert>
                     </div>
                   </div>
                 </div>
