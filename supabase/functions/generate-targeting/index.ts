@@ -25,16 +25,22 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    const systemPrompt = `You are an expert digital advertising strategist. Analyze the product/service description and generate optimal targeting recommendations for Meta (Facebook/Instagram) ads.
+    const systemPrompt = `You are an expert digital advertising strategist. Analyze the product/service description and generate 3 DIFFERENT targeting strategies for Meta (Facebook/Instagram) ads.
 
-Return structured targeting data including:
-- audienceSummary: A concise 5-10 word description of the target audience (e.g., "Women 25-45, Health-Conscious Shoppers")
+Each strategy should target a distinct audience segment with different demographics, psychographics, or behaviors. For example:
+- Strategy 1 might target younger, budget-conscious buyers
+- Strategy 2 might target affluent professionals
+- Strategy 3 might target a niche enthusiast community
+
+For each strategy, provide:
+- audienceSummary: A concise 5-10 word description (e.g., "Women 25-45, Health-Conscious Shoppers")
 - reasoning: One sentence explaining why this audience is ideal (max 150 chars)
-- recommendedChannels: Always return "Meta (Facebook & Instagram)" since we only support Meta currently
-- suggestedLocation: Best geographic targeting (e.g., "United States", "California", "New York City")
-- suggestedBudget: Recommended daily budget in USD (5-100, considering product price point and market)
+- recommendedChannels: Always "Meta (Facebook & Instagram)"
+- suggestedLocation: Best geographic targeting
+- suggestedBudget: Recommended daily budget in USD (5-100)
+- confidence: Your confidence in this strategy's success (0.70-0.95 scale, where 0.95 is highest confidence)
 
-Be specific and actionable. Base recommendations on product category, price point, and market positioning.`;
+Make each strategy meaningfully different and actionable.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -52,39 +58,56 @@ Be specific and actionable. Base recommendations on product category, price poin
           {
             type: 'function',
             function: {
-              name: 'generate_targeting',
-              description: 'Generate targeting recommendations for the product',
+              name: 'generate_targeting_options',
+              description: 'Generate 3 different targeting strategy options',
               parameters: {
                 type: 'object',
                 properties: {
-                  audienceSummary: { 
-                    type: 'string',
-                    description: 'Concise audience description (5-10 words)'
-                  },
-                  reasoning: { 
-                    type: 'string',
-                    description: 'One sentence explaining targeting strategy (max 150 chars)'
-                  },
-                  recommendedChannels: { 
-                    type: 'string',
-                    description: 'Always "Meta (Facebook & Instagram)"'
-                  },
-                  suggestedLocation: { 
-                    type: 'string',
-                    description: 'Geographic targeting recommendation'
-                  },
-                  suggestedBudget: { 
-                    type: 'number',
-                    description: 'Daily budget in USD (5-100)'
+                  options: {
+                    type: 'array',
+                    description: 'Array of 3 targeting strategies',
+                    minItems: 3,
+                    maxItems: 3,
+                    items: {
+                      type: 'object',
+                      properties: {
+                        audienceSummary: { 
+                          type: 'string',
+                          description: 'Concise audience description (5-10 words)'
+                        },
+                        reasoning: { 
+                          type: 'string',
+                          description: 'One sentence explaining strategy (max 150 chars)'
+                        },
+                        recommendedChannels: { 
+                          type: 'string',
+                          description: 'Always "Meta (Facebook & Instagram)"'
+                        },
+                        suggestedLocation: { 
+                          type: 'string',
+                          description: 'Geographic targeting'
+                        },
+                        suggestedBudget: { 
+                          type: 'number',
+                          description: 'Daily budget in USD (5-100)'
+                        },
+                        confidence: {
+                          type: 'number',
+                          description: 'Confidence score (0.70-0.95)'
+                        }
+                      },
+                      required: ['audienceSummary', 'reasoning', 'recommendedChannels', 'suggestedLocation', 'suggestedBudget', 'confidence'],
+                      additionalProperties: false
+                    }
                   }
                 },
-                required: ['audienceSummary', 'reasoning', 'recommendedChannels', 'suggestedLocation', 'suggestedBudget'],
+                required: ['options'],
                 additionalProperties: false
               }
             }
           }
         ],
-        tool_choice: { type: 'function', function: { name: 'generate_targeting' } }
+        tool_choice: { type: 'function', function: { name: 'generate_targeting_options' } }
       }),
     });
 
@@ -117,16 +140,28 @@ Be specific and actionable. Base recommendations on product category, price poin
       throw new Error('No tool call in response');
     }
     
-    const targeting = JSON.parse(toolCall.function.arguments);
+    const result = JSON.parse(toolCall.function.arguments);
+    const options = result.options || [];
 
-    // Validate and constrain budget
-    if (targeting.suggestedBudget < 5) targeting.suggestedBudget = 5;
-    if (targeting.suggestedBudget > 100) targeting.suggestedBudget = 100;
+    if (options.length !== 3) {
+      throw new Error('Expected 3 targeting options');
+    }
 
-    console.log('Generated targeting:', targeting);
+    // Validate and constrain each option
+    options.forEach((option: any) => {
+      if (option.suggestedBudget < 5) option.suggestedBudget = 5;
+      if (option.suggestedBudget > 100) option.suggestedBudget = 100;
+      if (option.confidence < 0.70) option.confidence = 0.70;
+      if (option.confidence > 0.95) option.confidence = 0.95;
+    });
+
+    // Sort by confidence (highest first)
+    options.sort((a: any, b: any) => b.confidence - a.confidence);
+
+    console.log('Generated targeting options:', options);
 
     return new Response(
-      JSON.stringify({ targeting }),
+      JSON.stringify({ options }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

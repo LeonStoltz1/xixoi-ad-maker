@@ -51,13 +51,15 @@ export default function CreateCampaign() {
   // Targeting & Budget
   const [targetLocation, setTargetLocation] = useState('');
   const [dailyBudget, setDailyBudget] = useState(20);
-  const [aiTargeting, setAiTargeting] = useState<{
+  const [targetingOptions, setTargetingOptions] = useState<Array<{
     audienceSummary: string;
     reasoning: string;
     recommendedChannels: string;
     suggestedLocation: string;
     suggestedBudget: number;
-  } | null>(null);
+    confidence: number;
+  }>>([]);
+  const [selectedTargetingIndex, setSelectedTargetingIndex] = useState<number | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -92,14 +94,17 @@ export default function CreateCampaign() {
         return;
       }
       
-      if (data?.targeting) {
-        setAiTargeting(data.targeting);
-        setTargetLocation(data.targeting.suggestedLocation);
-        setDailyBudget(data.targeting.suggestedBudget);
+      if (data?.options && data.options.length === 3) {
+        setTargetingOptions(data.options);
+        setSelectedTargetingIndex(0); // Auto-select highest confidence option
+        
+        // Apply first option's values
+        setTargetLocation(data.options[0].suggestedLocation);
+        setDailyBudget(data.options[0].suggestedBudget);
         
         toast({
-          title: "✨ AI Targeting Generated",
-          description: "Audience and budget predictions ready"
+          title: "✨ 3 Targeting Strategies Generated",
+          description: "Choose your preferred audience approach"
         });
       }
     } catch (error) {
@@ -112,13 +117,20 @@ export default function CreateCampaign() {
   // Auto-generate targeting when product description changes
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (productDescription && productDescription.trim().length >= 10 && !aiTargeting) {
+      if (productDescription && productDescription.trim().length >= 10 && targetingOptions.length === 0) {
         generateAITargeting();
       }
     }, 1500); // Debounce 1.5 seconds after user stops typing
 
     return () => clearTimeout(timer);
   }, [productDescription]);
+
+  const handleSelectTargeting = (index: number) => {
+    setSelectedTargetingIndex(index);
+    const selected = targetingOptions[index];
+    setTargetLocation(selected.suggestedLocation);
+    setDailyBudget(selected.suggestedBudget);
+  };
 
   const handleFileSelect = (file: File) => {
     const maxSize = uploadType === 'video' ? 200 * 1024 * 1024 : 5 * 1024 * 1024;
@@ -188,7 +200,7 @@ export default function CreateCampaign() {
       }
 
       // Generate AI targeting if not already done
-      if (!aiTargeting && productDescription) {
+      if (targetingOptions.length === 0 && productDescription) {
         await generateAITargeting();
       }
 
@@ -222,6 +234,11 @@ export default function CreateCampaign() {
           contact_phone: contactPhone,
           contact_email: contactEmail,
           landing_url: landingUrl,
+          target_location: targetLocation || 'United States',
+          target_audience: selectedTargetingIndex !== null && targetingOptions[selectedTargetingIndex] 
+            ? targetingOptions[selectedTargetingIndex].audienceSummary 
+            : 'General',
+          daily_budget: dailyBudget,
         })
         .select()
         .single();
@@ -477,13 +494,48 @@ export default function CreateCampaign() {
                 </div>
               </div>
 
-              {/* AI Suggested Audience (Read-only) */}
-              {aiTargeting && (
-                <div className="border border-black p-2 space-y-1">
-                  <div className="text-xs font-semibold text-black">Suggested Audience (AI-Generated)</div>
-                  <div className="text-xs text-black">{aiTargeting.audienceSummary}</div>
-                  <div className="text-xs text-black/60 italic">{aiTargeting.reasoning}</div>
-                  <div className="text-xs text-black mt-1">Recommended: {aiTargeting.recommendedChannels}</div>
+              {/* AI Targeting Options */}
+              {targetingOptions.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold text-black">AI Targeting Strategies (Select One)</div>
+                  {targetingOptions.map((option, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => handleSelectTargeting(index)}
+                      className={`w-full border p-2 text-left transition-all ${
+                        selectedTargetingIndex === index 
+                          ? 'border-black bg-black text-white' 
+                          : 'border-black bg-white text-black hover:bg-black/5'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="text-xs font-semibold">
+                          Strategy {index + 1}
+                        </div>
+                        <div className={`text-xs ${
+                          selectedTargetingIndex === index ? 'text-white' : 'text-black'
+                        }`}>
+                          {Math.round(option.confidence * 100)}% confidence
+                        </div>
+                      </div>
+                      <div className={`text-xs ${
+                        selectedTargetingIndex === index ? 'text-white' : 'text-black'
+                      }`}>
+                        {option.audienceSummary}
+                      </div>
+                      <div className={`text-xs italic mt-1 ${
+                        selectedTargetingIndex === index ? 'text-white/80' : 'text-black/60'
+                      }`}>
+                        {option.reasoning}
+                      </div>
+                      <div className={`text-xs mt-1 ${
+                        selectedTargetingIndex === index ? 'text-white/90' : 'text-black/70'
+                      }`}>
+                        ${option.suggestedBudget}/day • {option.suggestedLocation}
+                      </div>
+                    </button>
+                  ))}
                 </div>
               )}
 
