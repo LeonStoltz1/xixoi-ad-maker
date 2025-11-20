@@ -934,27 +934,56 @@ export default function CreateCampaign() {
                     className="hidden"
                   />
                   {previewUrl && uploadType === 'image' ? (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <img 
                         src={previewUrl} 
                         alt="Preview" 
-                        className="max-h-48 mx-auto object-contain"
+                        className="max-h-48 mx-auto object-contain border border-foreground/20"
                       />
-                      <p className="text-foreground text-sm font-medium">{uploadedFile?.name}</p>
-                      <p className="text-muted-foreground text-xs">
-                        {uploadedFile && `${(uploadedFile.size / 1024 / 1024).toFixed(2)}MB`} • Click or drag to change
-                      </p>
+                      <div className="space-y-2">
+                        <p className="text-foreground text-sm font-medium">{uploadedFile?.name}</p>
+                        <p className="text-muted-foreground text-xs">
+                          {uploadedFile && `${(uploadedFile.size / 1024 / 1024).toFixed(2)}MB`}
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="w-full mt-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUploadClick();
+                          }}
+                        >
+                          Replace Image
+                        </Button>
+                      </div>
                     </div>
                   ) : previewUrl && uploadType === 'video' ? (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <video 
                         src={previewUrl} 
                         controls
-                        className="max-h-48 mx-auto"
+                        className="max-h-48 mx-auto border border-foreground/20"
                       />
-                      <p className="text-muted-foreground text-xs">
-                        {uploadedFile && `${(uploadedFile.size / 1024 / 1024).toFixed(2)}MB`} • Click or drag to change
-                      </p>
+                      <div className="space-y-2">
+                        <p className="text-foreground text-sm font-medium">{uploadedFile?.name}</p>
+                        <p className="text-muted-foreground text-xs">
+                          {uploadedFile && `${(uploadedFile.size / 1024 / 1024).toFixed(2)}MB`}
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="w-full mt-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUploadClick();
+                          }}
+                        >
+                          Replace Video
+                        </Button>
+                      </div>
                     </div>
                   ) : uploadedFile ? (
                     <div className="space-y-2">
