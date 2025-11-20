@@ -463,9 +463,9 @@ export default function CreateCampaign() {
 
   return (
     <AppLayout title="Create Campaign">
-      <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-start lg:justify-center lg:gap-16 xl:gap-24">
+      <div className="flex flex-row items-start justify-center gap-8 xl:gap-16">
         {/* Left column – Controls */}
-        <div className="w-[375px] shrink-0 -mr-px lg:mr-0">
+        <div className="w-[375px] shrink-0">
           <div className="space-y-6">
             {/* Upload Section */}
             <Card className="p-3 w-full overflow-hidden">
