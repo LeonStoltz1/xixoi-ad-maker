@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Copy, DollarSign, Users, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
-import { Header } from '@/components/Header';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { Footer } from '@/components/Footer';
 
 const AffiliatesPage = () => {
@@ -173,16 +173,11 @@ const AffiliatesPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="max-w-6xl mx-auto py-12 px-4 mt-32">
+    <AppLayout title="xiXoi™ Affiliate Dashboard" showBack backTo="/dashboard">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4">
-            ← Back to Dashboard
-          </Button>
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">xiXoi™ Affiliate Dashboard</h1>
-          <div className="inline-flex items-center gap-3 bg-primary/10 border border-primary/20 px-6 py-3">
+          <div className="inline-flex items-center gap-3 bg-primary/10 border border-primary/20 px-6 py-3 mb-4">
             <DollarSign className="w-6 h-6 text-primary" />
             <div>
               <p className="text-sm text-muted-foreground">Commission Rate</p>
@@ -440,7 +435,7 @@ const AffiliatesPage = () => {
         )}
       </div>
       <Footer />
-    </div>
+    </AppLayout>
   );
 };
 

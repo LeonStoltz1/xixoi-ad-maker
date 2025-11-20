@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Header } from "@/components/Header";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { toast } from "sonner";
 import { Shield, Key, AlertCircle, CheckCircle, Search } from "lucide-react";
 
@@ -222,26 +222,23 @@ export default function PlatformCredentialsAdmin() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container mx-auto p-6 pt-40">
+      <AppLayout title="Platform API Status">
+        <div className="container mx-auto">
           <p>Loading...</p>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   if (!isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="container mx-auto p-6 pt-40 max-w-5xl">
+    <AppLayout title="Platform API Status" showBack backTo="/dashboard">
+      <div className="container mx-auto max-w-5xl">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Shield className="w-6 h-6" />
-              <h1 className="text-3xl font-bold">Platform API Status</h1>
             </div>
             <div className="flex gap-2">
               <Button asChild variant="outline">
@@ -402,6 +399,6 @@ export default function PlatformCredentialsAdmin() {
           </p>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
