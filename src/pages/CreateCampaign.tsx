@@ -881,13 +881,19 @@ export default function CreateCampaign() {
                         accentColor: manualOverrides.budget ? '#ca8a04' : '#000000'
                       }}
                     />
-                    <div className="flex items-center justify-between">
-                      <div className={`text-sm font-medium ${manualOverrides.budget ? 'text-yellow-700' : 'text-black'}`}>
-                        ${dailyBudget}/day
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className={`text-sm font-medium ${manualOverrides.budget ? 'text-yellow-700' : 'text-black'}`}>
+                          ${dailyBudget}/day
+                        </div>
+                        {manualOverrides.budget && (
+                          <div className="text-xs text-black/60">✏️ Edited</div>
+                        )}
                       </div>
-                      {manualOverrides.budget && (
-                        <div className="text-xs text-black/60">✏️ Edited</div>
-                      )}
+                      <div className="flex items-center gap-4 text-xs text-black/60">
+                        <span>Weekly: ${(dailyBudget * 7).toFixed(0)}</span>
+                        <span>Monthly: ${(dailyBudget * 30).toFixed(0)}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
