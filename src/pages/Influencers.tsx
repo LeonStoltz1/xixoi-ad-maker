@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { BannerDownload } from "@/components/BannerDownload";
 import { BannerGallery } from "@/components/BannerGallery";
+import { toast } from "sonner";
 
 export default function Influencers() {
   const navigate = useNavigate();
@@ -332,6 +333,7 @@ export default function Influencers() {
                   </p>
                   <Button size="sm" variant="outline" onClick={() => {
                     navigator.clipboard.writeText("Just discovered xiXoi™ - creates professional ads in 60 seconds using AI. No design skills needed. Perfect for small businesses and creators.");
+                    toast.success("Post copied to clipboard!");
                   }}>
                     Copy Post
                   </Button>
@@ -344,6 +346,7 @@ export default function Influencers() {
                   </p>
                   <Button size="sm" variant="outline" onClick={() => {
                     navigator.clipboard.writeText("Stop wasting time on ad creation. xiXoi™ uses AI to generate Meta, TikTok, and Google ads automatically. Upload your product → AI creates the ads → Publish instantly.");
+                    toast.success("Post copied to clipboard!");
                   }}>
                     Copy Post
                   </Button>
@@ -356,6 +359,7 @@ export default function Influencers() {
                   </p>
                   <Button size="sm" variant="outline" onClick={() => {
                     navigator.clipboard.writeText("AI-powered advertising for every human. xiXoi™ automates your entire ad workflow - from creative generation to multi-platform publishing. No marketing degree required.");
+                    toast.success("Post copied to clipboard!");
                   }}>
                     Copy Post
                   </Button>
@@ -381,6 +385,7 @@ export default function Influencers() {
                   </p>
                   <Button size="sm" variant="outline" onClick={() => {
                     navigator.clipboard.writeText("Hey [Name],\n\nI wanted to share xiXoi™ with you - it's an AI platform that creates professional ads in under a minute.\n\nUpload your product image → AI generates ad copy and variants → Publish to Meta, TikTok, Google instantly.\n\nNo design skills. No marketing degree. Just results.\n\nTry it here: [your-link]");
+                    toast.success("Email template copied to clipboard!");
                   }}>
                     Copy Email
                   </Button>
@@ -398,6 +403,7 @@ export default function Influencers() {
                   </p>
                   <Button size="sm" variant="outline" onClick={() => {
                     navigator.clipboard.writeText("Hi [Name],\n\nPaying $2,000-$5,000/month for ad creation? xiXoi™ does it for $49-$149/month using AI.\n\n• Generate unlimited ad variants\n• Auto-optimize targeting\n• Publish to 5 platforms instantly\n\nSee it in action: [your-link]");
+                    toast.success("Email template copied to clipboard!");
                   }}>
                     Copy Email
                   </Button>
