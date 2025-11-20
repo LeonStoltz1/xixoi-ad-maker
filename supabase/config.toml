@@ -134,3 +134,6 @@ verify_jwt = false
 [functions.send-affiliate-welcome]
 verify_jwt = false
 
+[functions.generate-targeting]
+verify_jwt = true
+
