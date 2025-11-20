@@ -615,11 +615,11 @@ export default function CreateCampaign() {
       <section className="space-y-6">
         <h1 className="text-3xl font-semibold tracking-tight">Create Campaign</h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 min-w-0">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* Left column – All Controls and Targeting */}
-          <div className="flex-1 min-w-0">
+          <div className="w-full lg:w-1/2 lg:flex-shrink-0">
             <Card className="w-full p-6">
-          <div className="space-y-6">
+              <div className="space-y-6">
             {/* Meta Requirements Info */}
             <Alert>
               <AlertCircle className="h-4 w-4" />
@@ -1250,8 +1250,9 @@ export default function CreateCampaign() {
           </div>
 
         {/* Right column – Live Preview Only */}
-        <div className="flex-1 min-w-0">
-          <Card className="w-full p-6 lg:sticky lg:top-24">
+        <div className="w-full lg:w-1/2 lg:flex-shrink-0">
+          <div className="lg:sticky lg:top-24">
+            <Card className="w-full p-6">
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <div>
@@ -1388,9 +1389,10 @@ export default function CreateCampaign() {
                 </div>
               </div>
             </Card>
-        </Card>
+          </Card>
           </div>
         </div>
+      </div>
       </section>
     </AppLayout>
   );
