@@ -195,6 +195,33 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_banners: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_url: string
+          is_featured: boolean | null
+          size: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url: string
+          is_featured?: boolean | null
+          size: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          is_featured?: boolean | null
+          size?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       affiliate_payouts: {
         Row: {
           admin_note: string | null
