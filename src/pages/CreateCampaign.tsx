@@ -60,6 +60,13 @@ export default function CreateCampaign() {
     confidence: number;
   }>>([]);
   const [selectedTargetingIndex, setSelectedTargetingIndex] = useState<number | null>(null);
+  const [metaSubPlatforms, setMetaSubPlatforms] = useState<{
+    facebook: boolean;
+    instagram: boolean;
+  }>({
+    facebook: true,
+    instagram: true
+  });
   const [manualOverrides, setManualOverrides] = useState({
     location: false,
     budget: false,
@@ -288,6 +295,15 @@ export default function CreateCampaign() {
       toast({
         title: "Upload required",
         description: "Please upload an image or video",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!metaSubPlatforms.facebook && !metaSubPlatforms.instagram) {
+      toast({
+        title: "Platform required",
+        description: "Please select at least one Meta platform (Facebook or Instagram)",
         variant: "destructive"
       });
       return;
@@ -744,9 +760,32 @@ export default function CreateCampaign() {
               {/* Platform Selection (Meta Only) */}
               <div>
                 <Label className="text-black">Publishing Platform</Label>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="flex items-center gap-2 px-3 py-2 border border-black bg-black text-white rounded text-sm">
-                    <span>Meta (Facebook & Instagram)</span>
+                <div className="mt-2 p-3 border border-black rounded">
+                  <div className="font-semibold text-sm mb-2">Meta</div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="facebook"
+                        checked={metaSubPlatforms.facebook}
+                        onChange={(e) => setMetaSubPlatforms(prev => ({...prev, facebook: e.target.checked}))}
+                        className="w-4 h-4 cursor-pointer"
+                      />
+                      <label htmlFor="facebook" className="text-sm cursor-pointer">Facebook</label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="instagram"
+                        checked={metaSubPlatforms.instagram}
+                        onChange={(e) => setMetaSubPlatforms(prev => ({...prev, instagram: e.target.checked}))}
+                        className="w-4 h-4 cursor-pointer"
+                      />
+                      <label htmlFor="instagram" className="text-sm cursor-pointer">Instagram</label>
+                    </div>
+                    {!metaSubPlatforms.facebook && !metaSubPlatforms.instagram && (
+                      <p className="text-xs text-destructive">Select at least one platform</p>
+                    )}
                   </div>
                 </div>
                 <div className="text-xs text-black/60 mt-1">Auto-targeted by xiXoi™</div>
