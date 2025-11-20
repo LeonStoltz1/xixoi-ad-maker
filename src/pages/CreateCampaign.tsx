@@ -1253,9 +1253,8 @@ export default function CreateCampaign() {
           </div>
 
         {/* Right column – Live Preview Only */}
-        <div className={`w-full lg:w-1/2 lg:flex-shrink-0 ${showMobilePreview ? 'block' : 'hidden lg:block'}`}>
-          <div className="lg:sticky lg:top-24">
-            <Card className="w-full p-6">
+        <div className={`w-full lg:w-1/2 lg:flex-shrink-0 lg:sticky lg:top-24 lg:self-start ${showMobilePreview ? 'block' : 'hidden lg:block'}`}>
+          <Card className="w-full p-6">
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <div>
@@ -1393,7 +1392,6 @@ export default function CreateCampaign() {
               </div>
             </Card>
           </Card>
-          </div>
         </div>
       </div>
 
