@@ -97,7 +97,7 @@ const AdPublished = () => {
             toast.error('Payment required but no checkout URL provided');
           }
         } else if (error.message?.includes('402') || error.message?.includes('credits exhausted')) {
-          toast.error('AI service credits exhausted. Please contact support at support@xixoi.com');
+          toast.error('AI service credits exhausted. Please contact support at info@stoltzone.com');
         } else {
           throw error;
         }

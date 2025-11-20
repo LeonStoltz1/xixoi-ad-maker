@@ -130,7 +130,7 @@ export default function GeneratePoliticalAd() {
         } else if (usageError?.message?.includes('402') || usageError?.message?.includes('credits exhausted')) {
           toast({
             title: "Credits Exhausted",
-            description: "AI service credits exhausted. Please contact support at support@xixoi.com",
+            description: "AI service credits exhausted. Please contact support at info@stoltzone.com",
             variant: "destructive",
           });
         } else {
@@ -180,7 +180,7 @@ export default function GeneratePoliticalAd() {
         } else if (functionError.message?.includes('402') || functionError.message?.includes('credits exhausted')) {
           toast({
             title: "Credits Exhausted",
-            description: "AI service credits exhausted. Please contact support at support@xixoi.com",
+            description: "AI service credits exhausted. Please contact support at info@stoltzone.com",
             variant: "destructive",
           });
           setLoading(false);

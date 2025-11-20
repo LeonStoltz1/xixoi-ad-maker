@@ -90,7 +90,7 @@ const About = () => {
               <div>
                 <h3 className="font-semibold mb-2">Support</h3>
                 <p>For technical support, billing inquiries, or general questions:</p>
-                <p className="mt-2">Email: <a href="mailto:support@xixoi.com" className="underline">support@xixoi.com</a></p>
+                <p className="mt-2">Email: <a href="mailto:info@stoltzone.com" className="underline">info@stoltzone.com</a></p>
               </div>
               
               <div>

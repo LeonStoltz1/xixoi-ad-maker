@@ -11,7 +11,7 @@ const footerLinks = {
     { label: "Careers", href: "/#careers" },
     { label: "For Influencers", href: "/influencers" },
     { label: "Leaderboard", href: "/leaderboard" },
-    { label: "Contact", href: "mailto:support@xixoi.com" }
+    { label: "Contact", href: "mailto:info@stoltzone.com" }
   ],
   Legal: [
     { label: "Privacy Policy", href: "/privacy" },
@@ -22,7 +22,7 @@ const footerLinks = {
     { label: "Twitter", href: "#" },
     { label: "LinkedIn", href: "#" },
     { label: "Discord", href: "#" },
-    { label: "Support", href: "mailto:support@xixoi.com" }
+    { label: "Support", href: "mailto:info@stoltzone.com" }
   ],
 };
 
@@ -84,7 +84,7 @@ export const Footer = () => {
               <a href="/terms" className="text-xs opacity-70 hover:opacity-100 transition-opacity">
                 Terms
               </a>
-              <a href="mailto:support@xixoi.com" className="text-xs opacity-70 hover:opacity-100 transition-opacity">
+              <a href="mailto:info@stoltzone.com" className="text-xs opacity-70 hover:opacity-100 transition-opacity">
                 Contact
               </a>
             </div>
