@@ -43,6 +43,10 @@ export default function CreateCampaign() {
   const [generating, setGenerating] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
   const [generatingTargeting, setGeneratingTargeting] = useState(false);
+  const [useCustomCopy, setUseCustomCopy] = useState(false);
+  const [customHeadline, setCustomHeadline] = useState("");
+  const [customBodyCopy, setCustomBodyCopy] = useState("");
+  const [customCtaText, setCustomCtaText] = useState("Learn More");
   
   // Campaign ID
   const [campaignId, setCampaignId] = useState<string | null>(null);
@@ -895,8 +899,58 @@ export default function CreateCampaign() {
         <div className="w-[375px] shrink-0">
           <div className="sticky top-6">
             <div className="mb-4">
-              <h2 className="text-xl font-semibold mb-1">Live Preview</h2>
-              <p className="text-sm text-muted-foreground">See your ad as you build it</p>
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h2 className="text-xl font-semibold mb-1">Live Preview</h2>
+                  <p className="text-sm text-muted-foreground">See your ad as you build it</p>
+                </div>
+                <Button
+                  type="button"
+                  variant={useCustomCopy ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setUseCustomCopy(!useCustomCopy)}
+                  className="shrink-0"
+                >
+                  {useCustomCopy ? "Using Custom" : "Use My Copy"}
+                </Button>
+              </div>
+              
+              {/* Custom copy editor */}
+              {useCustomCopy && (
+                <Card className="p-3 mb-4 space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="custom-headline" className="text-xs">Headline</Label>
+                    <Input
+                      id="custom-headline"
+                      value={customHeadline}
+                      onChange={(e) => setCustomHeadline(e.target.value)}
+                      placeholder="Your custom headline..."
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="custom-body" className="text-xs">Body Copy</Label>
+                    <Textarea
+                      id="custom-body"
+                      value={customBodyCopy}
+                      onChange={(e) => setCustomBodyCopy(e.target.value)}
+                      placeholder="Your custom ad copy..."
+                      rows={3}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="custom-cta" className="text-xs">CTA Button</Label>
+                    <Input
+                      id="custom-cta"
+                      value={customCtaText}
+                      onChange={(e) => setCustomCtaText(e.target.value)}
+                      placeholder="e.g., Shop Now"
+                      className="text-sm"
+                    />
+                  </div>
+                </Card>
+              )}
             </div>
             
             {/* Instagram-style preview */}
@@ -944,17 +998,21 @@ export default function CreateCampaign() {
               <div className="p-3 space-y-2 bg-background">
                 <div>
                   <p className="font-semibold text-sm leading-tight">
-                    {headline || "Your headline will appear here"}
+                    {useCustomCopy 
+                      ? (customHeadline || "Your custom headline...") 
+                      : (headline || "Your headline will appear here")}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground leading-snug">
-                    {bodyCopy || productDescription || "Your ad copy will appear here as you type..."}
+                    {useCustomCopy 
+                      ? (customBodyCopy || "Your custom ad copy...") 
+                      : (bodyCopy || productDescription || "Your ad copy will appear here as you type...")}
                   </p>
                 </div>
                 <div className="pt-1">
                   <Button size="sm" className="w-full h-9 text-sm font-semibold">
-                    {ctaText}
+                    {useCustomCopy ? customCtaText : ctaText}
                   </Button>
                 </div>
               </div>
