@@ -428,7 +428,7 @@ export default function CreateCampaign() {
           </div>
           
           {/* Instagram-style preview */}
-          <div className="mx-auto" style={{ maxWidth: '375px' }}>
+          <div className="mx-auto" style={{ maxWidth: '250px' }}>
             <Card className="overflow-hidden border-2">
               {/* Instagram header */}
               <div className="p-3 flex items-center gap-2 border-b bg-background">
