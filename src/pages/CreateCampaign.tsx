@@ -175,7 +175,10 @@ export default function CreateCampaign() {
         'suggest-ad-content',
         { 
           productDescription,
-          currentCTA: primaryGoal 
+          currentCTA: primaryGoal,
+          mediaUrl: previewUrl || assetUrl,
+          mediaType: uploadType,
+          textContent: uploadType === 'text' ? textContent : null
         }
       );
       
@@ -210,7 +213,7 @@ export default function CreateCampaign() {
     }
   };
 
-  // Auto-generate content suggestions when product description changes
+  // Auto-generate content suggestions when product description or media changes
   useEffect(() => {
     const timer = setTimeout(() => {
       if (productDescription && productDescription.trim().length >= 20) {
@@ -219,7 +222,7 @@ export default function CreateCampaign() {
     }, 2000); // Debounce 2 seconds after user stops typing
 
     return () => clearTimeout(timer);
-  }, [productDescription]);
+  }, [productDescription, uploadedFile, textContent, previewUrl]);
 
   // Auto-generate targeting when product description changes
   useEffect(() => {

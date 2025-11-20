@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { productDescription, currentCTA } = await req.json();
+    const { productDescription, currentCTA, mediaUrl, mediaType, textContent } = await req.json();
     
     if (!productDescription || productDescription.trim().length < 10) {
       return new Response(
@@ -26,7 +26,11 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    const systemPrompt = `You are an expert Meta advertising consultant. Analyze the user's product/service description and provide:
+    const systemPrompt = `You are an expert Meta advertising consultant. Analyze the user's product/service based on:
+- Product description text
+- Uploaded media (image, video, or text content)
+
+Provide:
 1. The BEST call-to-action type for this business (choose ONE: website, calls, email, messages, lead_form)
 2. A compelling headline (max 40 characters)
 3. Engaging body copy (max 125 characters)
@@ -40,6 +44,11 @@ Consider:
 - Social businesses (influencers, community) → messages
 - High-ticket items → lead_form
 
+When analyzing uploaded media:
+- For images: describe what you see, identify the product/service, note visual style and brand identity
+- For videos: describe the content, identify the product/service being promoted
+- For text ads: analyze the text content directly
+
 Return ONLY valid JSON with this structure:
 {
   "recommendedCTA": "website",
@@ -48,6 +57,17 @@ Return ONLY valid JSON with this structure:
   "suggestedURL": "yoursite.com/landing-page",
   "reasoning": "Brief explanation why this CTA works best"
 }`;
+
+    // Build user content with media context
+    let userContent = `Product/Service Description:\n${productDescription}\n\nCurrent CTA selection: ${currentCTA || 'none'}`;
+    
+    if (mediaType === 'text' && textContent) {
+      userContent += `\n\nText Ad Content:\n${textContent}`;
+    } else if (mediaType === 'image' && mediaUrl) {
+      userContent += `\n\nUploaded Image URL: ${mediaUrl}\nNote: Analyze the image to understand the product/service being advertised.`;
+    } else if (mediaType === 'video' && mediaUrl) {
+      userContent += `\n\nUploaded Video URL: ${mediaUrl}\nNote: This is a video ad. Consider video-appropriate messaging.`;
+    }
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -59,7 +79,7 @@ Return ONLY valid JSON with this structure:
         model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Product/Service Description:\n${productDescription}\n\nCurrent CTA selection: ${currentCTA || 'none'}` }
+          { role: 'user', content: userContent }
         ],
         temperature: 0.7,
       }),
