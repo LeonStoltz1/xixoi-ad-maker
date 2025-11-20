@@ -466,7 +466,7 @@ export default function CreateCampaign() {
       <section className="space-y-6">
         <h1 className="text-3xl font-semibold tracking-tight">Create Campaign</h1>
 
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between min-w-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 min-w-0">
           {/* Left column – All Controls and Targeting */}
           <div className="flex-1 min-w-0">
             <Card className="w-full p-6">
