@@ -105,7 +105,7 @@ const DeleteAccount = () => {
             <h2 className="text-2xl font-semibold mb-4">Need help instead?</h2>
             <p>If you're experiencing issues or have questions, contact us before deleting your account:</p>
             <p className="mt-4">
-              <strong>Email:</strong> support@xixoi.com<br />
+              <strong>Email:</strong> info@stoltzone.com<br />
               <strong>Privacy inquiries:</strong> privacy@xixoi.com
             </p>
           </div>

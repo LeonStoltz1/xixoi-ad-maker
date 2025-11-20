@@ -519,7 +519,7 @@ export default function CreateCampaign() {
           toast({
             variant: "destructive",
             title: "Credits exhausted",
-            description: "AI service credits exhausted. Please contact support at support@xixoi.com"
+            description: "AI service credits exhausted. Please contact support at info@stoltzone.com"
           });
           setLoading(false);
           return;

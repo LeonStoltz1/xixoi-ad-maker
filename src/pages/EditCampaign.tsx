@@ -90,7 +90,7 @@ export default function EditCampaign() {
           toast.error('AI service temporarily unavailable. Please try again in a moment.');
           return;
         } else if (moderationError.message?.includes('402') || moderationError.message?.includes('credits exhausted')) {
-          toast.error('AI service credits exhausted. Please contact support at support@xixoi.com');
+          toast.error('AI service credits exhausted. Please contact support at info@stoltzone.com');
           return;
         }
         

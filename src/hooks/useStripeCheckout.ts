@@ -51,7 +51,7 @@ export const useStripeCheckout = () => {
       if (error.message?.includes('429') || error.message?.includes('rate limit')) {
         toast.error('Payment service temporarily unavailable. Please try again in a moment.');
       } else if (error.message?.includes('402') || error.message?.includes('credits exhausted')) {
-        toast.error('Service credits exhausted. Please contact support at support@xixoi.com');
+        toast.error('Service credits exhausted. Please contact support at info@stoltzone.com');
       } else {
         toast.error(error.message || 'Failed to create checkout session');
       }

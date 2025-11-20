@@ -394,6 +394,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_training_signals: {
+        Row: {
+          context: Json | null
+          created_at: string | null
+          id: string
+          signal_content: string
+          signal_type: string
+          training_category: string | null
+          used_for_training: boolean | null
+          user_id: string
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string | null
+          id?: string
+          signal_content: string
+          signal_type: string
+          training_category?: string | null
+          used_for_training?: boolean | null
+          user_id: string
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string | null
+          id?: string
+          signal_content?: string
+          signal_type?: string
+          training_category?: string | null
+          used_for_training?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       batch_funding_queue: {
         Row: {
           amount: number
@@ -853,6 +886,240 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_bug_reports: {
+        Row: {
+          actual_behavior: string | null
+          assigned_to: string | null
+          bug_description: string
+          bug_location: string
+          created_at: string | null
+          expected_behavior: string | null
+          id: string
+          intake_form_id: string | null
+          resolved_at: string | null
+          screenshots: string[] | null
+          severity: string | null
+          status: string | null
+          steps_to_reproduce: string | null
+          user_id: string
+        }
+        Insert: {
+          actual_behavior?: string | null
+          assigned_to?: string | null
+          bug_description: string
+          bug_location: string
+          created_at?: string | null
+          expected_behavior?: string | null
+          id?: string
+          intake_form_id?: string | null
+          resolved_at?: string | null
+          screenshots?: string[] | null
+          severity?: string | null
+          status?: string | null
+          steps_to_reproduce?: string | null
+          user_id: string
+        }
+        Update: {
+          actual_behavior?: string | null
+          assigned_to?: string | null
+          bug_description?: string
+          bug_location?: string
+          created_at?: string | null
+          expected_behavior?: string | null
+          id?: string
+          intake_form_id?: string | null
+          resolved_at?: string | null
+          screenshots?: string[] | null
+          severity?: string | null
+          status?: string | null
+          steps_to_reproduce?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_bug_reports_intake_form_id_fkey"
+            columns: ["intake_form_id"]
+            isOneToOne: false
+            referencedRelation: "customer_intake_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_intake_forms: {
+        Row: {
+          advertising_goals: string[] | null
+          ai_assistance_needs: string[] | null
+          ai_training_permission: boolean | null
+          bug_description: string | null
+          bug_expected_behavior: string | null
+          bug_location: string | null
+          bug_screenshots: string[] | null
+          business_name: string | null
+          country: string | null
+          created_at: string | null
+          current_challenges: string[] | null
+          email: string
+          feature_request: string | null
+          full_name: string
+          has_bugs: boolean | null
+          id: string
+          industry_category: string | null
+          monthly_budget: string | null
+          onboarding_rating: number | null
+          product_description: string | null
+          questions_for_us: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          advertising_goals?: string[] | null
+          ai_assistance_needs?: string[] | null
+          ai_training_permission?: boolean | null
+          bug_description?: string | null
+          bug_expected_behavior?: string | null
+          bug_location?: string | null
+          bug_screenshots?: string[] | null
+          business_name?: string | null
+          country?: string | null
+          created_at?: string | null
+          current_challenges?: string[] | null
+          email: string
+          feature_request?: string | null
+          full_name: string
+          has_bugs?: boolean | null
+          id?: string
+          industry_category?: string | null
+          monthly_budget?: string | null
+          onboarding_rating?: number | null
+          product_description?: string | null
+          questions_for_us?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          advertising_goals?: string[] | null
+          ai_assistance_needs?: string[] | null
+          ai_training_permission?: boolean | null
+          bug_description?: string | null
+          bug_expected_behavior?: string | null
+          bug_location?: string | null
+          bug_screenshots?: string[] | null
+          business_name?: string | null
+          country?: string | null
+          created_at?: string | null
+          current_challenges?: string[] | null
+          email?: string
+          feature_request?: string | null
+          full_name?: string
+          has_bugs?: boolean | null
+          id?: string
+          industry_category?: string | null
+          monthly_budget?: string | null
+          onboarding_rating?: number | null
+          product_description?: string | null
+          questions_for_us?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      customer_questions: {
+        Row: {
+          answer: string | null
+          answered: boolean | null
+          answered_at: string | null
+          answered_by: string | null
+          created_at: string | null
+          id: string
+          intake_form_id: string | null
+          question: string
+          used_for_ai_training: boolean | null
+          user_id: string
+        }
+        Insert: {
+          answer?: string | null
+          answered?: boolean | null
+          answered_at?: string | null
+          answered_by?: string | null
+          created_at?: string | null
+          id?: string
+          intake_form_id?: string | null
+          question: string
+          used_for_ai_training?: boolean | null
+          user_id: string
+        }
+        Update: {
+          answer?: string | null
+          answered?: boolean | null
+          answered_at?: string | null
+          answered_by?: string | null
+          created_at?: string | null
+          id?: string
+          intake_form_id?: string | null
+          question?: string
+          used_for_ai_training?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_questions_intake_form_id_fkey"
+            columns: ["intake_form_id"]
+            isOneToOne: false
+            referencedRelation: "customer_intake_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_suggestions: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: string
+          implemented_at: string | null
+          intake_form_id: string | null
+          priority: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          suggestion: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          implemented_at?: string | null
+          intake_form_id?: string | null
+          priority?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          suggestion: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          implemented_at?: string | null
+          intake_form_id?: string | null
+          priority?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          suggestion?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_suggestions_intake_form_id_fkey"
+            columns: ["intake_form_id"]
+            isOneToOne: false
+            referencedRelation: "customer_intake_forms"
             referencedColumns: ["id"]
           },
         ]

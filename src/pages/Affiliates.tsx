@@ -99,7 +99,7 @@ const AffiliatesPage = () => {
     const accountStatus = (affiliate as any).stripe_account_status;
     if (accountStatus === 'rejected') {
       toast.error("Your Stripe account was rejected. Please contact support.");
-      setRequestError("Stripe account rejected. Contact support@xixoi.com");
+      setRequestError("Stripe account rejected. Contact info@stoltzone.com");
       return;
     }
     
@@ -269,7 +269,7 @@ const AffiliatesPage = () => {
                     ❌ Your Stripe account was rejected.
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Please contact support@xixoi.com for assistance.
+                    Please contact info@stoltzone.com for assistance.
                   </p>
                 </div>
               )}
