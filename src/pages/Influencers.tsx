@@ -6,6 +6,7 @@ import { DollarSign, Users, TrendingUp, Check, Zap, Gift } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { BannerDownload } from "@/components/BannerDownload";
+import { BannerGallery } from "@/components/BannerGallery";
 
 export default function Influencers() {
   const navigate = useNavigate();
@@ -405,11 +406,14 @@ export default function Influencers() {
             </Card>
           </div>
 
+          {/* Banner Gallery */}
+          <BannerGallery />
+
           {/* Banner Graphics */}
           <Card>
             <CardHeader>
-              <CardTitle>Banner Graphics & Assets</CardTitle>
-              <CardDescription>AI-generated affiliate banners ready to download</CardDescription>
+              <CardTitle>Generate Your Own Banner</CardTitle>
+              <CardDescription>AI-powered banner creation in seconds</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
