@@ -445,14 +445,24 @@ export default function CreateCampaign() {
                 </div>
               </div>
               
-              {/* Image */}
+              {/* Image/Video */}
               {(previewUrl || assetUrl) && (
                 <div className="relative w-full aspect-square bg-muted">
-                  <img
-                    src={previewUrl || assetUrl || ''}
-                    alt="Ad creative"
-                    className="w-full h-full object-cover"
-                  />
+                  {uploadType === 'video' ? (
+                    <video
+                      src={previewUrl || assetUrl || ''}
+                      className="w-full h-full object-cover"
+                      controls
+                      muted
+                      loop
+                    />
+                  ) : (
+                    <img
+                      src={previewUrl || assetUrl || ''}
+                      alt="Ad creative"
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                   {effectiveTier === 'free' && (
                     <div className="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] px-2 py-0.5 rounded">
                       Powered by xiXoi™
