@@ -51,8 +51,8 @@ export default function CreateCampaign() {
   const [customBodyCopy, setCustomBodyCopy] = useState("");
   const [customCtaText, setCustomCtaText] = useState("Learn More");
   
-  // Mobile preview visibility
-  const [showMobilePreview, setShowMobilePreview] = useState(false);
+  // Mobile preview visibility (default true - visible on mobile)
+  const [showMobilePreview, setShowMobilePreview] = useState(true);
   
   // AI Suggestions
   const [aiSuggestions, setAiSuggestions] = useState<{
@@ -1271,7 +1271,7 @@ export default function CreateCampaign() {
         {/* Right column – Live Preview Only */}
         <div 
           ref={previewRef}
-          className={`w-full lg:w-1/2 lg:flex-shrink-0 lg:sticky lg:top-24 lg:self-start transition-all duration-300 ${showMobilePreview ? 'block animate-fade-in' : 'hidden lg:block'}`}
+          className={`w-full lg:w-1/2 lg:flex-shrink-0 lg:sticky lg:top-24 lg:self-start transition-all duration-300 ${showMobilePreview ? 'block animate-fade-in' : 'hidden'} lg:block`}
         >
           <Card className="w-full p-6">
             <div className="mb-4">
