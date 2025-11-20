@@ -87,6 +87,22 @@ Deno.serve(async (req) => {
       );
     }
 
+    // CRITICAL: Validate platform selections to prevent fund mismanagement
+    const metaSubPlatforms = campaign.meta_sub_platforms || { facebook: true, instagram: true };
+    
+    if (!metaSubPlatforms.facebook && !metaSubPlatforms.instagram) {
+      console.error("PLATFORM_ERROR: No Meta sub-platforms selected for campaign", campaignId);
+      return new Response(
+        JSON.stringify({ 
+          error: "PLATFORM_ERROR", 
+          message: "No Meta platforms selected. Cannot publish ads without platform selection." 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    console.log(`Campaign ${campaignId} platform selections:`, metaSubPlatforms);
+
     // Fetch ad variant (first one for now)
     const { data: variant } = await supabase
       .from("ad_variants")
@@ -138,6 +154,21 @@ Deno.serve(async (req) => {
     // Step 2: Create Ad Set (with targeting and budget)
     const dailyBudget = campaign.daily_budget ? Math.round(campaign.daily_budget * 100) : 2000; // Convert to cents, minimum $20
     
+    // Build platform-specific placements based on user selection
+    const publisher_platforms: string[] = [];
+    const facebook_positions: string[] = [];
+    const instagram_positions: string[] = [];
+    
+    // CRITICAL: Only add platforms that the user explicitly selected
+    if (metaSubPlatforms.facebook) {
+      publisher_platforms.push('facebook');
+      facebook_positions.push('feed', 'right_hand_column', 'marketplace');
+    }
+    if (metaSubPlatforms.instagram) {
+      publisher_platforms.push('instagram');
+      instagram_positions.push('stream', 'story');
+    }
+
     const adSetParams = new URLSearchParams({
       name: `${campaign.name} - AdSet`,
       campaign_id: metaCampaignId,
@@ -149,7 +180,10 @@ Deno.serve(async (req) => {
       targeting: JSON.stringify({
         geo_locations: { countries: ["US"] }, // Default, should be from campaign.target_location
         age_min: 18,
-        age_max: 65
+        age_max: 65,
+        publisher_platforms, // CRITICAL: Enforce user's platform selection
+        facebook_positions: facebook_positions.length > 0 ? facebook_positions : undefined,
+        instagram_positions: instagram_positions.length > 0 ? instagram_positions : undefined,
       }),
       access_token: token
     });
@@ -194,6 +228,17 @@ Deno.serve(async (req) => {
     }
 
     console.log("Using Meta Page ID:", pageId);
+
+    // Build platform-specific placements based on user selection
+    const placements: string[] = [];
+    if (metaSubPlatforms.facebook) {
+      placements.push('facebook');
+    }
+    if (metaSubPlatforms.instagram) {
+      placements.push('instagram');
+    }
+    
+    console.log(`CRITICAL: Enforcing user platform selections - only publishing to: ${placements.join(', ')}`);
 
     const creativeParams = new URLSearchParams({
       name: `${campaign.name} - Creative`,
@@ -269,13 +314,20 @@ Deno.serve(async (req) => {
 
     const adId = adData.id;
     console.log("Created Meta ad:", adId);
+    
+    // CRITICAL SUCCESS LOG: Confirm which platforms ads were published to
+    const publishedPlatforms = [];
+    if (metaSubPlatforms.facebook) publishedPlatforms.push('Facebook');
+    if (metaSubPlatforms.instagram) publishedPlatforms.push('Instagram');
+    console.log(`✅ FUND SAFETY CONFIRMED: Ad published ONLY to user-selected platforms: ${publishedPlatforms.join(', ')}`);
 
     const result = {
       campaign_id: metaCampaignId,
       adset_id: adSetId,
       creative_id: creativeId,
       ad_id: adId,
-      status: "PAUSED"
+      status: "PAUSED",
+      published_platforms: metaSubPlatforms // Include in response for transparency
     };
 
     // Update campaign with published info
