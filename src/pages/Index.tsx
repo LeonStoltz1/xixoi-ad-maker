@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Header } from "@/components/Header";
+import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { Hero } from "@/components/Hero";
 import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { Pricing } from "@/components/Pricing";
@@ -69,7 +69,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <Header />
+      <UnifiedHeader />
       <main>
         <Hero />
         <HowItWorksSection />
