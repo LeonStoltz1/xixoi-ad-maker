@@ -39,8 +39,18 @@ export function AppLayout({ title, subtitle, showBack, backTo, backLabel = "Back
     <div className="min-h-screen bg-white text-black">
       <EffectiveTierBadge />
       {/* GLOBAL HEADER */}
-      <header className="fixed top-0 left-0 right-0 z-30 border-b border-neutral-800 bg-black">
-        <div className="mx-auto flex h-24 max-w-6xl items-center justify-between px-4">
+      <header className="fixed top-0 left-0 right-0 z-30 border-b border-neutral-800 bg-black overflow-hidden">
+        {/* Background Banner Video */}
+        <video 
+          src="/header-banner.mp4" 
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+          poster="/header-banner.jpg"
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
+        />
+        <div className="relative mx-auto flex h-24 max-w-6xl items-center justify-between px-4">
           {/* Logo + brand */}
           <Link to="/" className="flex items-center gap-3 text-white">
             <video 
