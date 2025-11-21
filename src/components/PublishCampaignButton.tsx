@@ -14,14 +14,17 @@ export function PublishCampaignButton({ selectedPlatforms, onPublish, disabled, 
   const navigate = useNavigate()
   const { loading, connections } = usePlatformConnections()
 
+  // Free users can connect OAuth but cannot publish without upgrading
+  const isFree = userPlan === "free" || !userPlan
   // Quick-Start users don't need OAuth connections (use master accounts)
-  const isQuickStart = userPlan === "quickstart" || userPlan === "free"
+  const isQuickStart = userPlan === "quickstart"
 
   const missingPlatforms = useMemo(() => {
+    if (isFree) return [] // Free users can have OAuth, but publishing triggers upgrade modal
     if (isQuickStart) return [] // Quick-Start uses system credentials
     if (!selectedPlatforms?.length) return []
     return selectedPlatforms.filter((p) => !connections[p])
-  }, [selectedPlatforms, connections, isQuickStart])
+  }, [selectedPlatforms, connections, isQuickStart, isFree])
 
   const isBlocked = !!missingPlatforms.length
   const finalDisabled = disabled || loading || isBlocked

@@ -11,19 +11,14 @@ interface UpgradeModalProps {
 }
 
 export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: UpgradeModalProps) => {
-  const [selectedPlan, setSelectedPlan] = useState<'free' | 'single' | 'unlimited'>('free');
+  const [selectedPlan, setSelectedPlan] = useState<'quickstart' | 'pro'>('quickstart');
   const { createCheckoutSession, loading } = useStripeCheckout();
 
   if (!isOpen) return null;
 
   const handleContinue = async () => {
-    if (selectedPlan === 'free') {
-      onPublishFree?.();
-      onClose();
-    } else {
-      const priceType = selectedPlan === 'single' ? 'branding_removal' : 'pro_subscription';
-      await createCheckoutSession(priceType, campaignId, false);
-    }
+    const priceType = selectedPlan === 'quickstart' ? 'quickstart_subscription' : 'pro_subscription';
+    await createCheckoutSession(priceType, campaignId, false);
   };
 
   return (
@@ -40,20 +35,20 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: Upg
         {/* Title */}
         <div className="space-y-3 mb-8">
           <h2 className="text-2xl md:text-3xl font-bold leading-tight">
-            Remove the watermark. Publish instantly.
+            Publishing ads is a Pro feature.
           </h2>
           <p className="text-sm md:text-base">
-            Upgrade to xiXoi™ Pro to launch this ad without the "Powered By xiXoi™" tag, and unlock full-speed publishing.
+            Upgrade now to launch this ad instantly. Your Meta account is already connected—just pick a plan and publish.
           </p>
         </div>
 
         {/* Pricing Options */}
         <div className="space-y-4 mb-6">
-          {/* Free Option */}
+          {/* Quick-Start Option */}
           <button
-            onClick={() => setSelectedPlan('free')}
+            onClick={() => setSelectedPlan('quickstart')}
             className={`w-full border text-left transition-all ${
-              selectedPlan === 'free'
+              selectedPlan === 'quickstart'
                 ? 'border-[2px] border-foreground'
                 : 'border border-foreground'
             }`}
@@ -61,31 +56,32 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: Upg
             <div className="p-6">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <div className="text-xs font-bold uppercase tracking-wide mb-1">FREE</div>
-                  <div className="text-xl md:text-2xl font-bold">$0</div>
+                  <div className="text-xs font-bold uppercase tracking-wide mb-1">QUICK-START</div>
+                  <div className="text-xl md:text-2xl font-bold">$49/month</div>
                 </div>
                 <div className={`w-5 h-5 border-2 flex items-center justify-center mt-1 ${
-                  selectedPlan === 'free' ? 'border-foreground' : 'border-foreground'
+                  selectedPlan === 'quickstart' ? 'border-foreground' : 'border-foreground'
                 }`}>
-                  {selectedPlan === 'free' && (
+                  {selectedPlan === 'quickstart' && (
                     <div className="w-3 h-3 bg-foreground" />
                   )}
                 </div>
               </div>
               <ul className="space-y-2 text-sm">
-                <li>• Keep "Powered By xiXoi™" watermark</li>
-                <li>• 1 AI ad variant included</li>
-                <li>• Publish this ad instantly</li>
-                <li>• Up to 3 ads per day</li>
+                <li>• Publish instantly via xiXoi accounts</li>
+                <li>• $300/week spend cap (5% service fee)</li>
+                <li>• No watermark</li>
+                <li>• AI targeting + variants</li>
+                <li>• Perfect for getting started fast</li>
               </ul>
             </div>
           </button>
 
-          {/* Single Publish Option */}
+          {/* Publish Pro Option */}
           <button
-            onClick={() => setSelectedPlan('single')}
+            onClick={() => setSelectedPlan('pro')}
             className={`w-full border text-left transition-all ${
-              selectedPlan === 'single'
+              selectedPlan === 'pro'
                 ? 'border-[2px] border-foreground'
                 : 'border border-foreground'
             }`}
@@ -94,53 +90,22 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: Upg
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wide mb-1">PUBLISH PRO</div>
-                  <div className="text-xl md:text-2xl font-bold">$29 per ad set</div>
-                </div>
-                <div className={`w-5 h-5 border-2 flex items-center justify-center mt-1 ${
-                  selectedPlan === 'single' ? 'border-foreground' : 'border-foreground'
-                }`}>
-                  {selectedPlan === 'single' && (
-                    <div className="w-3 h-3 bg-foreground" />
-                  )}
-                </div>
-              </div>
-              <ul className="space-y-2 text-sm">
-                <li>• Remove "Powered By xiXoi™" watermark</li>
-                <li>• Publish this ad instantly</li>
-                <li>• 4 AI ad variants included</li>
-                <li>• ROAS prediction for this ad set</li>
-              </ul>
-            </div>
-          </button>
-
-          {/* Unlimited Option */}
-          <button
-            onClick={() => setSelectedPlan('unlimited')}
-            className={`w-full border text-left transition-all ${
-              selectedPlan === 'unlimited'
-                ? 'border-[2px] border-foreground'
-                : 'border border-foreground'
-            }`}
-          >
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="text-xs font-bold uppercase tracking-wide mb-1">UNLIMITED PRO</div>
                   <div className="text-xl md:text-2xl font-bold">$99/month</div>
                 </div>
                 <div className={`w-5 h-5 border-2 flex items-center justify-center mt-1 ${
-                  selectedPlan === 'unlimited' ? 'border-foreground' : 'border-foreground'
+                  selectedPlan === 'pro' ? 'border-foreground' : 'border-foreground'
                 }`}>
-                  {selectedPlan === 'unlimited' && (
+                  {selectedPlan === 'pro' && (
                     <div className="w-3 h-3 bg-foreground" />
                   )}
                 </div>
               </div>
               <ul className="space-y-2 text-sm">
-                <li>• Remove watermark on ALL ads</li>
-                <li>• Unlimited publishes</li>
-                <li>• Priority generation speed</li>
-                <li>• Best for active stores & agencies</li>
+                <li>• Use YOUR connected ad accounts</li>
+                <li>• Unlimited spend, no caps or fees</li>
+                <li>• Full control over targeting</li>
+                <li>• Political ads allowed (FEC compliant)</li>
+                <li>• Best for power users</li>
               </ul>
             </div>
           </button>
@@ -148,7 +113,7 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: Upg
 
         {/* Disclaimer Text */}
         <p className="text-xs text-center mb-6 opacity-70">
-          You can cancel anytime. Your ad spend is still billed by Meta/Google/TikTok.
+          Cancel anytime. Your Meta account stays connected. xiXoi never touches your ad spend.
         </p>
 
         {/* CTA Buttons */}
@@ -161,7 +126,7 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: Upg
           >
             {loading ? "Processing..." : (
               <>
-                {selectedPlan === 'free' ? 'Publish with Watermark' : 'Continue to Payment'}
+                {selectedPlan === 'quickstart' ? 'Upgrade to Quick-Start' : 'Upgrade to Publish Pro'}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </>
             )}
@@ -171,7 +136,7 @@ export const UpgradeModal = ({ isOpen, onClose, campaignId, onPublishFree }: Upg
             onClick={onClose}
             className="w-full text-sm hover:opacity-70 transition-opacity py-2"
           >
-            Keep my ad as a draft
+            Cancel
           </button>
         </div>
 
