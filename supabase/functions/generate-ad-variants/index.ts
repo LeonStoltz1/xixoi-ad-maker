@@ -240,7 +240,7 @@ Your task:
 7. Include platform-appropriate CTAs
 8. Ensure ZERO discriminatory language
 9. Use inclusive, non-exclusionary language
-10. Return valid JSON only`
+10. Return ONLY valid JSON - no explanations, no markdown code blocks, just the raw JSON object`
           },
           {
             role: 'user',
@@ -336,6 +336,13 @@ Return JSON:
     
     console.log('AI Response status:', aiResponse.status);
     console.log('AI Response content:', content);
+    
+    // Extract JSON from markdown code blocks if present
+    const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+    if (jsonMatch) {
+      content = jsonMatch[1].trim();
+      console.log('Extracted JSON from markdown code block');
+    }
     
     // Check if AI refused the request (common with discriminatory or illegal content)
     // Must check BEFORE attempting to parse JSON
