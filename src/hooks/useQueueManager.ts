@@ -39,7 +39,7 @@ export const useQueueManager = () => {
         return { queued: false, existing: true };
       }
 
-      // Add to queue
+      // Add to queue with immediate next_attempt_at (no jitter for AI)
       const { data, error } = await supabase
         .from('ai_generation_queue')
         .insert({
@@ -47,7 +47,8 @@ export const useQueueManager = () => {
           campaign_id: request.campaign_id,
           request_type: request.request_type,
           request_payload: request.request_payload,
-          status: 'pending'
+          status: 'pending',
+          next_attempt_at: new Date().toISOString() // Ready immediately
         })
         .select()
         .single();
@@ -128,6 +129,10 @@ export const useQueueManager = () => {
         return { queued: false, existing: true };
       }
 
+      // Add to queue with random jitter (10-30s) for human-like timing
+      const jitterSeconds = 10 + Math.floor(Math.random() * 20);
+      const nextAttempt = new Date(Date.now() + jitterSeconds * 1000).toISOString();
+
       // Add to queue
       const { data, error } = await supabase
         .from('quick_start_publish_queue')
@@ -135,7 +140,8 @@ export const useQueueManager = () => {
           user_id: user.id,
           campaign_id: request.campaign_id,
           platform: request.platform,
-          status: 'queued'
+          status: 'queued',
+          next_attempt_at: nextAttempt
         })
         .select()
         .single();

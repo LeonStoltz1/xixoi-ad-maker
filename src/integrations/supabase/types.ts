@@ -488,6 +488,9 @@ export type Database = {
           error_message: string | null
           estimated_wait_seconds: number | null
           id: string
+          lease_expires_at: string | null
+          lease_id: string | null
+          next_attempt_at: string | null
           queue_position: number | null
           request_payload: Json
           request_type: string
@@ -503,6 +506,9 @@ export type Database = {
           error_message?: string | null
           estimated_wait_seconds?: number | null
           id?: string
+          lease_expires_at?: string | null
+          lease_id?: string | null
+          next_attempt_at?: string | null
           queue_position?: number | null
           request_payload: Json
           request_type: string
@@ -518,6 +524,9 @@ export type Database = {
           error_message?: string | null
           estimated_wait_seconds?: number | null
           id?: string
+          lease_expires_at?: string | null
+          lease_id?: string | null
+          next_attempt_at?: string | null
           queue_position?: number | null
           request_payload?: Json
           request_type?: string
@@ -1778,6 +1787,9 @@ export type Database = {
           error_message: string | null
           estimated_start_time: string | null
           id: string
+          lease_expires_at: string | null
+          lease_id: string | null
+          next_attempt_at: string | null
           platform: string
           queue_position: number | null
           retry_count: number | null
@@ -1793,6 +1805,9 @@ export type Database = {
           error_message?: string | null
           estimated_start_time?: string | null
           id?: string
+          lease_expires_at?: string | null
+          lease_id?: string | null
+          next_attempt_at?: string | null
           platform: string
           queue_position?: number | null
           retry_count?: number | null
@@ -1808,6 +1823,9 @@ export type Database = {
           error_message?: string | null
           estimated_start_time?: string | null
           id?: string
+          lease_expires_at?: string | null
+          lease_id?: string | null
+          next_attempt_at?: string | null
           platform?: string
           queue_position?: number | null
           retry_count?: number | null
@@ -2064,6 +2082,29 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      lease_ai_jobs: {
+        Args: { batch_size?: number }
+        Returns: {
+          campaign_id: string
+          created_at: string
+          id: string
+          request_payload: Json
+          request_type: string
+          user_id: string
+        }[]
+      }
+      lease_publish_jobs: {
+        Args: { batch_size?: number }
+        Returns: {
+          campaign_id: string
+          created_at: string
+          id: string
+          platform: string
+          retry_count: number
+          user_id: string
+        }[]
+      }
+      release_expired_leases: { Args: never; Returns: undefined }
       update_queue_positions: { Args: never; Returns: undefined }
     }
     Enums: {
