@@ -765,8 +765,14 @@ export default function CreateCampaign() {
                     required
                   />
                   <p className="text-xs text-muted-foreground mt-1">{headline.length}/40 characters - Main headline shown to customers</p>
-                  {aiSuggestions?.headline && (
-                    <p className="text-xs text-primary/70 mt-1">💡 AI suggests: "{aiSuggestions.headline}"</p>
+                  {aiSuggestions?.headline && headline !== aiSuggestions.headline && (
+                    <button
+                      type="button"
+                      onClick={() => setHeadline(aiSuggestions.headline)}
+                      className="text-xs text-primary hover:text-primary/80 mt-1 text-left transition-colors cursor-pointer underline decoration-dotted"
+                    >
+                      💡 AI suggests: "{aiSuggestions.headline}" — Click to use
+                    </button>
                   )}
                 </div>
 
@@ -796,8 +802,14 @@ export default function CreateCampaign() {
                     required
                   />
                   <p className="text-xs text-muted-foreground mt-1">{bodyCopy.length}/125 characters - Description shown with your ad</p>
-                  {aiSuggestions?.bodyCopy && (
-                    <p className="text-xs text-primary/70 mt-1">💡 AI suggests: "{aiSuggestions.bodyCopy}"</p>
+                  {aiSuggestions?.bodyCopy && bodyCopy !== aiSuggestions.bodyCopy && (
+                    <button
+                      type="button"
+                      onClick={() => setBodyCopy(aiSuggestions.bodyCopy)}
+                      className="text-xs text-primary hover:text-primary/80 mt-1 text-left transition-colors cursor-pointer underline decoration-dotted"
+                    >
+                      💡 AI suggests: "{aiSuggestions.bodyCopy}" — Click to use
+                    </button>
                   )}
                 </div>
 
@@ -861,8 +873,14 @@ export default function CreateCampaign() {
                     required
                   />
                   <p className="text-xs text-muted-foreground mt-1">{headline.length}/40 characters - Main headline shown to customers</p>
-                  {aiSuggestions?.headline && (
-                    <p className="text-xs text-primary/70 mt-1">💡 AI suggests: "{aiSuggestions.headline}"</p>
+                  {aiSuggestions?.headline && headline !== aiSuggestions.headline && (
+                    <button
+                      type="button"
+                      onClick={() => setHeadline(aiSuggestions.headline)}
+                      className="text-xs text-primary hover:text-primary/80 mt-1 text-left transition-colors cursor-pointer underline decoration-dotted"
+                    >
+                      💡 AI suggests: "{aiSuggestions.headline}" — Click to use
+                    </button>
                   )}
                 </div>
 
@@ -892,8 +910,14 @@ export default function CreateCampaign() {
                     required
                   />
                   <p className="text-xs text-muted-foreground mt-1">{bodyCopy.length}/125 characters - Description shown with your ad</p>
-                  {aiSuggestions?.bodyCopy && (
-                    <p className="text-xs text-primary/70 mt-1">💡 AI suggests: "{aiSuggestions.bodyCopy}"</p>
+                  {aiSuggestions?.bodyCopy && bodyCopy !== aiSuggestions.bodyCopy && (
+                    <button
+                      type="button"
+                      onClick={() => setBodyCopy(aiSuggestions.bodyCopy)}
+                      className="text-xs text-primary hover:text-primary/80 mt-1 text-left transition-colors cursor-pointer underline decoration-dotted"
+                    >
+                      💡 AI suggests: "{aiSuggestions.bodyCopy}" — Click to use
+                    </button>
                   )}
                 </div>
 
