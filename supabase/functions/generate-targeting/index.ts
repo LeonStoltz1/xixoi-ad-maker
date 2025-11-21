@@ -25,7 +25,18 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    const systemPrompt = `You are an expert digital advertising strategist. Analyze the product/service description and generate 3 DIFFERENT targeting strategies for Meta (Facebook/Instagram) ads.
+    const systemPrompt = `You are an expert digital advertising strategist. Analyze the product/service description and generate 3 DIFFERENT targeting strategies.
+
+CRITICAL PLATFORM RECOMMENDATION RULES:
+- xiXoi currently supports ONLY Meta (Facebook & Instagram)
+- NEVER recommend platforms not in the available list
+- Always recommend Facebook and/or Instagram based on business fit
+
+BUSINESS TYPE RANKING (for when more platforms are available):
+1. Local services (plumber, dentist, salon, gym, restaurant): Google Search, Facebook, Instagram, TikTok
+2. Ecommerce/online products: Instagram, Facebook, TikTok, Google Shopping
+3. B2B/professional services: LinkedIn, Facebook, Google, X
+4. Events/promos/seasonal: Facebook, Instagram, TikTok, YouTube
 
 Each strategy should target a distinct audience segment with different demographics, psychographics, or behaviors. For example:
 - Strategy 1 might target younger, budget-conscious buyers
@@ -35,12 +46,12 @@ Each strategy should target a distinct audience segment with different demograph
 For each strategy, provide:
 - audienceSummary: A concise 5-10 word description (e.g., "Women 25-45, Health-Conscious Shoppers")
 - reasoning: One sentence explaining why this audience is ideal (max 150 chars)
-- recommendedChannels: Always "Meta (Facebook & Instagram)"
+- recommendedChannels: "Meta (Facebook & Instagram)" - be specific about which platform(s) and why they fit this business
 - suggestedLocation: Best geographic targeting
 - suggestedBudget: Recommended daily budget in USD (5-100)
 - confidence: Your confidence in this strategy's success (0.70-0.95 scale, where 0.95 is highest confidence)
 
-Make each strategy meaningfully different and actionable.`;
+Make each strategy meaningfully different, actionable, and platform-specific.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -81,7 +92,7 @@ Make each strategy meaningfully different and actionable.`;
                         },
                         recommendedChannels: { 
                           type: 'string',
-                          description: 'Always "Meta (Facebook & Instagram)"'
+                          description: 'Currently only "Meta (Facebook & Instagram)" - recommend specific platform(s) based on business fit'
                         },
                         suggestedLocation: { 
                           type: 'string',
