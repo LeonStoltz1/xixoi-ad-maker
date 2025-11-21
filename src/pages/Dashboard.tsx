@@ -335,7 +335,11 @@ export default function Dashboard() {
           </div>
 
           {/* SECTION 3: Account Performance Insights */}
-          {campaigns.length > 0 && <AccountPerformanceInsights />}
+          {campaigns.length > 0 && (
+            <div className="mt-12">
+              <AccountPerformanceInsights />
+            </div>
+          )}
 
         {/* Edit Campaign Dialog */}
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
