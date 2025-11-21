@@ -28,28 +28,57 @@ export function QueueStatusIndicator() {
   const [aiQueue, setAiQueue] = useState<QueueStatus[]>([]);
   const [publishQueue, setPublishQueue] = useState<PublishQueueStatus[]>([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    // Get current user
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
     loadQueueStatus();
     
-    // Set up real-time subscriptions
+    // Set up real-time subscriptions filtered by user
     const aiChannel = supabase
       .channel('ai_queue_changes')
       .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'ai_generation_queue' }, 
-        loadQueueStatus
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'ai_generation_queue',
+          filter: `user_id=eq.${user?.id}` // Filter by current user only
+        }, 
+        (payload: any) => {
+          // Only reload if event affects current user
+          if (payload.new?.user_id === user?.id || payload.old?.user_id === user?.id) {
+            loadQueueStatus();
+          }
+        }
       )
       .subscribe();
 
     const publishChannel = supabase
       .channel('publish_queue_changes')
       .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'quick_start_publish_queue' },
-        loadQueueStatus
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'quick_start_publish_queue',
+          filter: `user_id=eq.${user?.id}` // Filter by current user only
+        },
+        (payload: any) => {
+          // Only reload if event affects current user
+          if (payload.new?.user_id === user?.id || payload.old?.user_id === user?.id) {
+            loadQueueStatus();
+          }
+        }
       )
       .subscribe();
 
-    // Poll every 5 seconds for position updates
+    // Poll every 5 seconds as backup (in case realtime misses updates)
     const interval = setInterval(loadQueueStatus, 5000);
 
     return () => {
