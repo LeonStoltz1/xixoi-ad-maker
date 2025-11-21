@@ -5,9 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Maximum concurrent Quick-Start publishes to protect master account
-const MAX_CONCURRENT_PUBLISHES = 15;
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -19,63 +16,42 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Check how many publishes are currently in progress
-    const { count: activeCount } = await supabaseClient
-      .from('quick_start_publish_queue')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'publishing');
+    // First, release any expired leases (recovery)
+    await supabaseClient.rpc('release_expired_leases');
 
-    console.log(`Currently ${activeCount || 0} Quick-Start publishes in progress`);
+    // Atomically lease up to 3 jobs (conservative for Meta master account safety)
+    const { data: leasedJobs, error: leaseError } = await supabaseClient
+      .rpc('lease_publish_jobs', { batch_size: 3 });
 
-    // Only process if under the safety limit
-    const availableSlots = MAX_CONCURRENT_PUBLISHES - (activeCount || 0);
-    if (availableSlots <= 0) {
-      console.log('⚠️ Max concurrent publishes reached, waiting...');
+    if (leaseError) throw leaseError;
+
+    console.log(`Leased ${leasedJobs?.length || 0} Quick-Start publish jobs`);
+
+    if (!leasedJobs || leasedJobs.length === 0) {
       return new Response(
-        JSON.stringify({ message: 'At capacity, try again shortly' }),
+        JSON.stringify({ processed: 0, message: 'No jobs ready to publish' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get queued items (only process available slots)
-    const { data: queueItems, error: fetchError } = await supabaseClient
-      .from('quick_start_publish_queue')
-      .select('*')
-      .eq('status', 'queued')
-      .order('created_at', { ascending: true })
-      .limit(Math.min(availableSlots, 5)); // Process max 5 at a time
-
-    if (fetchError) throw fetchError;
-
-    console.log(`Processing ${queueItems?.length || 0} Quick-Start publish requests`);
-
-    // Process each queue item with jitter
-    for (const item of queueItems || []) {
+    // Process each leased job sequentially (preserve jitter via next_attempt_at)
+    const results = [];
+    for (const job of leasedJobs as any[]) {
       try {
-        // Mark as publishing
-        await supabaseClient
-          .from('quick_start_publish_queue')
-          .update({ 
-            status: 'publishing', 
-            started_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', item.id);
-
-        // Get campaign and user data
+        // Get campaign data
         const { data: campaign } = await supabaseClient
           .from('campaigns')
           .select('*, profiles!inner(*)')
-          .eq('id', item.campaign_id)
+          .eq('id', job.campaign_id)
           .single();
 
         if (!campaign) {
           throw new Error('Campaign not found');
         }
 
-        // Call appropriate publish function
+        // Route to appropriate publish function
         let functionName = '';
-        switch (item.platform) {
+        switch (job.platform) {
           case 'meta':
             functionName = 'publish-meta';
             break;
@@ -92,7 +68,7 @@ Deno.serve(async (req) => {
             functionName = 'publish-x';
             break;
           default:
-            throw new Error(`Unknown platform: ${item.platform}`);
+            throw new Error(`Unknown platform: ${job.platform}`);
         }
 
         // Publish the ad
@@ -100,15 +76,13 @@ Deno.serve(async (req) => {
           functionName,
           { 
             body: { 
-              campaignId: item.campaign_id,
-              userId: item.user_id
+              campaignId: job.campaign_id,
+              userId: job.user_id
             }
           }
         );
 
-        if (publishError) {
-          throw publishError;
-        }
+        if (publishError) throw publishError;
 
         // Mark as live
         await supabaseClient
@@ -116,34 +90,42 @@ Deno.serve(async (req) => {
           .update({ 
             status: 'live',
             completed_at: new Date().toISOString(),
+            lease_id: null,
+            lease_expires_at: null,
             updated_at: new Date().toISOString()
           })
-          .eq('id', item.id);
+          .eq('id', job.id);
 
-        console.log(`✅ Published campaign ${item.campaign_id} to ${item.platform}`);
-
-        // Random jitter (10-30 seconds) between publishes to look human
-        const jitterMs = 10000 + Math.random() * 20000;
-        await new Promise(resolve => setTimeout(resolve, jitterMs));
+        console.log(`✅ Published campaign ${job.campaign_id} to ${job.platform}`);
+        results.push({ id: job.id, success: true });
 
       } catch (error) {
-        console.error(`❌ Failed to publish ${item.id}:`, error);
+        console.error(`❌ Failed to publish ${job.id}:`, error);
         
         // Retry logic
-        const newRetryCount = (item.retry_count || 0) + 1;
+        const newRetryCount = (job.retry_count || 0) + 1;
         const maxRetries = 3;
 
         if (newRetryCount < maxRetries) {
-          // Requeue for retry
+          // Calculate exponential backoff: 30s, 2min, 5min
+          const backoffSeconds = Math.min(30 * Math.pow(2, newRetryCount), 300);
+          const nextAttempt = new Date(Date.now() + backoffSeconds * 1000).toISOString();
+
+          // Requeue with backoff
           await supabaseClient
             .from('quick_start_publish_queue')
             .update({ 
               status: 'queued',
               retry_count: newRetryCount,
               error_message: error instanceof Error ? error.message : 'Unknown error',
+              lease_id: null,
+              lease_expires_at: null,
+              next_attempt_at: nextAttempt,
               updated_at: new Date().toISOString()
             })
-            .eq('id', item.id);
+            .eq('id', job.id);
+
+          console.log(`🔄 Requeued ${job.id} for retry ${newRetryCount}/${maxRetries} in ${backoffSeconds}s`);
         } else {
           // Mark as failed after max retries
           await supabaseClient
@@ -152,19 +134,28 @@ Deno.serve(async (req) => {
               status: 'failed',
               error_message: error instanceof Error ? error.message : 'Max retries exceeded',
               completed_at: new Date().toISOString(),
+              lease_id: null,
+              lease_expires_at: null,
               updated_at: new Date().toISOString()
             })
-            .eq('id', item.id);
+            .eq('id', job.id);
         }
+
+        results.push({ id: job.id, success: false, error: error instanceof Error ? error.message : 'Unknown' });
       }
     }
 
-    // Update queue positions for remaining items
+    // Update queue positions for remaining jobs
     await supabaseClient.rpc('update_queue_positions');
+
+    const successful = results.filter(r => r.success).length;
+    const failed = results.filter(r => !r.success).length;
 
     return new Response(
       JSON.stringify({ 
-        processed: queueItems?.length || 0,
+        processed: leasedJobs.length,
+        successful,
+        failed,
         message: 'Publish queue processing complete'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
