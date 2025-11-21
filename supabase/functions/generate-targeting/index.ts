@@ -29,6 +29,14 @@ serve(async (req) => {
 
 CRITICAL: You must intelligently analyze and create strategies for ANY legitimate business or offering, not just predefined categories.
 
+PROTECTED CATEGORIES - COMPLIANCE REQUIRED:
+- Real Estate: Must comply with Fair Housing Act. NEVER suggest targeting by age, family status, race, religion, disability, or national origin. Use location and interest-based targeting only.
+- Political Ads: Require FEC compliance, candidate verification, and mandatory disclaimers. Flag if detected.
+- Financial Services: May require special disclosures and age restrictions (18+).
+- Healthcare/Medical: HIPAA compliance considerations, avoid discriminatory targeting.
+- Employment/Jobs: Cannot target by protected characteristics under employment law.
+- Housing/Rentals: Same Fair Housing Act restrictions as real estate.
+
 PLATFORM RULES:
 - xiXoi currently supports ONLY Meta (Facebook & Instagram)
 - NEVER recommend platforms not in the available list
@@ -41,7 +49,7 @@ BUSINESS TYPE EXAMPLES (use as guidance, but adapt to ANY business):
 4. Events/promos/seasonal: Facebook, Instagram, TikTok, YouTube
 5. Creative/artistic (musicians, artists, photographers): Instagram, Facebook, TikTok
 6. Education/coaching (tutors, consultants, trainers): Facebook, LinkedIn, Instagram
-7. Real estate agents: Facebook, Instagram, Google Search
+7. Real estate agents: Facebook, Instagram, Google Search (compliance mode required)
 8. Nonprofits/causes: Facebook, Instagram, TikTok
 9. Tech/software products: LinkedIn, Facebook, Google
 10. ANY OTHER legitimate business: analyze intelligently and recommend Meta platforms
