@@ -151,8 +151,8 @@ export function AccountPerformanceInsights() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="space-y-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <div className="space-y-2 p-4 border rounded-lg bg-card">
             <div className="flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">Total Spend</p>
@@ -160,7 +160,7 @@ export function AccountPerformanceInsights() {
             <p className="text-2xl font-bold">${insights.totalSpend.toFixed(2)}</p>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2 p-4 border rounded-lg bg-card">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">Total Revenue</p>
@@ -168,7 +168,7 @@ export function AccountPerformanceInsights() {
             <p className="text-2xl font-bold">${insights.totalRevenue.toFixed(2)}</p>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2 p-4 border rounded-lg bg-card">
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">Conversions</p>
@@ -176,7 +176,7 @@ export function AccountPerformanceInsights() {
             <p className="text-2xl font-bold">{insights.totalConversions}</p>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2 p-4 border rounded-lg bg-card">
             <div className="flex items-center gap-2">
               <Award className="w-4 h-4 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">Overall ROAS</p>
@@ -188,9 +188,9 @@ export function AccountPerformanceInsights() {
         </div>
 
         {/* Best and Worst Performers */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {insights.bestPerformingCampaign && (
-            <div className="border p-4">
+            <div className="border rounded-lg p-4 bg-card">
               <div className="flex items-center gap-2 mb-2">
                 <Award className="w-5 h-5" />
                 <p className="font-semibold">Best Performer</p>
@@ -205,7 +205,7 @@ export function AccountPerformanceInsights() {
           )}
 
           {insights.worstPerformingCampaign && (
-            <div className="border p-4">
+            <div className="border rounded-lg p-4 bg-card">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="w-5 h-5" />
                 <p className="font-semibold">Needs Attention</p>
