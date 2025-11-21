@@ -480,6 +480,62 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_generation_queue: {
+        Row: {
+          campaign_id: string | null
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          estimated_wait_seconds: number | null
+          id: string
+          queue_position: number | null
+          request_payload: Json
+          request_type: string
+          started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          estimated_wait_seconds?: number | null
+          id?: string
+          queue_position?: number | null
+          request_payload: Json
+          request_type: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          estimated_wait_seconds?: number | null
+          id?: string
+          queue_position?: number | null
+          request_payload?: Json
+          request_type?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_generation_queue_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_training_signals: {
         Row: {
           context: Json | null
@@ -1714,6 +1770,62 @@ export type Database = {
         }
         Relationships: []
       }
+      quick_start_publish_queue: {
+        Row: {
+          campaign_id: string
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          estimated_start_time: string | null
+          id: string
+          platform: string
+          queue_position: number | null
+          retry_count: number | null
+          started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          estimated_start_time?: string | null
+          id?: string
+          platform: string
+          queue_position?: number | null
+          retry_count?: number | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          estimated_start_time?: string | null
+          id?: string
+          platform?: string
+          queue_position?: number | null
+          retry_count?: number | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quick_start_publish_queue_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stripe_customers: {
         Row: {
           created_at: string | null
@@ -1952,6 +2064,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      update_queue_positions: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

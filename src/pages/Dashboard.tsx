@@ -30,6 +30,7 @@ import { AlertCircle } from "lucide-react";
 import { CampaignContactSection } from "@/components/CampaignContactSection";
 import { detectContactInfo, removeContactInfo } from "@/utils/contactDetection";
 import { QuickStartBudgetWidget } from "@/components/QuickStartBudgetWidget";
+import { QueueStatusIndicator } from "@/components/QueueStatusIndicator";
 
 interface Campaign {
   id: string;
@@ -243,6 +244,9 @@ export default function Dashboard() {
 
         {/* Quick-Start Budget Widget */}
         <QuickStartBudgetWidget />
+
+        {/* Queue Status Indicator */}
+        <QueueStatusIndicator />
 
         {/* POLITICAL MODE HIDDEN - Re-enable later for launch */}
         {/* {politicalProfile?.hasPoliticalTier && (
