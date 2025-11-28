@@ -300,8 +300,10 @@ export type Database = {
         Row: {
           affiliate_id: string | null
           created_at: string | null
+          fraud_reason: string | null
           id: string
           ip_address: string | null
+          is_suspicious: boolean | null
           referrer: string | null
           user_agent: string | null
           visitor_id: string | null
@@ -309,8 +311,10 @@ export type Database = {
         Insert: {
           affiliate_id?: string | null
           created_at?: string | null
+          fraud_reason?: string | null
           id?: string
           ip_address?: string | null
+          is_suspicious?: boolean | null
           referrer?: string | null
           user_agent?: string | null
           visitor_id?: string | null
@@ -318,8 +322,10 @@ export type Database = {
         Update: {
           affiliate_id?: string | null
           created_at?: string | null
+          fraud_reason?: string | null
           id?: string
           ip_address?: string | null
+          is_suspicious?: boolean | null
           referrer?: string | null
           user_agent?: string | null
           visitor_id?: string | null
@@ -538,8 +544,12 @@ export type Database = {
         Row: {
           affiliate_earnings: number | null
           affiliate_id: string | null
+          fingerprint: string | null
           first_payment_at: string | null
+          fraud_reason: string | null
           id: string
+          ip_address: string | null
+          is_suspicious: boolean | null
           notes: string | null
           referred_at: string | null
           referred_user_id: string | null
@@ -549,8 +559,12 @@ export type Database = {
         Insert: {
           affiliate_earnings?: number | null
           affiliate_id?: string | null
+          fingerprint?: string | null
           first_payment_at?: string | null
+          fraud_reason?: string | null
           id?: string
+          ip_address?: string | null
+          is_suspicious?: boolean | null
           notes?: string | null
           referred_at?: string | null
           referred_user_id?: string | null
@@ -560,8 +574,12 @@ export type Database = {
         Update: {
           affiliate_earnings?: number | null
           affiliate_id?: string | null
+          fingerprint?: string | null
           first_payment_at?: string | null
+          fraud_reason?: string | null
           id?: string
+          ip_address?: string | null
+          is_suspicious?: boolean | null
           notes?: string | null
           referred_at?: string | null
           referred_user_id?: string | null
@@ -619,9 +637,12 @@ export type Database = {
           commission_duration_months: number | null
           created_at: string | null
           current_tier: string | null
+          fraud_flags: Json | null
+          fraud_score: number | null
           growth_rate: number | null
           id: string
           is_blocked: boolean | null
+          last_fraud_check: string | null
           last_tier_check: string | null
           monthly_revenue: number | null
           onboarding_completed: boolean | null
@@ -640,9 +661,12 @@ export type Database = {
           commission_duration_months?: number | null
           created_at?: string | null
           current_tier?: string | null
+          fraud_flags?: Json | null
+          fraud_score?: number | null
           growth_rate?: number | null
           id?: string
           is_blocked?: boolean | null
+          last_fraud_check?: string | null
           last_tier_check?: string | null
           monthly_revenue?: number | null
           onboarding_completed?: boolean | null
@@ -661,9 +685,12 @@ export type Database = {
           commission_duration_months?: number | null
           created_at?: string | null
           current_tier?: string | null
+          fraud_flags?: Json | null
+          fraud_score?: number | null
           growth_rate?: number | null
           id?: string
           is_blocked?: boolean | null
+          last_fraud_check?: string | null
           last_tier_check?: string | null
           monthly_revenue?: number | null
           onboarding_completed?: boolean | null
