@@ -272,10 +272,11 @@ export default function TargetingSetup() {
         .from('campaign_channels')
         .insert(channelRecords);
 
-      toast.success('Content approved! Campaign ready to publish.');
+      toast.success('Content approved! Now proceed to payment.');
       
-      // Navigate to dashboard
-      navigate(`/dashboard`);
+      // CRITICAL: Navigate to payment for ad budget (NOT dashboard)
+      // User must be pre-charged for ad budget before publishing
+      navigate(`/campaign/${campaignId}/publish`);
     } catch (error) {
       console.error('Error in publish flow:', error);
       toast.error('Failed to complete publish process');
