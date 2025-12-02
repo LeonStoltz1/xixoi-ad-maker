@@ -25,6 +25,29 @@ serve(async (req) => {
 
     const products = [];
 
+    // Product 0: xiXoi™ Quick-Start ($49/month)
+    console.log('Creating Product 0: Quick-Start...');
+    const product0 = await stripe.products.create({
+      name: 'xiXoi™ Quick-Start',
+      description: '$300/week spend cap, 5% service fee, no political ads, master account publishing',
+    });
+    const price0 = await stripe.prices.create({
+      product: product0.id,
+      unit_amount: 4900, // $49.00
+      currency: 'usd',
+      recurring: {
+        interval: 'month',
+      },
+    });
+    products.push({
+      name: product0.name,
+      price_id: price0.id,
+      amount: '$49.00/month',
+      type: 'subscription',
+      secret_name: 'STRIPE_PRICE_QUICKSTART'
+    });
+    console.log('✅ Product 0 created:', price0.id);
+
     // Product 1: xiXoi™ Publish Pro - Per Ad Set ($29 one-time)
     console.log('Creating Product 1: Per Ad Set...');
     const product1 = await stripe.products.create({
@@ -124,6 +147,7 @@ serve(async (req) => {
         next_steps: [
           'Copy the price_id values above',
           'Add them as secrets in Lovable using the secret_name provided',
+          'STRIPE_PRICE_QUICKSTART: ' + price0.id,
           'STRIPE_PRICE_BRANDING_REMOVAL: ' + price1.id,
           'STRIPE_PRICE_PRO_UNLIMITED: ' + price2.id,
           'STRIPE_PRICE_ELITE: ' + price3.id,
