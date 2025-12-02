@@ -92,10 +92,12 @@ export default function CampaignBudgetPayment() {
     loadCampaign();
   }, [campaignId, user, navigate]);
 
-  // Calculate total ad budget (daily budget * 7 days for weekly)
-  const budgetPeriod = 7; // Weekly
+  // CRITICAL: Calculate total ad budget (daily budget * 7 days for weekly pre-charge)
+  // This is the FULL WEEKLY AMOUNT that must be charged BEFORE ads run
+  const budgetPeriod = 7; // Weekly - ALWAYS 7 days pre-charged
   const totalAdBudget = useMemo(() => {
     if (!campaign?.daily_budget) return 0;
+    // Pre-charge for full week (7 days) - critical business requirement
     return campaign.daily_budget * budgetPeriod;
   }, [campaign]);
 
@@ -206,11 +208,18 @@ export default function CampaignBudgetPayment() {
       backTo={`/targeting/${campaignId}`}
     >
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Critical Notice */}
-        <Alert className="border-yellow-500 bg-yellow-50">
-          <AlertCircle className="h-5 w-5 text-yellow-600" />
-          <AlertDescription className="text-yellow-900">
-            <strong>Payment Required:</strong> You must pre-pay for your ad budget before we can publish your campaign. This ensures your ads go live immediately.
+        {/* Critical Notice - BUSINESS REQUIREMENT */}
+        <Alert className="border-red-500 bg-red-50">
+          <AlertCircle className="h-5 w-5 text-red-600" />
+          <AlertDescription className="text-red-900">
+            <strong>⚠️ CRITICAL: Pre-Payment Required</strong>
+            <p className="mt-2">
+              You MUST pre-pay the full weekly ad budget (${totalAdBudget.toFixed(2)}) before your ads can run. 
+              If payment fails or is declined, your ads will NOT publish to any platform. No exceptions.
+            </p>
+            <p className="mt-2 font-semibold">
+              This protects both you and xiXoi from unauthorized ad spend.
+            </p>
           </AlertDescription>
         </Alert>
 
