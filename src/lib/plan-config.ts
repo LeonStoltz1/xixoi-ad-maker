@@ -1,10 +1,10 @@
 export const PLAN_CONFIG = {
   free: null,
-  quickstart: "price_1QccgjRfAZMMsSx8bHEQk4s3", // Quick-Start $49/mo - REPLACE WITH ACTUAL PRICE ID
-  pro: "price_1QW0zIRfAZMMsSx8KpQXRVyC", // Pro $29 per ad set
-  proUnlimited: "price_1QW10URfAZMMsSx8vYhxGmJR", // Pro Unlimited $99/mo
-  elite: "price_1QW11cRfAZMMsSx8S7nJH5uX", // Scale Elite $199/mo
-  agency: "price_1QW127RfAZMMsSx8QGOdxqnw", // Agency $999/mo
+  quickstart: "price_1SZmIERfAZMMsSx86QejcQEk", // Quick-Start $49/mo
+  pro: "price_1SZmIERfAZMMsSx8UKOMlsu1", // Pro $29 per ad set
+  proUnlimited: "price_1SZmIFRfAZMMsSx8Bkh6Cahn", // Pro Unlimited $99/mo
+  elite: "price_1SZmIFRfAZMMsSx8ILZlxo3T", // Scale Elite $199/mo
+  agency: "price_1SZmIGRfAZMMsSx88O7DsgzY", // Agency $999/mo
 } as const;
 
 export type PlanTier = keyof typeof PLAN_CONFIG;
