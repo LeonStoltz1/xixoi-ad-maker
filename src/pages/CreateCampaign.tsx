@@ -14,6 +14,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { CampaignContactSection } from "@/components/CampaignContactSection";
 import { useEffectiveTier } from "@/hooks/useEffectiveTier";
 import { getMinimumDailySpend } from "@/lib/spendEngine";
+import { CreationMethodSelector } from "@/components/campaign/CreationMethodSelector";
+import { URLImport } from "@/components/campaign/URLImport";
 
 export default function CreateCampaign() {
   const navigate = useNavigate();
@@ -21,6 +23,16 @@ export default function CreateCampaign() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const { tier: effectiveTier } = useEffectiveTier();
+  
+  // Creation method selection
+  const [creationMethod, setCreationMethod] = useState<'select' | 'url' | 'scratch'>('select');
+  const [urlImportData, setUrlImportData] = useState<{
+    url: string;
+    images: string[];
+    selectedImage: string | null;
+    content: string;
+    title: string;
+  } | null>(null);
   
   // Upload state
   const [uploadType, setUploadType] = useState<'image' | 'video' | 'text'>('image');
@@ -629,10 +641,72 @@ export default function CreateCampaign() {
     }
   };
 
+  // Handle URL import data
+  const handleUrlImportComplete = (data: {
+    url: string;
+    images: string[];
+    selectedImage: string | null;
+    content: string;
+    title: string;
+  }) => {
+    setUrlImportData(data);
+    setCreationMethod('scratch');
+    
+    // Pre-fill fields with extracted data
+    setProductDescription(data.content);
+    setCampaignName(data.title);
+    
+    // If image selected, create a preview
+    if (data.selectedImage) {
+      setUploadType('image');
+      setAssetUrl(data.selectedImage);
+      setPreviewUrl(data.selectedImage);
+    }
+    
+    toast({
+      title: "✨ Content imported",
+      description: "Your website content has been extracted. Review and continue."
+    });
+  };
+
   return (
     <AppLayout>
       <section className="space-y-6 px-4 lg:px-8">
-        <h1 className="text-3xl font-semibold tracking-tight">Create Campaign</h1>
+        
+        {/* Initial Method Selection */}
+        {creationMethod === 'select' && (
+          <>
+            <h1 className="text-3xl font-semibold tracking-tight text-center">Create Campaign</h1>
+            <CreationMethodSelector onSelectMethod={(method) => setCreationMethod(method)} />
+          </>
+        )}
+
+        {/* URL Import Flow */}
+        {creationMethod === 'url' && (
+          <>
+            <h1 className="text-3xl font-semibold tracking-tight">Import from URL</h1>
+            <URLImport
+              onContentExtracted={handleUrlImportComplete}
+              onBack={() => setCreationMethod('select')}
+            />
+          </>
+        )}
+
+        {/* Standard Creation Flow */}
+        {creationMethod === 'scratch' && (
+          <>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-semibold tracking-tight">Create Campaign</h1>
+          {urlImportData && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCreationMethod('select')}
+            >
+              ← Start Over
+            </Button>
+          )}
+        </div>
 
         <div className="flex flex-col lg:flex-row gap-8 items-start max-w-[1400px] mx-auto">
           {/* Left column – All Controls and Targeting */}
@@ -1450,7 +1524,8 @@ export default function CreateCampaign() {
           <Eye className="h-6 w-6" />
         )}
       </Button>
-
+          </>
+        )}
       </section>
     </AppLayout>
   );
