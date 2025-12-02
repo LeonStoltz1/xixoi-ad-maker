@@ -100,7 +100,9 @@ serve(async (req) => {
       mode = 'payment';
       successUrl = `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
     } else if (priceType === 'quickstart_subscription') {
-      priceId = 'price_1SZmIERfAZMMsSx86QejcQEk'; // Quick-Start $49/mo
+      // CRITICAL: Use actual Quick-Start price ID from Stripe (price_1SZmlERfAZMMsSx86Qej)
+      // This must match the live Stripe product price
+      priceId = 'price_1SZmlERfAZMMsSx86Qej'; // Quick-Start $49/mo (CORRECTED)
       mode = 'subscription';
       successUrl = `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
     } else if (priceType === 'pro_subscription') {
