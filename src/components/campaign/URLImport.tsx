@@ -16,6 +16,16 @@ interface URLImportProps {
     selectedImage: string | null;
     content: string;
     title: string;
+    generatedAd?: {
+      headline: string;
+      bodyCopy: string;
+      ctaText: string;
+    };
+    targeting?: {
+      suggestedLocation: string;
+      suggestedBudget: number;
+      audienceSummary: string;
+    };
   }) => void;
   onBack: () => void;
 }
@@ -182,16 +192,62 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
     }
   };
 
-  const handleContinue = () => {
-    if (!extractedData) return;
+  const handleContinue = async () => {
+    if (!selectedImage || !extractedData) return;
+    
+    setLoading(true);
+    
+    try {
+      // Call AI generation functions in parallel
+      const [variantsResult, targetingResult] = await Promise.all([
+        invokeWithRetry(supabase, 'generate-ad-variants', {
+          productDescription: extractedData.content,
+          mediaUrl: selectedImage,
+          mediaType: 'image'
+        }),
+        invokeWithRetry(supabase, 'generate-targeting', {
+          productDescription: extractedData.content
+        })
+      ]);
 
-    onContentExtracted({
-      url,
-      images: extractedData.images,
-      selectedImage,
-      content: extractedData.content,
-      title: extractedData.title
-    });
+      if (variantsResult.error) throw new Error(variantsResult.error.message);
+      if (targetingResult.error) throw new Error(targetingResult.error.message);
+
+      const variant = variantsResult.data?.variants?.[0];
+      const targeting = targetingResult.data?.options?.[0];
+
+      if (!variant || !targeting) {
+        throw new Error('Failed to generate ad content');
+      }
+
+      // Pass generated data back to parent
+      onContentExtracted({
+        url,
+        images: extractedData.images,
+        selectedImage,
+        content: extractedData.content,
+        title: extractedData.title,
+        generatedAd: {
+          headline: variant.headline || 'Your headline',
+          bodyCopy: variant.body_copy || 'Your ad copy',
+          ctaText: variant.cta_text || 'Learn More'
+        },
+        targeting: {
+          suggestedLocation: targeting.suggestedLocation,
+          suggestedBudget: targeting.suggestedBudget,
+          audienceSummary: targeting.audienceSummary
+        }
+      });
+    } catch (error) {
+      console.error('Error generating ad:', error);
+      toast({
+        title: "Generation failed",
+        description: error instanceof Error ? error.message : "Failed to generate ad",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -323,12 +379,21 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
 
             <Button
               onClick={handleContinue}
-              disabled={!selectedImage}
+              disabled={!selectedImage || loading}
               className="w-full"
               size="lg"
             >
-              Continue with Selected Content
-              <ChevronRight className="w-4 h-4 ml-2" />
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating Your Ad...
+                </>
+              ) : (
+                <>
+                  Continue with Selected Content
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </>
+              )}
             </Button>
           </div>
         )}
