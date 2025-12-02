@@ -149,3 +149,9 @@ verify_jwt = false
 [functions.process-publish-queue]
 verify_jwt = false
 
+[functions.process-url-content]
+verify_jwt = true
+
+[functions.generate-image-from-description]
+verify_jwt = true
+
