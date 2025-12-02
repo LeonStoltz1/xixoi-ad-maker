@@ -508,6 +508,25 @@ export default function TargetingSetup() {
             <p className="text-sm text-muted-foreground">
               Reaches ~{estimatedReach.toLocaleString()} people/day
             </p>
+            
+            {/* Weekly Pre-Charge Calculation - CRITICAL BUSINESS REQUIREMENT */}
+            <div className="pt-4 border-t mt-4 space-y-3">
+              <div className="bg-primary/10 p-4 rounded-lg space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-foreground">Weekly Pre-Charge</span>
+                  <span className="text-xl font-bold text-primary">${(selectedBudget * 7).toFixed(2)}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  ${selectedBudget}/day × 7 days = ${(selectedBudget * 7).toFixed(2)} charged upfront
+                </p>
+                <div className="pt-2 border-t border-primary/20">
+                  <p className="text-xs text-yellow-600 font-semibold flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                    Payment required before ads run. If payment fails, ads will NOT publish.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

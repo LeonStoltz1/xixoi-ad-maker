@@ -618,7 +618,10 @@ serve(async (req) => {
         console.log(`Unhandled event type: ${event.type}`);
     }
 
-    // CRITICAL: Handle payment_intent.succeeded for ad budget payments
+    // CRITICAL BUSINESS REQUIREMENT: Handle payment_intent.succeeded for ad budget payments
+    // This is the ONLY place where campaigns are queued for publishing
+    // If payment fails, this event never fires, and ads NEVER run
+    // This protects the business from running ads without payment
     if (event.type === 'payment_intent.succeeded') {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
       const metadata = paymentIntent.metadata;
@@ -628,28 +631,29 @@ serve(async (req) => {
         metadata 
       });
 
-      // Check if this is an ad budget payment
+      // Check if this is an ad budget payment (NOT subscription payment)
       if (metadata.payment_type === 'ad_budget' && metadata.campaign_id && metadata.user_id) {
         const campaignId = metadata.campaign_id;
         const userId = metadata.user_id;
         const platforms = metadata.platforms?.split(',') || ['meta'];
 
-        console.log('Ad budget payment detected, queueing campaign for publishing:', { 
+        console.log('✅ Ad budget payment confirmed - NOW queueing campaign for publishing:', { 
           campaignId, 
           userId, 
           platforms 
         });
 
-        // Update campaign with payment ID
+        // Update campaign with payment ID and mark as paid
         await supabase
           .from('campaigns')
           .update({ 
             stripe_payment_id: paymentIntent.id,
-            status: 'paid'
+            status: 'paid' // ONLY set to 'paid' after payment succeeds
           })
           .eq('id', campaignId);
 
         // Queue for publishing on each selected platform
+        // Campaigns are ONLY queued AFTER payment succeeds
         for (const platform of platforms) {
           await supabase
             .from('quick_start_publish_queue')
@@ -661,7 +665,7 @@ serve(async (req) => {
               next_attempt_at: new Date().toISOString(),
             });
           
-          console.log(`Queued campaign ${campaignId} for platform: ${platform}`);
+          console.log(`✅ Queued campaign ${campaignId} for platform: ${platform}`);
         }
 
         // Mark reload as completed
@@ -672,7 +676,7 @@ serve(async (req) => {
             .eq('id', metadata.reload_id);
         }
 
-        console.log('Campaign successfully queued for publishing after ad budget payment');
+        console.log('✅ Campaign successfully queued for publishing ONLY after successful payment');
       }
     }
 
