@@ -13,31 +13,52 @@ serve(async (req) => {
   }
 
   try {
-    const { campaignId, enableABTesting = false } = await req.json();
+    const { campaignId, productDescription: directDescription, mediaUrl, mediaType, enableABTesting = false } = await req.json();
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get campaign and user profile to check plan
-    const { data: campaign, error: campaignError } = await supabase
-      .from('campaigns')
-      .select('*, campaign_assets(*)')
-      .eq('id', campaignId)
-      .single();
+    let campaign: any = null;
+    let userPlan = 'free';
+    let isFreeUser = true;
+    let productDescription = directDescription || '';
+    let imageUrl = mediaUrl || null;
+    let videoUrl = mediaType === 'video' ? mediaUrl : null;
+    let assetUrl = mediaUrl || null;
 
-    if (campaignError) throw campaignError;
+    // If campaignId provided, fetch campaign data
+    if (campaignId) {
+      const { data: campaignData, error: campaignError } = await supabase
+        .from('campaigns')
+        .select('*, campaign_assets(*)')
+        .eq('id', campaignId)
+        .single();
 
-    // Get user's plan from profiles table
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('plan')
-      .eq('id', campaign.user_id)
-      .single();
+      if (campaignError) throw campaignError;
+      campaign = campaignData;
 
-    const userPlan = profile?.plan || 'free';
-    const isFreeUser = userPlan === 'free';
+      // Get user's plan from profiles table
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', campaign.user_id)
+        .single();
+
+      userPlan = profile?.plan || 'free';
+      isFreeUser = userPlan === 'free';
+
+      // Get the text content from assets
+      const asset = campaign.campaign_assets[0];
+      productDescription = asset?.asset_text || 'Product description';
+      
+      const imageAsset = campaign.campaign_assets.find((a: any) => a.asset_type === 'image');
+      const videoAsset = campaign.campaign_assets.find((a: any) => a.asset_type === 'video');
+      imageUrl = imageAsset?.asset_url || null;
+      videoUrl = videoAsset?.asset_url || null;
+      assetUrl = imageAsset?.asset_url || videoAsset?.asset_url || null;
+    }
     
     // Variant limits by tier (multiply by 2 if A/B testing enabled)
     const variantCount: Record<string, number> = {
@@ -50,10 +71,6 @@ serve(async (req) => {
     const maxVariants = enableABTesting ? baseVariantCount * 2 : baseVariantCount;
     
     console.log('User plan:', userPlan, 'Is free user:', isFreeUser, 'Base variants:', baseVariantCount, 'A/B Testing:', enableABTesting, 'Total variants:', maxVariants);
-
-    // Get the text content from assets (all asset types now have description)
-    const asset = campaign.campaign_assets[0];
-    const productDescription = asset?.asset_text || 'Product description';
     
     // Political ad blocking for free and quickstart tiers
     const POLITICAL_KEYWORDS = [
@@ -79,13 +96,6 @@ serve(async (req) => {
       );
     }
     
-    const imageAsset = campaign.campaign_assets.find((a: any) => a.asset_type === 'image');
-    const videoAsset = campaign.campaign_assets.find((a: any) => a.asset_type === 'video');
-    const imageUrl = imageAsset?.asset_url || null;
-    const videoUrl = videoAsset?.asset_url || null;
-    
-    console.log('Campaign data:', JSON.stringify(campaign, null, 2));
-    console.log('Asset found:', asset);
     console.log('Image URL:', imageUrl);
     console.log('Video URL:', videoUrl);
     console.log('Product description to use:', productDescription);
@@ -371,9 +381,7 @@ Return JSON:
       throw new Error('AI failed to generate valid ad variants. This may be due to content policy violations or technical issues.');
     }
 
-    // Get campaign asset URL
-    const assetUrl = campaign.campaign_assets[0]?.asset_url || null;
-    console.log('Asset URL:', assetUrl);
+    console.log('Final asset URL:', assetUrl);
 
     // Limit variants based on tier
     const variantsToCreate = isFreeUser 
@@ -381,6 +389,24 @@ Return JSON:
       : parsedContent.variants.slice(0, maxVariants);
 
     console.log(`Creating ${variantsToCreate.length} variant(s) for ${userPlan} user (max: ${maxVariants})`);
+
+    // If no campaignId, return variants without inserting to DB (preview mode)
+    if (!campaignId) {
+      return new Response(
+        JSON.stringify({ 
+          variants: variantsToCreate.map((variant: any) => ({
+            platform: variant.platform,
+            headline: variant.headline,
+            body_copy: variant.body,
+            cta_text: variant.cta,
+            creative_url: assetUrl,
+            predicted_roas: (2.5 + Math.random() * 2).toFixed(2),
+            variant_set: variant.set || 'A'
+          }))
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Insert ad variants into database with asset URL
     const variants = variantsToCreate.map((variant: any) => ({
