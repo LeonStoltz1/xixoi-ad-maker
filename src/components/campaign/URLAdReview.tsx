@@ -8,6 +8,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronLeft, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEffectiveTier } from "@/hooks/useEffectiveTier";
+import { FreeUpgradeModal } from "@/components/FreeUpgradeModal";
 
 interface URLAdReviewProps {
   campaignId: string;
@@ -45,6 +47,8 @@ export function URLAdReview({
   onBack,
   onPublish
 }: URLAdReviewProps) {
+  const { tier } = useEffectiveTier();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [headline, setHeadline] = useState(initialHeadline);
   const [bodyCopy, setBodyCopy] = useState(initialBodyCopy);
   const [ctaText, setCtaText] = useState(initialCtaText);
@@ -56,6 +60,13 @@ export function URLAdReview({
   const [targetingOpen, setTargetingOpen] = useState(false);
 
   const handlePublish = () => {
+    // Check if user is on free tier
+    if (tier === 'free') {
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    // Proceed with normal publish for paid users
     onPublish({
       headline,
       bodyCopy,
@@ -265,6 +276,19 @@ export function URLAdReview({
           </Button>
         </div>
       </div>
+
+      {/* Free Upgrade Modal */}
+      <FreeUpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        campaignId={campaignId}
+        adData={{
+          image: selectedImage,
+          headline,
+          bodyCopy,
+          ctaText
+        }}
+      />
     </div>
   );
 }
