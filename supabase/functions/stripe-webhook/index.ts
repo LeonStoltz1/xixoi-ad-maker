@@ -204,37 +204,84 @@ serve(async (req) => {
           }
         }
 
-        if (priceType === 'quickstart_subscription' && session.subscription) {
-          // Handle Quick-Start subscription
+        // CRITICAL FIX: Check subscription by actual price ID, not just metadata
+        // This handles cases where price IDs may differ from hardcoded values
+        if (session.subscription) {
           const subscription = await stripe.subscriptions.retrieve(
             session.subscription as string
           );
 
-          console.log('Creating Quick-Start subscription:', subscription.id);
+          // Extract the actual price ID from the subscription
+          const actualPriceId = subscription.items.data[0]?.price.id;
+          console.log('Subscription created with price:', actualPriceId);
 
-          await supabase
-            .from('subscriptions')
-            .insert({
-              user_id: userId,
-              stripe_subscription_id: subscription.id,
-              stripe_customer_id: session.customer as string,
-              status: subscription.status,
-              plan_type: 'quickstart',
-              current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-              cancel_at_period_end: subscription.cancel_at_period_end,
-            });
+          // Determine plan type from actual price ID
+          const planType = getPlanTypeFromPriceId(actualPriceId);
+          
+          // Also check if price looks like Quick-Start (price_1SZm... pattern)
+          const isQuickStartPrice = actualPriceId?.startsWith('price_1SZm');
+          
+          if (planType === 'quickstart' || isQuickStartPrice) {
+            console.log('Creating Quick-Start subscription:', subscription.id);
 
-          // Update user's plan in profiles
-          await supabase
-            .from('profiles')
-            .update({ plan: 'quickstart' })
-            .eq('id', userId);
+            await supabase
+              .from('subscriptions')
+              .insert({
+                user_id: userId,
+                stripe_subscription_id: subscription.id,
+                stripe_customer_id: session.customer as string,
+                status: subscription.status,
+                plan_type: 'quickstart',
+                current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                cancel_at_period_end: subscription.cancel_at_period_end,
+              });
 
-          console.log('Updated user plan to: quickstart');
+            // Update user's plan in profiles with actual price ID
+            await supabase
+              .from('profiles')
+              .update({ 
+                plan: 'quickstart',
+                stripe_price_id: actualPriceId 
+              })
+              .eq('id', userId);
 
-          // NOTE: Do NOT queue for publishing here - users must separately pay for ad budget
-          // Publishing only happens after payment_intent.succeeded for ad_budget payment type
+            console.log('✅ Updated user plan to: quickstart with price:', actualPriceId);
+
+            // NOTE: Do NOT queue for publishing here - users must separately pay for ad budget
+            // Publishing only happens after payment_intent.succeeded for ad_budget payment type
+          } else if (planType !== 'pro') {
+            // Handle other subscription types (Pro, Elite, Agency)
+            console.log(`Creating ${planType} subscription:`, subscription.id);
+            
+            await supabase
+              .from('subscriptions')
+              .insert({
+                user_id: userId,
+                stripe_subscription_id: subscription.id,
+                stripe_customer_id: session.customer as string,
+                status: subscription.status,
+                plan_type: planType,
+                current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                cancel_at_period_end: subscription.cancel_at_period_end,
+              });
+
+            await supabase
+              .from('profiles')
+              .update({ 
+                plan: planType,
+                stripe_price_id: actualPriceId 
+              })
+              .eq('id', userId);
+
+            console.log(`✅ Updated user plan to: ${planType}`);
+          }
+        }
+
+        // Legacy: Also check old metadata-based flow for backward compatibility
+        if (priceType === 'quickstart_subscription' && !session.subscription) {
+          console.warn('⚠️ Old checkout flow without subscription - metadata only');
         }
 
         if (priceType === 'pro_subscription' && session.subscription) {
