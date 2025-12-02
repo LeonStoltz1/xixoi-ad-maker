@@ -1429,9 +1429,12 @@ export default function CreateCampaign() {
                         }
                         const minDaily = getMinimumDailySpend(selectedPlatforms);
                         return dailyBudget < minDaily && selectedPlatforms.length > 0 ? (
-                          <div className="flex items-start gap-1 text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-                            <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
-                            <span>Meta requires ${minDaily}/day minimum. You can still proceed, but ads may not deliver optimally.</span>
+                          <div className="flex items-start gap-2 text-xs text-red-700 bg-red-50 p-3 rounded border-2 border-red-300">
+                            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                            <div>
+                              <div className="font-semibold mb-1">Meta Platform Minimum Not Met</div>
+                              <div>Meta requires a minimum of <span className="font-bold">${minDaily}/day</span> for ad campaigns. Your current budget of ${dailyBudget}/day is below this requirement. Ads may be rejected or not deliver.</div>
+                            </div>
                           </div>
                         ) : null;
                       })()}
