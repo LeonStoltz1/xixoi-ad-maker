@@ -96,7 +96,7 @@ serve(async (req) => {
       mode = 'payment';
       successUrl = `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
     } else if (priceType === 'quickstart_subscription') {
-      priceId = 'price_1QccgjRfAZMMsSx8bHEQk4s3'; // Quick-Start $49/mo
+      priceId = 'price_1SZmIERfAZMMsSx86QejcQEk'; // Quick-Start $49/mo
       mode = 'subscription';
       successUrl = `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
     } else if (priceType === 'pro_subscription') {
