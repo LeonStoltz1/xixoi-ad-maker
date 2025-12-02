@@ -96,7 +96,7 @@ serve(async (req) => {
       mode = 'payment';
       successUrl = `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
     } else if (priceType === 'quickstart_subscription') {
-      priceId = Deno.env.get('STRIPE_PRICE_QUICKSTART')!;
+      priceId = 'price_1QccgjRfAZMMsSx8bHEQk4s3'; // Quick-Start $49/mo
       mode = 'subscription';
       successUrl = `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
     } else if (priceType === 'pro_subscription') {
