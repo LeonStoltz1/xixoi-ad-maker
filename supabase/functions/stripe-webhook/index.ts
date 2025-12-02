@@ -233,22 +233,8 @@ serve(async (req) => {
 
           console.log('Updated user plan to: quickstart');
 
-          // Queue ad for publishing if campaignId exists
-          if (campaignId) {
-            console.log('Queueing campaign for publishing:', campaignId);
-            
-            await supabase
-              .from('quick_start_publish_queue')
-              .insert({
-                user_id: userId,
-                campaign_id: campaignId,
-                platform: 'meta', // Quick-Start tier publishes to Meta only
-                status: 'queued',
-                next_attempt_at: new Date().toISOString(),
-              });
-
-            console.log('Campaign queued for publishing');
-          }
+          // NOTE: Do NOT queue for publishing here - users must separately pay for ad budget
+          // Publishing only happens after payment_intent.succeeded for ad_budget payment type
         }
 
         if (priceType === 'pro_subscription' && session.subscription) {
@@ -630,6 +616,64 @@ serve(async (req) => {
 
       default:
         console.log(`Unhandled event type: ${event.type}`);
+    }
+
+    // CRITICAL: Handle payment_intent.succeeded for ad budget payments
+    if (event.type === 'payment_intent.succeeded') {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      const metadata = paymentIntent.metadata;
+      
+      console.log('Payment intent succeeded:', { 
+        paymentIntentId: paymentIntent.id, 
+        metadata 
+      });
+
+      // Check if this is an ad budget payment
+      if (metadata.payment_type === 'ad_budget' && metadata.campaign_id && metadata.user_id) {
+        const campaignId = metadata.campaign_id;
+        const userId = metadata.user_id;
+        const platforms = metadata.platforms?.split(',') || ['meta'];
+
+        console.log('Ad budget payment detected, queueing campaign for publishing:', { 
+          campaignId, 
+          userId, 
+          platforms 
+        });
+
+        // Update campaign with payment ID
+        await supabase
+          .from('campaigns')
+          .update({ 
+            stripe_payment_id: paymentIntent.id,
+            status: 'paid'
+          })
+          .eq('id', campaignId);
+
+        // Queue for publishing on each selected platform
+        for (const platform of platforms) {
+          await supabase
+            .from('quick_start_publish_queue')
+            .insert({
+              user_id: userId,
+              campaign_id: campaignId,
+              platform: platform.trim(),
+              status: 'queued',
+              next_attempt_at: new Date().toISOString(),
+            });
+          
+          console.log(`Queued campaign ${campaignId} for platform: ${platform}`);
+        }
+
+        // Mark reload as completed
+        if (metadata.reload_id) {
+          await supabase
+            .from('ad_budget_reloads')
+            .update({ payment_status: 'completed' })
+            .eq('id', metadata.reload_id);
+        }
+
+        console.log('Campaign successfully queued for publishing after ad budget payment');
+      }
     }
 
     return new Response(

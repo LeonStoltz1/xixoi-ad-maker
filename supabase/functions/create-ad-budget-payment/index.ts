@@ -35,7 +35,7 @@ serve(async (req) => {
       throw new Error('Not authenticated');
     }
 
-    const { amount, platforms } = await req.json();
+    const { amount, platforms, campaignId } = await req.json();
 
     if (!amount || !platforms || platforms.length === 0) {
       throw new Error('Amount and platforms are required');
@@ -125,6 +125,8 @@ serve(async (req) => {
         platforms: platforms.join(','),
         ad_budget: amount.toString(),
         service_fee: serviceFee.toString(),
+        campaign_id: campaignId || '', // CRITICAL: Include campaign ID for publishing
+        payment_type: 'ad_budget',
       },
     });
 
