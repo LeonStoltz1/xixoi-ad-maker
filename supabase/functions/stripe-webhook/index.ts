@@ -56,12 +56,14 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get price IDs for plan detection
+    const PRICE_ID_QUICKSTART = 'price_1SZmIERfAZMMsSx86QejcQEk';
     const PRICE_ID_PRO = Deno.env.get('STRIPE_PRICE_PRO_SUBSCRIPTION');
     const PRICE_ID_ELITE = Deno.env.get('STRIPE_PRICE_ELITE');
     const PRICE_ID_AGENCY = Deno.env.get('STRIPE_PRICE_AGENCY');
 
     // Helper function to determine plan type from price ID
     const getPlanTypeFromPriceId = (priceId: string): string => {
+      if (priceId === PRICE_ID_QUICKSTART) return 'quickstart';
       if (priceId === PRICE_ID_PRO) return 'pro';
       if (priceId === PRICE_ID_ELITE) return 'elite';
       if (priceId === PRICE_ID_AGENCY) return 'agency';
@@ -199,6 +201,53 @@ serve(async (req) => {
             }
 
             console.log('Watermark tampering charge processed for variant:', variantId);
+          }
+        }
+
+        if (priceType === 'quickstart_subscription' && session.subscription) {
+          // Handle Quick-Start subscription
+          const subscription = await stripe.subscriptions.retrieve(
+            session.subscription as string
+          );
+
+          console.log('Creating Quick-Start subscription:', subscription.id);
+
+          await supabase
+            .from('subscriptions')
+            .insert({
+              user_id: userId,
+              stripe_subscription_id: subscription.id,
+              stripe_customer_id: session.customer as string,
+              status: subscription.status,
+              plan_type: 'quickstart',
+              current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              cancel_at_period_end: subscription.cancel_at_period_end,
+            });
+
+          // Update user's plan in profiles
+          await supabase
+            .from('profiles')
+            .update({ plan: 'quickstart' })
+            .eq('id', userId);
+
+          console.log('Updated user plan to: quickstart');
+
+          // Queue ad for publishing if campaignId exists
+          if (campaignId) {
+            console.log('Queueing campaign for publishing:', campaignId);
+            
+            await supabase
+              .from('quick_start_publish_queue')
+              .insert({
+                user_id: userId,
+                campaign_id: campaignId,
+                platform: 'meta', // Quick-Start tier publishes to Meta only
+                status: 'queued',
+                next_attempt_at: new Date().toISOString(),
+              });
+
+            console.log('Campaign queued for publishing');
           }
         }
 
