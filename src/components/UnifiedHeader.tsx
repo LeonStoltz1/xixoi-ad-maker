@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, FolderOpen } from "lucide-react";
 import { useRealtor } from "@/contexts/RealtorContext";
 import { Switch } from "@/components/ui/switch";
+import { SavedImagesLibrary } from "@/components/SavedImagesLibrary";
 
 export const UnifiedHeader = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userPlan, setUserPlan] = useState<string>('free');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showSavedLibrary, setShowSavedLibrary] = useState(false);
   const navigate = useNavigate();
   const { realtorProfile, viewMode, setViewMode } = useRealtor();
 
@@ -116,6 +118,15 @@ export const UnifiedHeader = () => {
               </div>
             )}
 
+            {/* Saved Images Library Button */}
+            <button 
+              onClick={() => setShowSavedLibrary(true)}
+              className="px-3 py-1.5 border border-white/20 text-sm text-white hover:bg-white/10 transition-colors flex items-center gap-2"
+            >
+              <FolderOpen className="w-4 h-4" />
+              <span className="hidden lg:inline">My Images</span>
+            </button>
+
             {/* Admin Link - Only shown for admins */}
             {isAdmin && (
               <button 
@@ -179,6 +190,12 @@ export const UnifiedHeader = () => {
           </div>
         )}
       </div>
+
+      {/* Saved Images Library Modal */}
+      <SavedImagesLibrary
+        isOpen={showSavedLibrary}
+        onClose={() => setShowSavedLibrary(false)}
+      />
     </header>
   );
 };

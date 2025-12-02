@@ -2139,6 +2139,39 @@ export type Database = {
           },
         ]
       }
+      saved_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_type: string
+          image_url: string
+          last_used_at: string | null
+          prompt_used: string | null
+          usage_count: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_type?: string
+          image_url: string
+          last_used_at?: string | null
+          prompt_used?: string | null
+          usage_count?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_type?: string
+          image_url?: string
+          last_used_at?: string | null
+          prompt_used?: string | null
+          usage_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       stripe_customers: {
         Row: {
           created_at: string | null

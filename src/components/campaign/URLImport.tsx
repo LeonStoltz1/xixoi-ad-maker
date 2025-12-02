@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Link2, Sparkles, Image as ImageIcon, ChevronRight } from "lucide-react";
+import { Loader2, Link2, Sparkles, Image as ImageIcon, ChevronRight, Save, FolderOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { invokeWithRetry } from "@/lib/retryWithBackoff";
 import { supabase } from "@/integrations/supabase/client";
+import { SavedImagesLibrary } from "@/components/SavedImagesLibrary";
 
 interface URLImportProps {
   onContentExtracted: (data: {
@@ -41,6 +42,8 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
   } | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [generatingImage, setGeneratingImage] = useState(false);
+  const [showSavedLibrary, setShowSavedLibrary] = useState(false);
+  const [savingImage, setSavingImage] = useState(false);
 
   const handleExtractContent = async () => {
     if (!url.trim()) {
@@ -192,6 +195,46 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
     }
   };
 
+  const handleSaveImage = async (imageUrl: string, prompt: string) => {
+    setSavingImage(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to save images",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('saved_images')
+        .insert({
+          user_id: user.id,
+          image_url: imageUrl,
+          image_type: 'ai_generated',
+          prompt_used: prompt
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "✓ Image saved",
+        description: "Added to your library for future use"
+      });
+    } catch (error) {
+      console.error('Error saving image:', error);
+      toast({
+        title: "Save failed",
+        description: "Could not save image to library",
+        variant: "destructive"
+      });
+    } finally {
+      setSavingImage(false);
+    }
+  };
+
   const handleContinue = async () => {
     if (!selectedImage || !extractedData) return;
     
@@ -317,24 +360,34 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="font-semibold">Select Image ({extractedData.images.length} found)</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleGenerateImage}
-                  disabled={generatingImage}
-                >
-                  {generatingImage ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Generate with AI
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowSavedLibrary(true)}
+                  >
+                    <FolderOpen className="w-4 h-4 mr-2" />
+                    My Library
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateImage}
+                    disabled={generatingImage}
+                  >
+                    {generatingImage ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Generate with AI
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
 
               {extractedData.images.length > 0 ? (
@@ -342,7 +395,7 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
                   {extractedData.images.map((img, idx) => (
                     <Card
                       key={idx}
-                      className={`cursor-pointer transition-all hover:shadow-lg ${
+                      className={`cursor-pointer transition-all hover:shadow-lg group protected-image ${
                         selectedImage === img ? 'ring-2 ring-primary' : ''
                       }`}
                       onClick={() => setSelectedImage(img)}
@@ -351,17 +404,34 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
                         <img
                           src={img}
                           alt={`Option ${idx + 1}`}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover select-none pointer-events-none"
+                          draggable="false"
+                          onContextMenu={(e) => e.preventDefault()}
                           onError={(e) => {
                             e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3C/svg%3E';
                           }}
                         />
                         {selectedImage === img && (
-                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center pointer-events-none">
                             <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
                               ✓
                             </div>
                           </div>
+                        )}
+                        {/* Save button for AI-generated images */}
+                        {idx < 2 && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSaveImage(img, extractedData.content);
+                            }}
+                            disabled={savingImage}
+                          >
+                            <Save className="w-3 h-3" />
+                          </Button>
                         )}
                       </div>
                     </Card>
@@ -398,6 +468,19 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
           </div>
         )}
       </Card>
+
+      {/* Saved Images Library Modal */}
+      <SavedImagesLibrary
+        isOpen={showSavedLibrary}
+        onClose={() => setShowSavedLibrary(false)}
+        onSelectImage={(imageUrl) => {
+          setSelectedImage(imageUrl);
+          setExtractedData(prev => prev ? {
+            ...prev,
+            images: [imageUrl, ...prev.images]
+          } : null);
+        }}
+      />
     </div>
   );
 };
