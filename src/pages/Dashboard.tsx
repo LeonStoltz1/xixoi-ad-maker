@@ -297,10 +297,10 @@ export default function Dashboard() {
           </div>
             {campaigns.length === 0 ? (
               <div className="text-center py-20 border-2 border-black">
-                <div className="max-w-md mx-auto">
+                <div className="max-w-2xl mx-auto">
                   <h3 className="text-2xl font-bold mb-3">Ready to Launch Your First Ad?</h3>
-                  <p className="text-foreground/80 mb-6 text-base">
-                    Upload your product image, video, or description. xiXoi™ AI will generate high-converting ad variants in seconds and publish to Meta.
+                  <p className="text-foreground/80 mb-6 text-base leading-relaxed">
+                    Choose your path: paste your website URL and xiXoi™ AI extracts images and writes your ad instantly. Or upload your own creative and let AI optimize the copy and targeting. Either way, you'll have a live ad on Meta in under 60 seconds. No accounts. No setup. No friction.
                   </p>
                   <Button onClick={() => navigate("/create-campaign")} size="lg" className="text-base px-8">
                     <Plus className="w-5 h-5 mr-2" />
