@@ -17,6 +17,7 @@ import { getMinimumDailySpend } from "@/lib/spendEngine";
 import { CreationMethodSelector } from "@/components/campaign/CreationMethodSelector";
 import { URLImport } from "@/components/campaign/URLImport";
 import { URLAdReview } from "@/components/campaign/URLAdReview";
+import { FreeUpgradeModal } from "@/components/FreeUpgradeModal";
 
 export default function CreateCampaign() {
   const navigate = useNavigate();
@@ -39,6 +40,10 @@ export default function CreateCampaign() {
       audienceSummary: string;
     };
   } | null>(null);
+  
+  // Free upgrade modal state
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeModalAdData, setUpgradeModalAdData] = useState<any>(null);
   
   // Upload state
   const [uploadType, setUploadType] = useState<'image' | 'video' | 'text'>('image');
@@ -1217,7 +1222,21 @@ export default function CreateCampaign() {
               </div>
 
               <Button
-                onClick={() => navigate(`/targeting/${campaignId}`)}
+                onClick={() => {
+                  // Check if user is on free tier
+                  if (effectiveTier === 'free') {
+                    setUpgradeModalAdData({
+                      image: previewUrl || assetUrl || '',
+                      headline,
+                      bodyCopy,
+                      ctaText
+                    });
+                    setShowUpgradeModal(true);
+                    return;
+                  }
+                  // Proceed with normal publish for paid users
+                  navigate(`/targeting/${campaignId}`);
+                }}
                 className="w-full"
                 size="lg"
               >
@@ -1623,6 +1642,14 @@ export default function CreateCampaign() {
       </Button>
           </>
         )}
+
+        {/* Free Upgrade Modal */}
+        <FreeUpgradeModal
+          isOpen={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          campaignId={campaignId || ''}
+          adData={upgradeModalAdData || { image: '', headline: '', bodyCopy: '', ctaText: '' }}
+        />
       </section>
     </AppLayout>
   );
