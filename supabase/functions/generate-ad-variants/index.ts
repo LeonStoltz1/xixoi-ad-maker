@@ -27,6 +27,10 @@ serve(async (req) => {
     let imageUrl = mediaUrl || null;
     let videoUrl = mediaType === 'video' ? mediaUrl : null;
     let assetUrl = mediaUrl || null;
+    let isRealtor = false;
+    let realtorName: string | null = null;
+    let brokerageName: string | null = null;
+    let licenseState: string | null = null;
 
     // If campaignId provided, fetch campaign data
     if (campaignId) {
@@ -39,15 +43,21 @@ serve(async (req) => {
       if (campaignError) throw campaignError;
       campaign = campaignData;
 
-      // Get user's plan from profiles table
+      // Get user's plan and realtor profile from profiles table
       const { data: profile } = await supabase
         .from('profiles')
-        .select('plan')
+        .select('plan, is_realtor, realtor_name, brokerage_name, realtor_license_state')
         .eq('id', campaign.user_id)
         .single();
 
       userPlan = profile?.plan || 'free';
       isFreeUser = userPlan === 'free';
+      
+      // Store realtor info for compliance
+      isRealtor = profile?.is_realtor || false;
+      realtorName = profile?.realtor_name || null;
+      brokerageName = profile?.brokerage_name || null;
+      licenseState = profile?.realtor_license_state || null;
 
       // Get the text content from assets
       const asset = campaign.campaign_assets[0];
@@ -193,6 +203,17 @@ CRITICAL COMPLIANCE RULES (NEVER VIOLATE):
 7. NO sensational/clickbait language
 8. NO targeting language that excludes protected groups
 9. If unsure whether something violates policy = DON'T USE IT
+
+${isRealtor && realtorName && brokerageName ? `
+REALTOR MODE - FAIR HOUSING ACT COMPLIANCE REQUIRED:
+This user is a licensed real estate professional. You MUST include the following in ALL ad variants:
+- Realtor Attribution: "Listed by ${realtorName}, ${brokerageName}"
+- Equal Housing Opportunity Statement: Add "Equal Housing Opportunity" or "EHO" at end of body copy
+- NEVER use discriminatory language: no age (young, senior, retiree), family status (perfect for families, singles), gender, religion, ethnicity references
+- Use inclusive language only: "Beautiful property", "Spacious home", "Great location"
+- Focus on property features, not buyer characteristics
+- Example compliant language: "3BR/2BA home with updated kitchen. Listed by ${realtorName}, ${brokerageName}. Equal Housing Opportunity."
+` : ''}
 
 DO NOT write about "xiXoi" or "AI-powered ads" — you are writing ads FOR THE USER'S PRODUCT.
 
