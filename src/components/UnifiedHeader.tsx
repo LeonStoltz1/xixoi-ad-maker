@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ExternalLink, FolderOpen } from "lucide-react";
+import { ExternalLink, FolderOpen, Menu, LayoutDashboard } from "lucide-react";
 import { useRealtor } from "@/contexts/RealtorContext";
 import { Switch } from "@/components/ui/switch";
 import { SavedImagesLibrary } from "@/components/SavedImagesLibrary";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export const UnifiedHeader = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userPlan, setUserPlan] = useState<string>('free');
   const [isAdmin, setIsAdmin] = useState(false);
   const [showSavedLibrary, setShowSavedLibrary] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { realtorProfile, viewMode, setViewMode } = useRealtor();
 
@@ -84,95 +86,133 @@ export const UnifiedHeader = () => {
           </div>
         </Link>
         
-        {/* User Controls - Right Side - ONLY THIS SECTION CHANGES */}
+        {/* Hamburger Menu - Right Side */}
         {isAuthenticated ? (
-          <div className="flex items-center gap-4">
-            {/* Realtor Mode Toggle - Only shown for realtors */}
-            {realtorProfile?.isRealtor && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/20">
-                <span 
-                  onClick={() => setViewMode('general')}
-                  className={`text-xs cursor-pointer transition-all ${
-                    viewMode === 'general' 
-                      ? 'text-white font-bold' 
-                      : 'text-white/50 hover:text-white/70'
-                  }`}
-                >
-                  General
-                </span>
-                <Switch
-                  id="view-mode"
-                  checked={viewMode === 'realtor'}
-                  onCheckedChange={(checked) => setViewMode(checked ? 'realtor' : 'general')}
-                />
-                <span 
-                  onClick={() => setViewMode('realtor')}
-                  className={`text-xs cursor-pointer transition-all ${
-                    viewMode === 'realtor' 
-                      ? 'text-white font-bold' 
-                      : 'text-white/50 hover:text-white/70'
-                  }`}
-                >
-                  Realtor
-                </span>
-              </div>
-            )}
-
-            {/* Saved Images Library Button */}
-            <button 
-              onClick={() => setShowSavedLibrary(true)}
-              className="px-3 py-1.5 border border-white/20 text-sm text-white hover:bg-white/10 transition-colors flex items-center gap-2"
-            >
-              <FolderOpen className="w-4 h-4" />
-              <span className="hidden lg:inline">My Images</span>
-            </button>
-
-            {/* Admin Link - Only shown for admins */}
-            {isAdmin && (
-              <button 
-                onClick={() => navigate('/admin/platform-credentials')}
-                className="px-3 py-1.5 border border-white/20 text-sm text-white hover:bg-white/10 transition-colors"
-              >
-                Admin
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+            <SheetTrigger asChild>
+              <button className="p-2 text-white hover:bg-white/10 transition-colors">
+                <Menu className="w-6 h-6" />
               </button>
-            )}
-            
-            {/* Connected Accounts Link - Only for Pro/Agency users */}
-            {(userPlan === 'pro' || userPlan === 'elite' || userPlan === 'agency') && (
-              <button 
-                onClick={() => navigate('/connect-platforms')}
-                className="px-3 py-1.5 border border-white/20 text-sm text-white hover:bg-white/10 transition-colors"
-              >
-                Connected Accounts
-              </button>
-            )}
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80 bg-black border-l border-white/20">
+              <nav className="flex flex-col gap-4 mt-8">
+                {/* Dashboard Link */}
+                <button
+                  onClick={() => {
+                    navigate('/dashboard');
+                    setMenuOpen(false);
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors border border-white/20"
+                >
+                  <LayoutDashboard className="w-5 h-5" />
+                  <span>Dashboard</span>
+                </button>
 
-            {/* Plan Badge */}
-            <div className="px-3 py-1.5 border border-white/20 text-sm">
-              <span className="text-white uppercase tracking-wide">
-                {userPlan === 'pro' ? 'PRO' : userPlan === 'elite' ? 'ELITE' : userPlan === 'agency' ? 'AGENCY' : 'FREE'}
-              </span>
-            </div>
-            
-            {/* Upgrade Link */}
-            <button 
-              onClick={() => navigate('/', { state: { scrollToPricing: true } })}
-              className="text-white hover:text-white/80 transition-colors text-sm"
-            >
-              Upgrade
-            </button>
-            
-            {/* External Link Icon */}
-            <ExternalLink className="w-5 h-5 text-white" />
-            
-            {/* Sign Out */}
-            <button 
-              onClick={handleSignOut}
-              className="text-white hover:text-white/80 transition-colors text-sm"
-            >
-              Sign Out
-            </button>
-          </div>
+                {/* Realtor Mode Toggle - Only shown for realtors */}
+                {realtorProfile?.isRealtor && (
+                  <div className="flex flex-col gap-2 px-4 py-3 bg-white/5 border border-white/20">
+                    <span className="text-xs text-white/60 uppercase tracking-wider">View Mode</span>
+                    <div className="flex items-center gap-2">
+                      <span 
+                        onClick={() => setViewMode('general')}
+                        className={`text-sm cursor-pointer transition-all ${
+                          viewMode === 'general' 
+                            ? 'text-white font-bold' 
+                            : 'text-white/50 hover:text-white/70'
+                        }`}
+                      >
+                        General
+                      </span>
+                      <Switch
+                        id="menu-view-mode"
+                        checked={viewMode === 'realtor'}
+                        onCheckedChange={(checked) => setViewMode(checked ? 'realtor' : 'general')}
+                      />
+                      <span 
+                        onClick={() => setViewMode('realtor')}
+                        className={`text-sm cursor-pointer transition-all ${
+                          viewMode === 'realtor' 
+                            ? 'text-white font-bold' 
+                            : 'text-white/50 hover:text-white/70'
+                        }`}
+                      >
+                        Realtor
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Saved Images Library Button */}
+                <button 
+                  onClick={() => {
+                    setShowSavedLibrary(true);
+                    setMenuOpen(false);
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors border border-white/20"
+                >
+                  <FolderOpen className="w-5 h-5" />
+                  <span>My Images</span>
+                </button>
+
+                {/* Admin Link - Only shown for admins */}
+                {isAdmin && (
+                  <button 
+                    onClick={() => {
+                      navigate('/admin/platform-credentials');
+                      setMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors border border-white/20"
+                  >
+                    <span>Admin</span>
+                  </button>
+                )}
+                
+                {/* Connected Accounts Link - Only for Pro/Agency users */}
+                {(userPlan === 'pro' || userPlan === 'elite' || userPlan === 'agency') && (
+                  <button 
+                    onClick={() => {
+                      navigate('/connect-platforms');
+                      setMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors border border-white/20"
+                  >
+                    <span>Connected Accounts</span>
+                  </button>
+                )}
+
+                {/* Plan Badge */}
+                <div className="px-4 py-3 border border-white/20">
+                  <span className="text-xs text-white/60 uppercase tracking-wider block mb-1">Current Plan</span>
+                  <span className="text-white uppercase tracking-wide font-bold">
+                    {userPlan === 'pro' ? 'PRO' : userPlan === 'elite' ? 'ELITE' : userPlan === 'agency' ? 'AGENCY' : 'FREE'}
+                  </span>
+                </div>
+                
+                {/* Upgrade Link */}
+                <button 
+                  onClick={() => {
+                    navigate('/', { state: { scrollToPricing: true } });
+                    setMenuOpen(false);
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors border border-white/20"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                  <span>Upgrade</span>
+                </button>
+                
+                {/* Sign Out */}
+                <button 
+                  onClick={() => {
+                    handleSignOut();
+                    setMenuOpen(false);
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors border border-white/20"
+                >
+                  <span>Sign Out</span>
+                </button>
+              </nav>
+            </SheetContent>
+          </Sheet>
         ) : (
           <div className="flex items-center gap-3">
             <button 
