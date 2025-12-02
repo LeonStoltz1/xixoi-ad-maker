@@ -433,10 +433,27 @@ export function EnhancedCampaignCard({
     }
   };
 
+  // Get first ad variant thumbnail
+  const thumbnailUrl = adVariants.length > 0 ? adVariants[0].creative_url : null;
+
   return (
     <Card className="relative overflow-hidden">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-4">
+          {/* Thumbnail Preview */}
+          {thumbnailUrl && (
+            <div className="w-20 h-20 flex-shrink-0 bg-muted relative overflow-hidden border border-border">
+              <img 
+                src={thumbnailUrl} 
+                alt={campaign.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Hide broken image
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            </div>
+          )}
           <div className="space-y-2 flex-1 min-w-0">
             <CardTitle className="text-lg truncate">{campaign.name}</CardTitle>
             <div className="flex items-center gap-2 flex-wrap">
@@ -649,12 +666,16 @@ export function EnhancedCampaignCard({
                 )}
 
                 {/* Creative Preview */}
-                {selectedVariant.creative_url && (
-                  <div className="aspect-square max-w-md mx-auto bg-muted relative overflow-hidden">
+                {selectedVariant.creative_url ? (
+                  <div className="aspect-square max-w-md mx-auto bg-muted relative overflow-hidden border border-border">
                     <img 
                       src={selectedVariant.creative_url} 
                       alt={selectedVariant.headline || 'Ad creative'} 
                       className="w-full h-full object-contain"
+                      onError={(e) => {
+                        // Replace with placeholder on error
+                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23f5f5f5" width="400" height="400"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" fill="%23999" font-size="16"%3EImage unavailable%3C/text%3E%3C/svg%3E';
+                      }}
                     />
                     {userPlan === 'free' && hasWatermark && (
                       <div className="absolute bottom-4 right-4 bg-foreground/90 backdrop-blur-sm py-2 px-4">
@@ -663,6 +684,10 @@ export function EnhancedCampaignCard({
                         </p>
                       </div>
                     )}
+                  </div>
+                ) : (
+                  <div className="aspect-square max-w-md mx-auto bg-muted flex items-center justify-center border border-border">
+                    <p className="text-muted-foreground text-sm">No creative image</p>
                   </div>
                 )}
 
@@ -731,10 +756,50 @@ export function EnhancedCampaignCard({
                           <p className="text-lg font-bold">{selectedVariant.predicted_roas.toFixed(2)}x</p>
                         </div>
                       )}
-                      <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleEditAd}>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button variant="outline" onClick={handleEditAd} className="flex-1">
                           <Pencil className="w-4 h-4 mr-2" />
                           Edit Ad Copy
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          onClick={async () => {
+                            // Save creative to library
+                            try {
+                              const { data: userData } = await supabase.auth.getUser();
+                              if (!userData.user) throw new Error('Not authenticated');
+
+                              const { error } = await supabase
+                                .from('saved_creatives' as any)
+                                .insert({
+                                  user_id: userData.user.id,
+                                  name: campaign.name + ' - ' + selectedVariant.variant_type,
+                                  image_url: selectedVariant.creative_url || '',
+                                  headline: selectedVariant.headline,
+                                  body_copy: selectedVariant.body_copy,
+                                  cta_text: selectedVariant.cta_text,
+                                  description: `Saved from campaign: ${campaign.name}`,
+                                });
+
+                              if (error) throw error;
+
+                              toast({
+                                title: 'Creative saved',
+                                description: 'This ad creative has been saved to your library for future use',
+                              });
+                            } catch (error) {
+                              console.error('Error saving creative:', error);
+                              toast({
+                                title: 'Error',
+                                description: 'Failed to save creative',
+                                variant: 'destructive',
+                              });
+                            }
+                          }}
+                          className="flex-1"
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          Save Creative
                         </Button>
                         <Button 
                           variant="outline" 
