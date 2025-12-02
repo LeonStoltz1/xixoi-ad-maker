@@ -34,6 +34,7 @@ export default function CreateCampaign() {
     bodyCopy: string;
     ctaText: string;
     sourceUrl: string;
+    businessName: string;
     targeting: {
       suggestedLocation: string;
       suggestedBudget: number;
@@ -727,6 +728,7 @@ export default function CreateCampaign() {
           bodyCopy: data.generatedAd.bodyCopy,
           ctaText: data.generatedAd.ctaText,
           sourceUrl: data.url,
+          businessName: data.title,
           targeting: data.targeting
         });
         setCreationMethod('url-review');
@@ -776,6 +778,7 @@ export default function CreateCampaign() {
             bodyCopy={urlReviewData.bodyCopy}
             ctaText={urlReviewData.ctaText}
             sourceUrl={urlReviewData.sourceUrl}
+            businessName={urlReviewData.businessName}
             targeting={urlReviewData.targeting}
             onBack={() => setCreationMethod('url')}
             onPublish={(publishData) => {
