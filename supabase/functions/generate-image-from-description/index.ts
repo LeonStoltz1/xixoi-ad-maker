@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -81,9 +82,9 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const base64Image = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
-    if (!imageUrl) {
+    if (!base64Image) {
       console.error('No image in AI response');
       return new Response(
         JSON.stringify({ error: 'Failed to generate image' }),
@@ -91,11 +92,47 @@ serve(async (req) => {
       );
     }
 
-    console.log('Image generated successfully');
-    return new Response(
-      JSON.stringify({ imageUrl }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // Convert base64 to blob and upload to Supabase storage
+    try {
+      const base64Data = base64Image.split(',')[1];
+      const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+      
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
+      const fileName = `ai-generated-${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+      const filePath = `ai-generated/${fileName}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('campaign-assets')
+        .upload(filePath, binaryData, {
+          contentType: 'image/png',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('campaign-assets')
+        .getPublicUrl(filePath);
+
+      console.log('Image generated and uploaded successfully:', publicUrl);
+      return new Response(
+        JSON.stringify({ imageUrl: publicUrl }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (storageError) {
+      console.error('Failed to upload image to storage:', storageError);
+      // Fallback to base64 if storage fails
+      return new Response(
+        JSON.stringify({ imageUrl: base64Image }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
   } catch (error) {
     console.error('Error in generate-image-from-description function:', error);
