@@ -1,19 +1,54 @@
-import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Check } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Check, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get('session_id');
+  const [campaignId, setCampaignId] = useState<string | null>(null);
+  const [status, setStatus] = useState<'checking' | 'publishing' | 'complete'>('checking');
 
   useEffect(() => {
-    // Redirect to ad published page after 2 seconds
-    const timer = setTimeout(() => {
-      navigate('/ad-published');
-    }, 2000);
+    const checkPublishStatus = async () => {
+      try {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          navigate('/auth');
+          return;
+        }
 
-    return () => clearTimeout(timer);
+        // Check for most recent campaign in publish queue
+        const { data: queueData } = await supabase
+          .from('quick_start_publish_queue')
+          .select('campaign_id, status')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (queueData?.campaign_id) {
+          setCampaignId(queueData.campaign_id);
+          
+          if (queueData.status === 'live') {
+            setStatus('complete');
+            setTimeout(() => navigate(`/ad-published/${queueData.campaign_id}`), 2000);
+          } else {
+            setStatus('publishing');
+            // Redirect after showing message
+            setTimeout(() => navigate(`/dashboard`), 4000);
+          }
+        } else {
+          // No queue entry found, just go to dashboard
+          setTimeout(() => navigate('/dashboard'), 2000);
+        }
+      } catch (err) {
+        console.error('Error checking publish status:', err);
+        setTimeout(() => navigate('/dashboard'), 2000);
+      }
+    };
+
+    checkPublishStatus();
   }, [navigate]);
 
   return (
@@ -28,18 +63,37 @@ const PaymentSuccess = () => {
             Payment Successful
           </h1>
           <p className="text-xl text-muted-foreground">
-            Your payment has been processed successfully.
+            Your Quick-Start subscription is now active!
           </p>
-          {sessionId && (
-            <p className="text-sm text-muted-foreground font-mono">
-              Session ID: {sessionId.slice(0, 20)}...
-            </p>
-          )}
         </div>
 
-        <p className="text-base text-muted-foreground">
-          Publishing your ad...
-        </p>
+        <div className="space-y-4 text-base text-muted-foreground">
+          {status === 'checking' && (
+            <div className="flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <p>Checking your campaign status...</p>
+            </div>
+          )}
+          
+          {status === 'publishing' && (
+            <>
+              <div className="flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <p>Publishing your ad to Meta...</p>
+              </div>
+              <p className="text-sm">
+                This usually takes 30-60 seconds. You'll be redirected to your dashboard where you can view your ad status.
+              </p>
+            </>
+          )}
+
+          {status === 'complete' && (
+            <div className="space-y-2">
+              <p className="text-green-600 font-medium">Your ad is live!</p>
+              <p className="text-sm">Redirecting you to view your campaign...</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
