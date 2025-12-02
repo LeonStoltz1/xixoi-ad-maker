@@ -44,6 +44,7 @@ import SeedTestData from "./pages/admin/SeedTestData";
 import TierTestingChecklist from "./pages/admin/TierTestingChecklist";
 import ConnectPlatforms from "./pages/ConnectPlatforms";
 import CustomerIntake from "./pages/CustomerIntake";
+import CampaignStatus from "./pages/CampaignStatus";
 
 const queryClient = new QueryClient();
 
@@ -84,6 +85,7 @@ const App = () => (
             {/* <Route path="/verify/candidate/:candidateId" element={<VerifyCandidate />} /> */}
             <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-campaign" element={<CreateCampaign />} />
+          <Route path="/campaign/:id" element={<CampaignStatus />} />
           <Route path="/connect-platforms" element={<ConnectPlatforms />} />
           <Route path="/targeting/:campaignId" element={<TargetingSetup />} />
           <Route path="/edit-campaign/:campaignId" element={<EditCampaign />} />

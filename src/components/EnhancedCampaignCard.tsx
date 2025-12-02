@@ -466,6 +466,10 @@ export function EnhancedCampaignCard({
                   <Pencil className="w-4 h-4 mr-2" />
                   Edit Campaign
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(`/campaign/${campaign.id}`)}>
+                  <Rocket className="w-4 h-4 mr-2" />
+                  View Ad Status
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onViewAnalytics(campaign.id)}>
                   <Eye className="w-4 h-4 mr-2" />
                   View Analytics
