@@ -66,21 +66,66 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
       if (error) throw error;
 
       if (data && data.images && data.content) {
+        const extractedImages = data.images || [];
+        
         setExtractedData({
-          images: data.images || [],
+          images: extractedImages,
           content: data.content,
           title: data.title || 'Untitled'
         });
 
         // Auto-select first image if available
-        if (data.images.length > 0) {
-          setSelectedImage(data.images[0]);
+        if (extractedImages.length > 0) {
+          setSelectedImage(extractedImages[0]);
         }
 
         toast({
           title: "✨ Content extracted",
-          description: `Found ${data.images.length} images and page content`
+          description: `Found ${extractedImages.length} images. Generating 2 AI variants...`
         });
+
+        // Automatically generate 2 AI images
+        setGeneratingImage(true);
+        const generatedImages: string[] = [];
+
+        for (let i = 0; i < 2; i++) {
+          try {
+            const { data: imageData, error: imageError } = await invokeWithRetry(
+              supabase,
+              'generate-image-from-description',
+              { 
+                description: data.content.slice(0, 500),
+                title: data.title
+              }
+            );
+
+            if (imageError) throw imageError;
+            if (imageData?.imageUrl) {
+              generatedImages.push(imageData.imageUrl);
+            }
+          } catch (err) {
+            console.error(`Failed to generate AI image ${i + 1}:`, err);
+          }
+        }
+
+        setGeneratingImage(false);
+
+        if (generatedImages.length > 0) {
+          setExtractedData(prev => prev ? {
+            ...prev,
+            images: [...generatedImages, ...extractedImages]
+          } : null);
+          
+          // Auto-select first generated image if no extracted images
+          if (extractedImages.length === 0) {
+            setSelectedImage(generatedImages[0]);
+          }
+
+          toast({
+            title: "✨ Ready to publish",
+            description: `${extractedImages.length + generatedImages.length} images ready. Select your favorite!`
+          });
+        }
       }
     } catch (error: any) {
       console.error('URL extraction error:', error);
@@ -91,6 +136,7 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
       });
     } finally {
       setLoading(false);
+      setGeneratingImage(false);
     }
   };
 
