@@ -89,7 +89,11 @@ serve(async (req) => {
     let priceId: string;
     let mode: 'payment' | 'subscription';
     let successUrl: string;
-    const origin = req.headers.get('origin') || 'http://localhost:8080';
+    // Extract project ref from Supabase URL to construct the app URL
+    const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1];
+    const origin = projectRef 
+      ? `https://${projectRef}.lovableproject.com`
+      : (req.headers.get('origin') || 'http://localhost:8080');
 
     if (priceType === 'branding_removal') {
       priceId = Deno.env.get('STRIPE_PRICE_BRANDING_REMOVAL')!;
