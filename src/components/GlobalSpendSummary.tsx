@@ -50,57 +50,61 @@ export function GlobalSpendSummary() {
       const firstOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
         .toISOString().split('T')[0];
 
-      // Get user profile for monthly spend limit
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('monthly_ad_spend_limit')
-        .eq('id', user.id)
-        .single();
-
-      // Get campaigns
+      // Fetch campaigns first (needed for spend queries)
       const { data: campaigns } = await supabase
         .from('campaigns')
         .select('id, status, is_active, total_spent')
         .eq('user_id', user.id);
 
-      if (!campaigns) return;
+      if (!campaigns || campaigns.length === 0) {
+        setSummary({
+          todaySpend: 0,
+          monthSpend: 0,
+          totalSpent: 0,
+          walletBalance: 0,
+          monthlySpendLimit: null,
+        });
+        setLoading(false);
+        return;
+      }
 
-      // Calculate total spent across all campaigns
+      const campaignIds = campaigns.map(c => c.id);
       const totalSpent = campaigns.reduce((sum, c) => sum + (c.total_spent || 0), 0);
 
-      // Get wallet balance
-      const { data: wallet } = await supabase
-        .from('ad_wallets')
-        .select('balance')
-        .eq('user_id', user.id)
-        .single();
+      // Run all remaining queries in parallel for maximum speed
+      const [profileResult, walletResult, todaySpendResult, monthSpendResult] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('monthly_ad_spend_limit')
+          .eq('id', user.id)
+          .single(),
+        supabase
+          .from('ad_wallets')
+          .select('balance')
+          .eq('user_id', user.id)
+          .single(),
+        supabase
+          .from('campaign_spend_daily')
+          .select('spend')
+          .in('campaign_id', campaignIds)
+          .eq('date', today),
+        supabase
+          .from('campaign_spend_daily')
+          .select('spend')
+          .in('campaign_id', campaignIds)
+          .gte('date', firstOfMonth)
+      ]);
 
-      const walletBalance = wallet?.balance ? Number(wallet.balance) : 0;
-
-      // Get today's spend
-      const { data: todaySpendData } = await supabase
-        .from('campaign_spend_daily')
-        .select('spend')
-        .in('campaign_id', campaigns.map(c => c.id))
-        .eq('date', today);
-
-      const todaySpend = todaySpendData?.reduce((sum, row) => sum + Number(row.spend || 0), 0) || 0;
-
-      // Get month's spend
-      const { data: monthSpendData } = await supabase
-        .from('campaign_spend_daily')
-        .select('spend')
-        .in('campaign_id', campaigns.map(c => c.id))
-        .gte('date', firstOfMonth);
-
-      const monthSpend = monthSpendData?.reduce((sum, row) => sum + Number(row.spend || 0), 0) || 0;
+      const walletBalance = walletResult.data?.balance ? Number(walletResult.data.balance) : 0;
+      const todaySpend = todaySpendResult.data?.reduce((sum, row) => sum + Number(row.spend || 0), 0) || 0;
+      const monthSpend = monthSpendResult.data?.reduce((sum, row) => sum + Number(row.spend || 0), 0) || 0;
 
       setSummary({
         todaySpend,
         monthSpend,
         totalSpent,
         walletBalance,
-        monthlySpendLimit: profile?.monthly_ad_spend_limit ? Number(profile.monthly_ad_spend_limit) : null,
+        monthlySpendLimit: profileResult.data?.monthly_ad_spend_limit ? Number(profileResult.data.monthly_ad_spend_limit) : null,
       });
     } catch (error) {
       console.error('Error loading spend summary:', error);

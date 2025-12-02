@@ -62,42 +62,37 @@ export const GlobalSpendOverview = () => {
       }
 
       const campaignIds = campaigns.map(c => c.id);
-
-      // Count campaign statuses
       const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
       const pausedCampaigns = campaigns.filter(c => c.status === 'paused').length;
 
-      // Get spend today
-      const { data: todaySpend } = await supabase
-        .from('campaign_spend_daily')
-        .select('spend')
-        .in('campaign_id', campaignIds)
-        .eq('date', today);
+      // Run all spend queries in parallel for faster loading
+      const [todaySpendResult, monthSpendResult, walletResult] = await Promise.all([
+        supabase
+          .from('campaign_spend_daily')
+          .select('spend')
+          .in('campaign_id', campaignIds)
+          .eq('date', today),
+        supabase
+          .from('campaign_spend_daily')
+          .select('spend')
+          .in('campaign_id', campaignIds)
+          .gte('date', firstDayOfMonth),
+        supabase
+          .from('ad_wallets')
+          .select('balance')
+          .eq('user_id', user.id)
+          .single()
+      ]);
 
-      const spendToday = todaySpend?.reduce((sum, row) => sum + (Number(row.spend) || 0), 0) || 0;
-
-      // Get spend this month
-      const { data: monthSpend } = await supabase
-        .from('campaign_spend_daily')
-        .select('spend')
-        .in('campaign_id', campaignIds)
-        .gte('date', firstDayOfMonth);
-
-      const spendThisMonth = monthSpend?.reduce((sum, row) => sum + (Number(row.spend) || 0), 0) || 0;
-
-      // Get wallet balance (if exists)
-      const { data: wallet } = await supabase
-        .from('ad_wallets')
-        .select('balance')
-        .eq('user_id', user.id)
-        .single();
+      const spendToday = todaySpendResult.data?.reduce((sum, row) => sum + (Number(row.spend) || 0), 0) || 0;
+      const spendThisMonth = monthSpendResult.data?.reduce((sum, row) => sum + (Number(row.spend) || 0), 0) || 0;
 
       setOverview({
         spendToday,
         spendThisMonth,
         activeCampaigns,
         pausedCampaigns,
-        walletBalance: wallet?.balance ? Number(wallet.balance) : undefined,
+        walletBalance: walletResult.data?.balance ? Number(walletResult.data.balance) : undefined,
       });
     } catch (error) {
       console.error('Error loading spend overview:', error);
