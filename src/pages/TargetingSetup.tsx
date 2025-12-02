@@ -17,6 +17,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -290,6 +301,41 @@ export default function TargetingSetup() {
     navigate(`/edit-campaign/${campaignId}`);
   };
 
+  const handleSaveDraft = async () => {
+    try {
+      const { error } = await supabase
+        .from('campaigns')
+        .update({
+          daily_budget: selectedBudget,
+          target_location: audienceSuggestion?.locations.join(', ') || 'Global',
+          status: 'draft',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', campaignId);
+
+      if (error) throw error;
+
+      // Create/update campaign channels
+      const channelRecords = selectedPlatforms.map(platform => ({
+        campaign_id: campaignId,
+        channel: platform,
+        is_connected: false
+      }));
+
+      // Delete existing channels and insert new ones
+      await supabase.from('campaign_channels').delete().eq('campaign_id', campaignId);
+      if (channelRecords.length > 0) {
+        await supabase.from('campaign_channels').insert(channelRecords);
+      }
+
+      toast.success('Ad saved as draft! You can continue editing anytime from your dashboard.');
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      toast.error('Failed to save ad as draft. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
@@ -520,6 +566,32 @@ export default function TargetingSetup() {
               Continue to Review
             </Button>
           </div>
+          
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                variant="outline"
+                className="w-full"
+              >
+                Save as Draft
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Save ad as draft?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Your ad will be saved with all current settings. You can continue editing it anytime from your dashboard and publish it when you're ready.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleSaveDraft}>
+                  Save Draft
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
           {selectedPlatforms.length === 0 && (
             <p className="text-xs text-center text-destructive">
               ⚠️ Please select at least one platform to continue
