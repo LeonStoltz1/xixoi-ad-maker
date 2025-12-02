@@ -95,6 +95,10 @@ serve(async (req) => {
       priceId = Deno.env.get('STRIPE_PRICE_BRANDING_REMOVAL')!;
       mode = 'payment';
       successUrl = `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
+    } else if (priceType === 'quickstart_subscription') {
+      priceId = Deno.env.get('STRIPE_PRICE_QUICKSTART')!;
+      mode = 'subscription';
+      successUrl = `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
     } else if (priceType === 'pro_subscription') {
       priceId = Deno.env.get('STRIPE_PRICE_PRO_SUBSCRIPTION')!;
       mode = 'subscription';
