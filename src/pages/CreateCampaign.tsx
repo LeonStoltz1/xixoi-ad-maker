@@ -16,6 +16,7 @@ import { useEffectiveTier } from "@/hooks/useEffectiveTier";
 import { getMinimumDailySpend } from "@/lib/spendEngine";
 import { CreationMethodSelector } from "@/components/campaign/CreationMethodSelector";
 import { URLImport } from "@/components/campaign/URLImport";
+import { URLAdReview } from "@/components/campaign/URLAdReview";
 
 export default function CreateCampaign() {
   const navigate = useNavigate();
@@ -25,13 +26,18 @@ export default function CreateCampaign() {
   const { tier: effectiveTier } = useEffectiveTier();
   
   // Creation method selection
-  const [creationMethod, setCreationMethod] = useState<'select' | 'url' | 'scratch'>('select');
-  const [urlImportData, setUrlImportData] = useState<{
-    url: string;
-    images: string[];
-    selectedImage: string | null;
-    content: string;
-    title: string;
+  const [creationMethod, setCreationMethod] = useState<'select' | 'url' | 'scratch' | 'url-review'>('select');
+  const [urlReviewData, setUrlReviewData] = useState<{
+    selectedImage: string;
+    headline: string;
+    bodyCopy: string;
+    ctaText: string;
+    sourceUrl: string;
+    targeting: {
+      suggestedLocation: string;
+      suggestedBudget: number;
+      audienceSummary: string;
+    };
   } | null>(null);
   
   // Upload state
@@ -642,31 +648,95 @@ export default function CreateCampaign() {
   };
 
   // Handle URL import data
-  const handleUrlImportComplete = (data: {
+  const handleUrlImportComplete = async (data: {
     url: string;
     images: string[];
     selectedImage: string | null;
     content: string;
     title: string;
+    generatedAd?: {
+      headline: string;
+      bodyCopy: string;
+      ctaText: string;
+    };
+    targeting?: {
+      suggestedLocation: string;
+      suggestedBudget: number;
+      audienceSummary: string;
+    };
   }) => {
-    setUrlImportData(data);
-    setCreationMethod('scratch');
-    
-    // Pre-fill fields with extracted data
-    setProductDescription(data.content);
-    setCampaignName(data.title);
-    
-    // If image selected, create a preview
-    if (data.selectedImage) {
-      setUploadType('image');
-      setAssetUrl(data.selectedImage);
-      setPreviewUrl(data.selectedImage);
+    if (data.generatedAd && data.targeting && data.selectedImage) {
+      // Create campaign in database
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
+
+        // Upload selected image to storage
+        const timestamp = Date.now();
+        const imageResponse = await fetch(data.selectedImage);
+        const imageBlob = await imageResponse.blob();
+        const fileName = `campaign-${timestamp}-${data.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.jpg`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('campaign-assets')
+          .upload(`${user.id}/${fileName}`, imageBlob, {
+            contentType: 'image/jpeg',
+            upsert: false
+          });
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('campaign-assets')
+          .getPublicUrl(uploadData.path);
+
+        // Create campaign
+        const { data: campaign, error: campaignError } = await supabase
+          .from('campaigns')
+          .insert({
+            name: data.title,
+            user_id: user.id,
+            status: 'draft',
+            landing_url: data.url,
+            target_location: data.targeting.suggestedLocation,
+            daily_budget: data.targeting.suggestedBudget
+          })
+          .select()
+          .single();
+
+        if (campaignError) throw campaignError;
+
+        // Store image as campaign asset
+        await supabase.from('campaign_assets').insert({
+          campaign_id: campaign.id,
+          asset_type: 'image',
+          asset_url: publicUrl
+        });
+
+        // Set state for review screen
+        setCampaignId(campaign.id);
+        setAssetUrl(publicUrl);
+        setUrlReviewData({
+          selectedImage: publicUrl,
+          headline: data.generatedAd.headline,
+          bodyCopy: data.generatedAd.bodyCopy,
+          ctaText: data.generatedAd.ctaText,
+          sourceUrl: data.url,
+          targeting: data.targeting
+        });
+        setCreationMethod('url-review');
+      } catch (error) {
+        console.error('Error creating campaign:', error);
+        toast({
+          title: "Failed to create campaign",
+          description: error instanceof Error ? error.message : "Unknown error",
+          variant: "destructive"
+        });
+      }
+    } else {
+      // Fallback to scratch flow (shouldn't happen)
+      setCreationMethod('scratch');
     }
-    
-    toast({
-      title: "✨ Content imported",
-      description: "Your website content has been extracted. Review and continue."
-    });
   };
 
   return (
@@ -692,20 +762,47 @@ export default function CreateCampaign() {
           </>
         )}
 
+        {/* URL Ad Review Flow */}
+        {creationMethod === 'url-review' && urlReviewData && (
+          <URLAdReview
+            campaignId={campaignId || ''}
+            selectedImage={urlReviewData.selectedImage}
+            headline={urlReviewData.headline}
+            bodyCopy={urlReviewData.bodyCopy}
+            ctaText={urlReviewData.ctaText}
+            sourceUrl={urlReviewData.sourceUrl}
+            targeting={urlReviewData.targeting}
+            onBack={() => setCreationMethod('url')}
+            onPublish={(publishData) => {
+              // Navigate to campaign publish with all data
+              navigate(`/campaign-publish/${campaignId}`, {
+                state: {
+                  headline: publishData.headline,
+                  bodyCopy: publishData.bodyCopy,
+                  ctaText: publishData.ctaText,
+                  destinationType: publishData.destinationType,
+                  destination: publishData.destination,
+                  location: publishData.location,
+                  dailyBudget: publishData.dailyBudget,
+                  platforms: publishData.platforms
+                }
+              });
+            }}
+          />
+        )}
+
         {/* Standard Creation Flow */}
         {creationMethod === 'scratch' && (
           <>
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-semibold tracking-tight">Create Campaign</h1>
-          {urlImportData && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCreationMethod('select')}
-            >
-              ← Start Over
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCreationMethod('select')}
+          >
+            ← Start Over
+          </Button>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8 items-start max-w-[1400px] mx-auto">
