@@ -705,7 +705,8 @@ export default function CreateCampaign() {
             status: 'draft',
             landing_url: data.url,
             target_location: data.targeting.suggestedLocation,
-            daily_budget: data.targeting.suggestedBudget
+            daily_budget: data.targeting.suggestedBudget,
+            meta_sub_platforms: metaSubPlatforms, // CRITICAL: Store platform selections to prevent fund mismanagement
           })
           .select()
           .single();
@@ -1445,40 +1446,46 @@ export default function CreateCampaign() {
                 {/* Platform Selection */}
                 <div>
                   <Label className="text-black text-xs">Platform</Label>
-                  <div className="mt-2 p-2 border border-black rounded">
-                    <div className="font-semibold text-xs mb-2">Meta</div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                  <Alert className="mt-2 mb-3 bg-blue-50 border-blue-300">
+                    <div className="flex gap-2 items-start">
+                      <Info className="h-4 w-4 mt-0.5 shrink-0 text-blue-700" />
+                      <p className="text-xs text-blue-900 font-medium">
+                        💡 Pro Tip: Meta charges the same daily budget whether you advertise on Facebook only, Instagram only, or both platforms. We recommend keeping both checked for maximum reach at no additional cost.
+                      </p>
+                    </div>
+                  </Alert>
+                  <div className="p-3 border-2 border-black rounded bg-white">
+                    <div className="font-semibold text-sm mb-3">Meta Platforms</div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 transition-colors">
                         <input
                           type="checkbox"
                           id="facebook"
                           checked={metaSubPlatforms.facebook}
                           onChange={(e) => setMetaSubPlatforms(prev => ({...prev, facebook: e.target.checked}))}
-                          className="w-3 h-3 cursor-pointer"
+                          className="w-4 h-4 cursor-pointer accent-black"
                         />
-                        <label htmlFor="facebook" className="text-xs cursor-pointer">Facebook</label>
+                        <label htmlFor="facebook" className="text-sm cursor-pointer flex-1 font-medium">Facebook</label>
+                        {metaSubPlatforms.facebook && (
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Active</span>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 transition-colors">
                         <input
                           type="checkbox"
                           id="instagram"
                           checked={metaSubPlatforms.instagram}
                           onChange={(e) => setMetaSubPlatforms(prev => ({...prev, instagram: e.target.checked}))}
-                          className="w-3 h-3 cursor-pointer"
+                          className="w-4 h-4 cursor-pointer accent-black"
                         />
-                        <label htmlFor="instagram" className="text-xs cursor-pointer">Instagram</label>
+                        <label htmlFor="instagram" className="text-sm cursor-pointer flex-1 font-medium">Instagram</label>
+                        {metaSubPlatforms.instagram && (
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Active</span>
+                        )}
                       </div>
                       {!metaSubPlatforms.facebook && !metaSubPlatforms.instagram && (
-                        <p className="text-xs text-destructive">Select at least one</p>
+                        <p className="text-sm text-red-600 font-medium mt-2">⚠️ Select at least one platform</p>
                       )}
-                      <Alert className="mt-3 bg-muted/50 border-muted-foreground/20">
-                        <div className="flex gap-2 items-start">
-                          <Info className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
-                          <p className="text-xs text-muted-foreground">
-                            Meta uses a unified budget system—you'll pay the same daily rate whether you advertise on Facebook only, Instagram only, or both. We recommend keeping both checked for maximum reach at no extra cost.
-                          </p>
-                        </div>
-                      </Alert>
                     </div>
                   </div>
                 </div>
