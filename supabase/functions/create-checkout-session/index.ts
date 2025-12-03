@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { priceType, campaignId, useEmbedded, affiliateRef, adBudgetAmount } = await req.json();
+    const { priceType, campaignId, useEmbedded, affiliateRef, adBudgetAmount, isRecurringBudget } = await req.json();
     
     if (!priceType) {
       return new Response(
@@ -22,7 +22,7 @@ serve(async (req) => {
       );
     }
     
-    console.log('Creating checkout session:', { priceType, campaignId, useEmbedded, affiliateRef, adBudgetAmount });
+    console.log('Creating checkout session:', { priceType, campaignId, useEmbedded, affiliateRef, adBudgetAmount, isRecurringBudget });
 
     // Initialize Stripe
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
@@ -89,6 +89,7 @@ serve(async (req) => {
     let priceId: string;
     let mode: 'payment' | 'subscription';
     let successUrl: string;
+    
     // Extract project ref from Supabase URL to construct the app URL
     const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1];
     const origin = projectRef 
@@ -130,12 +131,12 @@ serve(async (req) => {
         amount: mode === 'payment' ? 500 : 9900, // $5 or $99 based on type
         currency: 'usd',
         customer: customer.id,
-      metadata: {
-        priceType,
-        campaignId: campaignId || '',
-        userId: user.id,
-        affiliateRef: affiliateRef || '',
-      },
+        metadata: {
+          priceType,
+          campaignId: campaignId || '',
+          userId: user.id,
+          affiliateRef: affiliateRef || '',
+        },
         automatic_payment_methods: {
           enabled: true,
         },
@@ -154,7 +155,7 @@ serve(async (req) => {
       );
     }
 
-    // Build line items array
+    // Build line items array - start with subscription
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
       {
         price: priceId,
@@ -162,51 +163,106 @@ serve(async (req) => {
       },
     ];
 
-    // If ad budget is included, add it as an additional line item
-    // For combined checkout with subscription, we need to use subscription mode
-    // and add the ad budget as a one-time invoice item after checkout
+    // If ad budget is included, handle it
     const hasAdBudget = adBudgetAmount && adBudgetAmount > 0;
     
     // Calculate service fee for quickstart tier (5%)
-    const serviceFee = priceType === 'quickstart_subscription' && hasAdBudget 
-      ? Math.round(adBudgetAmount * 0.05 * 100) // Convert to cents
-      : 0;
+    const isQuickStart = priceType === 'quickstart_subscription';
+    const serviceFeePercent = isQuickStart ? 0.05 : 0;
+    const serviceFee = hasAdBudget ? Math.round(adBudgetAmount * serviceFeePercent * 100) : 0;
 
-    // If including ad budget, create a separate price for it
     if (hasAdBudget) {
-      // Create a one-time price for the ad budget
-      const adBudgetPrice = await stripe.prices.create({
-        unit_amount: Math.round(adBudgetAmount * 100), // Convert to cents
-        currency: 'usd',
-        product_data: {
-          name: 'Weekly Ad Budget Pre-payment',
-        },
-      });
+      if (isRecurringBudget) {
+        // Create recurring prices for weekly ad budget
+        // First, create or get product for ad budget
+        let adBudgetProduct: Stripe.Product | undefined;
+        const existingProducts = await stripe.products.list({ limit: 100 });
+        adBudgetProduct = existingProducts.data.find((p: Stripe.Product) => p.name === 'Weekly Ad Budget');
+        
+        if (!adBudgetProduct) {
+          adBudgetProduct = await stripe.products.create({
+            name: 'Weekly Ad Budget',
+            description: 'Recurring weekly ad spend pre-payment',
+          });
+        }
 
-      lineItems.push({
-        price: adBudgetPrice.id,
-        quantity: 1,
-      });
+        // Create weekly recurring price for the ad budget
+        const weeklyBudgetPrice = await stripe.prices.create({
+          unit_amount: Math.round(adBudgetAmount * 100), // Convert to cents
+          currency: 'usd',
+          recurring: {
+            interval: 'week',
+            interval_count: 1,
+          },
+          product: adBudgetProduct.id,
+        });
 
-      // Add service fee if quickstart
-      if (serviceFee > 0) {
-        const serviceFeePrice = await stripe.prices.create({
-          unit_amount: serviceFee,
+        lineItems.push({
+          price: weeklyBudgetPrice.id,
+          quantity: 1,
+        });
+
+        // Add recurring service fee if quickstart
+        if (serviceFee > 0) {
+          let serviceFeeProduct: Stripe.Product | undefined;
+          serviceFeeProduct = existingProducts.data.find((p: Stripe.Product) => p.name === 'Weekly Service Fee');
+          
+          if (!serviceFeeProduct) {
+            serviceFeeProduct = await stripe.products.create({
+              name: 'Weekly Service Fee',
+              description: '5% service fee on ad budget',
+            });
+          }
+
+          const weeklyFeePrice = await stripe.prices.create({
+            unit_amount: serviceFee,
+            currency: 'usd',
+            recurring: {
+              interval: 'week',
+              interval_count: 1,
+            },
+            product: serviceFeeProduct.id,
+          });
+
+          lineItems.push({
+            price: weeklyFeePrice.id,
+            quantity: 1,
+          });
+        }
+      } else {
+        // One-time ad budget payment
+        const adBudgetPrice = await stripe.prices.create({
+          unit_amount: Math.round(adBudgetAmount * 100), // Convert to cents
           currency: 'usd',
           product_data: {
-            name: 'Service Fee (5%)',
+            name: 'Weekly Ad Budget Pre-payment',
           },
         });
 
         lineItems.push({
-          price: serviceFeePrice.id,
+          price: adBudgetPrice.id,
           quantity: 1,
         });
+
+        // Add one-time service fee if quickstart
+        if (serviceFee > 0) {
+          const serviceFeePrice = await stripe.prices.create({
+            unit_amount: serviceFee,
+            currency: 'usd',
+            product_data: {
+              name: 'Service Fee (5%)',
+            },
+          });
+
+          lineItems.push({
+            price: serviceFeePrice.id,
+            quantity: 1,
+          });
+        }
       }
     }
 
-    // For combined subscription + one-time payments, we need to use subscription mode
-    // with invoice items for one-time charges
+    // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customer.id,
       mode: mode,
@@ -220,14 +276,15 @@ serve(async (req) => {
         affiliate_ref: affiliateRef || '',
         ad_budget_amount: hasAdBudget ? adBudgetAmount.toString() : '',
         service_fee: serviceFee > 0 ? (serviceFee / 100).toString() : '',
+        is_recurring_budget: isRecurringBudget ? 'true' : 'false',
       },
-      // For subscriptions with one-time items, we need this
-      ...(mode === 'subscription' && hasAdBudget ? {
-        payment_intent_data: undefined, // Not applicable for subscription mode
-      } : {}),
     });
 
-    console.log('Checkout session created:', session.id, 'with ad budget:', hasAdBudget ? adBudgetAmount : 'none');
+    console.log('Checkout session created:', session.id, {
+      adBudget: hasAdBudget ? adBudgetAmount : 'none',
+      recurring: isRecurringBudget,
+      serviceFee: serviceFee / 100,
+    });
 
     return new Response(
       JSON.stringify({ sessionId: session.id, url: session.url }),

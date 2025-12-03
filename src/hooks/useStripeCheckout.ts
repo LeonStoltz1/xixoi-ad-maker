@@ -10,7 +10,8 @@ export const useStripeCheckout = () => {
     campaignId?: string,
     useEmbedded: boolean = true,
     affiliateRefOverride?: string,
-    adBudgetAmount?: number
+    adBudgetAmount?: number,
+    isRecurringBudget?: boolean
   ) => {
     try {
       setLoading(true);
@@ -34,7 +35,7 @@ export const useStripeCheckout = () => {
       }
 
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceType, campaignId, useEmbedded, affiliateRef, adBudgetAmount }
+        body: { priceType, campaignId, useEmbedded, affiliateRef, adBudgetAmount, isRecurringBudget }
       });
 
       if (error) throw error;
