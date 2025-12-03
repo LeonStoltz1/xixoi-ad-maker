@@ -1,6 +1,6 @@
 export const PLAN_CONFIG = {
   free: null,
-  quickstart: "price_1SZmIERfAZMMsSx86QejcQEk", // Quick-Start $49/mo
+  quickstart: "price_1SZmlERfAZMMsSx86Qej", // Quick-Start $49/mo
   pro: "price_1SZmIERfAZMMsSx8UKOMlsu1", // Pro $29 per ad set
   proUnlimited: "price_1SZmIFRfAZMMsSx8Bkh6Cahn", // Pro Unlimited $99/mo
   elite: "price_1SZmIFRfAZMMsSx8ILZlxo3T", // Scale Elite $199/mo
