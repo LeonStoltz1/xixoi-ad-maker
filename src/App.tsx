@@ -47,6 +47,7 @@ import TierTestingChecklist from "./pages/admin/TierTestingChecklist";
 import ConnectPlatforms from "./pages/ConnectPlatforms";
 import CustomerIntake from "./pages/CustomerIntake";
 import CampaignStatus from "./pages/CampaignStatus";
+import { AIOnboardingPage } from "./features/onboarding";
 
 const queryClient = new QueryClient();
 
@@ -116,7 +117,8 @@ const App = () => (
           <Route path="/admin/test-meta" element={<TestMetaPublish />} />
           <Route path="/admin/seed-data" element={<SeedTestData />} />
           <Route path="/admin/tier-testing" element={<TierTestingChecklist />} />
-          <Route path="/customer-intake" element={<CustomerIntake />} />
+<Route path="/customer-intake" element={<CustomerIntake />} />
+          <Route path="/ai-onboarding" element={<AIOnboardingPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
