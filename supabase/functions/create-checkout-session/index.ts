@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { priceType, campaignId, useEmbedded, affiliateRef } = await req.json();
+    const { priceType, campaignId, useEmbedded, affiliateRef, adBudgetAmount } = await req.json();
     
     if (!priceType) {
       return new Response(
@@ -22,7 +22,7 @@ serve(async (req) => {
       );
     }
     
-    console.log('Creating checkout session:', { priceType, campaignId, useEmbedded, affiliateRef });
+    console.log('Creating checkout session:', { priceType, campaignId, useEmbedded, affiliateRef, adBudgetAmount });
 
     // Initialize Stripe
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
@@ -49,7 +49,7 @@ serve(async (req) => {
     // Get user profile
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('email, stripe_customer_id')
+      .select('email, stripe_customer_id, plan')
       .eq('id', user.id)
       .single();
 
@@ -100,9 +100,8 @@ serve(async (req) => {
       mode = 'payment';
       successUrl = `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
     } else if (priceType === 'quickstart_subscription') {
-      // CRITICAL: Use actual Quick-Start price ID from Stripe (price_1SZmlERfAZMMsSx86Qej)
-      // This must match the live Stripe product price
-      priceId = 'price_1SZmlERfAZMMsSx86Qej'; // Quick-Start $49/mo (CORRECTED)
+      // CRITICAL: Use actual Quick-Start price ID from Stripe
+      priceId = 'price_1SZmlERfAZMMsSx86Qej'; // Quick-Start $49/mo
       mode = 'subscription';
       successUrl = `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
     } else if (priceType === 'pro_subscription') {
@@ -155,16 +154,63 @@ serve(async (req) => {
       );
     }
 
-    // Create checkout session for redirect flow
+    // Build line items array
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+      {
+        price: priceId,
+        quantity: 1,
+      },
+    ];
+
+    // If ad budget is included, add it as an additional line item
+    // For combined checkout with subscription, we need to use subscription mode
+    // and add the ad budget as a one-time invoice item after checkout
+    const hasAdBudget = adBudgetAmount && adBudgetAmount > 0;
+    
+    // Calculate service fee for quickstart tier (5%)
+    const serviceFee = priceType === 'quickstart_subscription' && hasAdBudget 
+      ? Math.round(adBudgetAmount * 0.05 * 100) // Convert to cents
+      : 0;
+
+    // If including ad budget, create a separate price for it
+    if (hasAdBudget) {
+      // Create a one-time price for the ad budget
+      const adBudgetPrice = await stripe.prices.create({
+        unit_amount: Math.round(adBudgetAmount * 100), // Convert to cents
+        currency: 'usd',
+        product_data: {
+          name: 'Weekly Ad Budget Pre-payment',
+        },
+      });
+
+      lineItems.push({
+        price: adBudgetPrice.id,
+        quantity: 1,
+      });
+
+      // Add service fee if quickstart
+      if (serviceFee > 0) {
+        const serviceFeePrice = await stripe.prices.create({
+          unit_amount: serviceFee,
+          currency: 'usd',
+          product_data: {
+            name: 'Service Fee (5%)',
+          },
+        });
+
+        lineItems.push({
+          price: serviceFeePrice.id,
+          quantity: 1,
+        });
+      }
+    }
+
+    // For combined subscription + one-time payments, we need to use subscription mode
+    // with invoice items for one-time charges
     const session = await stripe.checkout.sessions.create({
       customer: customer.id,
-      mode,
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      mode: mode,
+      line_items: lineItems,
       success_url: successUrl,
       cancel_url: `${origin}/payment-canceled`,
       metadata: {
@@ -172,10 +218,16 @@ serve(async (req) => {
         campaign_id: campaignId || '',
         price_type: priceType,
         affiliate_ref: affiliateRef || '',
+        ad_budget_amount: hasAdBudget ? adBudgetAmount.toString() : '',
+        service_fee: serviceFee > 0 ? (serviceFee / 100).toString() : '',
       },
+      // For subscriptions with one-time items, we need this
+      ...(mode === 'subscription' && hasAdBudget ? {
+        payment_intent_data: undefined, // Not applicable for subscription mode
+      } : {}),
     });
 
-    console.log('Checkout session created:', session.id);
+    console.log('Checkout session created:', session.id, 'with ad budget:', hasAdBudget ? adBudgetAmount : 'none');
 
     return new Response(
       JSON.stringify({ sessionId: session.id, url: session.url }),

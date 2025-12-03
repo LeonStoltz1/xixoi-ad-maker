@@ -8,29 +8,33 @@ export const useStripeCheckout = () => {
   const createCheckoutSession = async (
     priceType: 'branding_removal' | 'quickstart_subscription' | 'pro_subscription' | 'elite_subscription' | 'agency_subscription',
     campaignId?: string,
-    useEmbedded: boolean = true
+    useEmbedded: boolean = true,
+    affiliateRefOverride?: string,
+    adBudgetAmount?: number
   ) => {
     try {
       setLoading(true);
 
-      // Get affiliate ref code from localStorage or cookie
-      let affiliateRef: string | null = null;
-      try {
-        affiliateRef = localStorage.getItem('xixoi_affiliate_ref');
-      } catch {
-        // Fallback to cookie if localStorage fails
-        if (typeof document !== 'undefined') {
-          const match = document.cookie
-            .split('; ')
-            .find((row) => row.startsWith('xixoi_affiliate_ref='));
-          if (match) {
-            affiliateRef = decodeURIComponent(match.split('=')[1]);
+      // Get affiliate ref code from localStorage or cookie (unless override provided)
+      let affiliateRef: string | null = affiliateRefOverride || null;
+      if (!affiliateRef) {
+        try {
+          affiliateRef = localStorage.getItem('xixoi_affiliate_ref');
+        } catch {
+          // Fallback to cookie if localStorage fails
+          if (typeof document !== 'undefined') {
+            const match = document.cookie
+              .split('; ')
+              .find((row) => row.startsWith('xixoi_affiliate_ref='));
+            if (match) {
+              affiliateRef = decodeURIComponent(match.split('=')[1]);
+            }
           }
         }
       }
 
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceType, campaignId, useEmbedded, affiliateRef }
+        body: { priceType, campaignId, useEmbedded, affiliateRef, adBudgetAmount }
       });
 
       if (error) throw error;

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { X, ArrowRight, Check } from "lucide-react";
+import { X, ArrowRight, Check, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import { Slider } from "@/components/ui/slider";
 
 interface FreeUpgradeModalProps {
   isOpen: boolean;
@@ -17,13 +18,24 @@ interface FreeUpgradeModalProps {
 
 export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUpgradeModalProps) => {
   const [selectedPlan, setSelectedPlan] = useState<'quickstart' | 'pro'>('quickstart');
+  const [includeAdBudget, setIncludeAdBudget] = useState(true);
+  const [dailyBudget, setDailyBudget] = useState(40); // Meta minimum $40/day
   const { createCheckoutSession, loading } = useStripeCheckout();
 
   if (!isOpen) return null;
 
+  const weeklyBudget = dailyBudget * 7;
+  const serviceFee = selectedPlan === 'quickstart' ? weeklyBudget * 0.05 : 0;
+  const subscriptionPrice = selectedPlan === 'quickstart' ? 49 : 99;
+  const totalWithAdBudget = subscriptionPrice + weeklyBudget + serviceFee;
+  const totalSubscriptionOnly = subscriptionPrice;
+
   const handleUpgrade = async () => {
     const priceType = selectedPlan === 'quickstart' ? 'quickstart_subscription' : 'pro_subscription';
-    await createCheckoutSession(priceType, campaignId, false);
+    
+    // Pass ad budget info if user wants to include it
+    const adBudgetAmount = includeAdBudget ? weeklyBudget : undefined;
+    await createCheckoutSession(priceType, campaignId, false, undefined, adBudgetAmount);
   };
 
   return (
@@ -200,6 +212,100 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
           </button>
         </div>
 
+        {/* Ad Budget Section */}
+        <div className="border border-foreground p-4 md:p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wide mb-1">ADD FIRST WEEK'S AD BUDGET</div>
+              <p className="text-xs opacity-70">Pre-pay your ad spend to start running ads immediately</p>
+            </div>
+            <button
+              onClick={() => setIncludeAdBudget(!includeAdBudget)}
+              className={`w-12 h-6 rounded-full transition-colors ${
+                includeAdBudget ? 'bg-primary' : 'bg-muted'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-full bg-background transition-transform mx-0.5 ${
+                includeAdBudget ? 'translate-x-6' : 'translate-x-0'
+              }`} />
+            </button>
+          </div>
+
+          {includeAdBudget && (
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">Daily Budget</span>
+                  <span className="text-lg font-bold">${dailyBudget}/day</span>
+                </div>
+                <Slider
+                  value={[dailyBudget]}
+                  onValueChange={([val]) => setDailyBudget(val)}
+                  min={40}
+                  max={300}
+                  step={10}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs opacity-60 mt-1">
+                  <span>$40/day (Meta minimum)</span>
+                  <span>$300/day</span>
+                </div>
+              </div>
+
+              <div className="bg-muted p-3 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Weekly Ad Budget (7 days)</span>
+                  <span className="font-medium">${weeklyBudget.toFixed(2)}</span>
+                </div>
+                {selectedPlan === 'quickstart' && (
+                  <div className="flex justify-between text-sm">
+                    <span>Service Fee (5%)</span>
+                    <span className="font-medium">${serviceFee.toFixed(2)}</span>
+                  </div>
+                )}
+              </div>
+
+              <p className="text-xs text-destructive font-medium">
+                ⚠️ Weekly ad budget must be pre-paid before ads publish. Ads will not run without payment.
+              </p>
+            </div>
+          )}
+
+          {!includeAdBudget && (
+            <p className="text-xs opacity-70">
+              You can add ad budget later from your dashboard. Subscription only gets you access to publish.
+            </p>
+          )}
+        </div>
+
+        {/* Total Summary */}
+        <div className="border-t border-foreground pt-4 mb-6">
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>{selectedPlan === 'quickstart' ? 'Quick-Start' : 'Publish Pro'} Subscription</span>
+              <span>${subscriptionPrice}/mo</span>
+            </div>
+            {includeAdBudget && (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span>First Week Ad Budget</span>
+                  <span>${weeklyBudget.toFixed(2)}</span>
+                </div>
+                {selectedPlan === 'quickstart' && serviceFee > 0 && (
+                  <div className="flex justify-between text-sm opacity-70">
+                    <span>Service Fee (5%)</span>
+                    <span>${serviceFee.toFixed(2)}</span>
+                  </div>
+                )}
+              </>
+            )}
+            <div className="flex justify-between text-lg font-bold pt-2 border-t border-border">
+              <span>Total Due Today</span>
+              <span>${includeAdBudget ? totalWithAdBudget.toFixed(2) : totalSubscriptionOnly.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
         {/* CTA Buttons */}
         <div className="space-y-3">
           <Button
@@ -210,7 +316,7 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
           >
             {loading ? "Processing..." : (
               <>
-                Upgrade & Publish Now
+                {includeAdBudget ? 'Subscribe & Fund Ads' : 'Subscribe Now'}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </>
             )}
