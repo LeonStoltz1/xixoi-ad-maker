@@ -107,6 +107,7 @@ export function EnhancedCampaignCard({
   const [loading, setLoading] = useState(false);
   const [adVariants, setAdVariants] = useState<AdVariant[]>([]);
   const [campaignAssets, setCampaignAssets] = useState<CampaignAsset[]>([]);
+  const [imageError, setImageError] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<AdVariant | null>(null);
   const [showAdModal, setShowAdModal] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
@@ -128,6 +129,7 @@ export function EnhancedCampaignCard({
   const navigate = useNavigate();
 
   useEffect(() => {
+    setImageError(false);
     loadAdVariants();
     loadCampaignAssets();
     loadUserProfile();
@@ -465,19 +467,16 @@ export function EnhancedCampaignCard({
         <div className="flex items-start justify-between gap-4">
           {/* Thumbnail Preview */}
           <div className="w-20 h-20 flex-shrink-0 bg-muted relative overflow-hidden border border-border flex items-center justify-center">
-            {thumbnailUrl ? (
+            {thumbnailUrl && !imageError ? (
               <img 
                 src={thumbnailUrl} 
                 alt={campaign.name}
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  // Show placeholder on error
-                  (e.target as HTMLImageElement).style.display = 'none';
-                  (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                }}
+                onError={() => setImageError(true)}
               />
-            ) : null}
-            <ImageIcon className={`w-8 h-8 text-muted-foreground ${thumbnailUrl ? 'hidden' : ''}`} />
+            ) : (
+              <ImageIcon className="w-8 h-8 text-muted-foreground" />
+            )}
           </div>
           <div className="space-y-2 flex-1 min-w-0">
             <CardTitle className="text-lg truncate">{campaign.name}</CardTitle>
