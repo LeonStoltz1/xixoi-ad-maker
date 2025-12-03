@@ -26,6 +26,7 @@ interface UserCostProfile {
   userId: string;
   llmCost: number;
   infraCost: number;
+  stripeFees: number;
   totalCost: number;
   tierLimit: number;
   marginRemaining: number;
@@ -38,6 +39,10 @@ interface UserCostProfile {
   priceTests: number;
   safetyChecks: number;
   apiCalls: number;
+  // Revenue metrics
+  grossRevenue: number;
+  netRevenue: number;
+  trueProfitMargin: number;
 }
 
 function calculateCostStatus(marginPercentage: number): CostStatus {
@@ -83,11 +88,12 @@ serve(async (req) => {
     const userPlan = profile?.plan || 'free';
     const tierLimit = TIER_LLM_COST_LIMITS[userPlan] || TIER_LLM_COST_LIMITS.free;
 
-    // Get current month's usage
+    // Get current month's start date
     const monthStart = new Date();
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
 
+    // Get current month's LLM usage
     const { data: usage, error: usageError } = await supabaseClient
       .from('user_llm_usage')
       .select('*')
@@ -102,18 +108,56 @@ serve(async (req) => {
 
     const costs = systemCosts?.reduce((acc, c) => ({ ...acc, [c.key]: c.value }), {}) || {};
 
-    // Calculate totals
+    // =========================================================================
+    // PHASE 10C: Get REAL Stripe fees from payment_economics
+    // =========================================================================
+    const { data: paymentEconomics, error: peError } = await supabaseClient
+      .from('payment_economics')
+      .select('gross_amount_usd, stripe_fees_usd, net_revenue_usd')
+      .eq('user_id', userId)
+      .gte('created_at', monthStart.toISOString());
+
+    if (peError) {
+      console.error('Error fetching payment_economics:', peError);
+    }
+
+    // Aggregate Stripe fees and revenue
+    const totalStripeFees = paymentEconomics?.reduce(
+      (sum, p) => sum + (p.stripe_fees_usd || 0), 
+      0
+    ) || 0;
+
+    const totalGrossRevenue = paymentEconomics?.reduce(
+      (sum, p) => sum + Math.max(0, p.gross_amount_usd || 0), // Only count positive (payments, not refunds)
+      0
+    ) || 0;
+
+    const totalNetRevenue = paymentEconomics?.reduce(
+      (sum, p) => sum + (p.net_revenue_usd || 0),
+      0
+    ) || 0;
+
+    // Calculate totals including Stripe fees
     const llmCost = usage?.llm_cost_usd || 0;
     const infraCost = usage?.total_infra_cost || 0;
-    const totalCost = llmCost + infraCost;
-    const marginRemaining = tierLimit - totalCost;
+    const platformCosts = llmCost + infraCost;
+    const totalCost = platformCosts + totalStripeFees;
+    
+    // Margin calculations
+    // 1. Tier-based margin (for AI guardrails)
+    const marginRemaining = tierLimit - platformCosts;
     const marginPercentage = tierLimit > 0 ? marginRemaining / tierLimit : 0;
+    
+    // 2. True profit margin (net revenue minus all costs)
+    const trueProfitMargin = totalNetRevenue - platformCosts;
+    
     const status = calculateCostStatus(marginPercentage);
 
     const costProfile: UserCostProfile = {
       userId,
       llmCost,
       infraCost,
+      stripeFees: totalStripeFees,
       totalCost,
       tierLimit,
       marginRemaining,
@@ -126,6 +170,10 @@ serve(async (req) => {
       priceTests: usage?.price_tests || 0,
       safetyChecks: usage?.safety_checks || 0,
       apiCalls: usage?.api_calls || 0,
+      // Revenue metrics
+      grossRevenue: totalGrossRevenue,
+      netRevenue: totalNetRevenue,
+      trueProfitMargin,
     };
 
     // Log if user is approaching or exceeding limit
@@ -135,7 +183,7 @@ serve(async (req) => {
         .insert([{
           user_id: userId,
           event_type: status === 'exceeded' ? 'platform_limit_reached' : 'platform_limit_warning',
-          decision_rationale: `User cost status: ${status}, margin: ${(marginPercentage * 100).toFixed(1)}%`,
+          decision_rationale: `User cost status: ${status}, margin: ${(marginPercentage * 100).toFixed(1)}%, true profit: $${trueProfitMargin.toFixed(2)}`,
           confidence: 1.0,
           payload: {
             totalCost,
@@ -143,11 +191,18 @@ serve(async (req) => {
             marginRemaining,
             marginPercentage,
             status,
+            stripeFees: totalStripeFees,
+            grossRevenue: totalGrossRevenue,
+            netRevenue: totalNetRevenue,
+            trueProfitMargin,
           }
         }]);
     }
 
-    console.log(`User ${userId} cost profile:`, costProfile);
+    console.log(`User ${userId} cost profile:`, {
+      ...costProfile,
+      summary: `LLM: $${llmCost.toFixed(2)}, Infra: $${infraCost.toFixed(2)}, Stripe: $${totalStripeFees.toFixed(2)}, Net: $${totalNetRevenue.toFixed(2)}, Profit: $${trueProfitMargin.toFixed(2)}`
+    });
 
     return new Response(
       JSON.stringify(costProfile),

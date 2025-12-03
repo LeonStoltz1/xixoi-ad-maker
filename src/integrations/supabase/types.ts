@@ -1992,6 +1992,51 @@ export type Database = {
           },
         ]
       }
+      payment_economics: {
+        Row: {
+          created_at: string | null
+          gross_amount_usd: number
+          id: string
+          meta: Json | null
+          net_revenue_usd: number
+          stripe_charge_id: string | null
+          stripe_customer_id: string | null
+          stripe_fees_usd: number
+          stripe_invoice_id: string | null
+          stripe_payment_intent_id: string | null
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          gross_amount_usd: number
+          id?: string
+          meta?: Json | null
+          net_revenue_usd: number
+          stripe_charge_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_fees_usd?: number
+          stripe_invoice_id?: string | null
+          stripe_payment_intent_id?: string | null
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          gross_amount_usd?: number
+          id?: string
+          meta?: Json | null
+          net_revenue_usd?: number
+          stripe_charge_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_fees_usd?: number
+          stripe_invoice_id?: string | null
+          stripe_payment_intent_id?: string | null
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       payment_transactions: {
         Row: {
           amount: number
