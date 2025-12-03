@@ -59,18 +59,43 @@ export function usePlatformCosts(): UsePlatformCostsReturn {
         .gte('month_start', monthStartStr)
         .maybeSingle();
 
+      // Fetch Stripe fees from payment_economics
+      const { data: paymentEconomics } = await supabase
+        .from('payment_economics')
+        .select('gross_amount_usd, stripe_fees_usd, net_revenue_usd')
+        .eq('user_id', user.id)
+        .gte('created_at', monthStart.toISOString());
+
+      const stripeFees = paymentEconomics?.reduce(
+        (sum, p) => sum + (Number(p.stripe_fees_usd) || 0), 
+        0
+      ) || 0;
+
+      const grossRevenue = paymentEconomics?.reduce(
+        (sum, p) => sum + Math.max(0, Number(p.gross_amount_usd) || 0),
+        0
+      ) || 0;
+
+      const netRevenue = paymentEconomics?.reduce(
+        (sum, p) => sum + (Number(p.net_revenue_usd) || 0),
+        0
+      ) || 0;
+
       // Calculate totals
       const llmCost = Number(usage?.llm_cost_usd) || 0;
       const infraCost = Number(usage?.total_infra_cost) || 0;
-      const totalCost = llmCost + infraCost;
-      const marginRemaining = tierLimit - totalCost;
+      const platformCosts = llmCost + infraCost;
+      const totalCost = platformCosts + stripeFees;
+      const marginRemaining = tierLimit - platformCosts;
       const marginPercentage = tierLimit > 0 ? marginRemaining / tierLimit : 0;
       const status = calculateCostStatus(marginPercentage);
+      const trueProfitMargin = netRevenue - platformCosts;
 
       const costProfileData: UserCostProfile = {
         userId: user.id,
         llmCost,
         infraCost,
+        stripeFees,
         totalCost,
         tierLimit,
         marginRemaining,
@@ -83,6 +108,9 @@ export function usePlatformCosts(): UsePlatformCostsReturn {
         priceTests: usage?.price_tests || 0,
         safetyChecks: usage?.safety_checks || 0,
         apiCalls: usage?.api_calls || 0,
+        grossRevenue,
+        netRevenue,
+        trueProfitMargin,
       };
 
       setCostProfile(costProfileData);

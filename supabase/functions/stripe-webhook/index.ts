@@ -26,6 +26,88 @@ function getPlanTypeFromPriceId(priceId: string): string {
 }
 
 // =============================================================================
+// PAYMENT ECONOMICS: Record real Stripe fees from balance_transaction
+// =============================================================================
+
+interface PaymentEconomicsData {
+  user_id?: string | null;
+  stripe_customer_id?: string | null;
+  stripe_invoice_id?: string | null;
+  stripe_payment_intent_id?: string | null;
+  stripe_charge_id?: string | null;
+  gross_amount_usd: number;
+  stripe_fees_usd: number;
+  net_revenue_usd: number;
+  type: 'subscription' | 'one_time' | 'refund' | 'chargeback' | 'ad_budget';
+  meta?: Record<string, any>;
+}
+
+async function recordPaymentEconomics(
+  supabase: SupabaseClient,
+  data: PaymentEconomicsData
+): Promise<void> {
+  const { error } = await supabase.from('payment_economics').insert({
+    user_id: data.user_id,
+    stripe_customer_id: data.stripe_customer_id,
+    stripe_invoice_id: data.stripe_invoice_id,
+    stripe_payment_intent_id: data.stripe_payment_intent_id,
+    stripe_charge_id: data.stripe_charge_id,
+    gross_amount_usd: data.gross_amount_usd,
+    stripe_fees_usd: data.stripe_fees_usd,
+    net_revenue_usd: data.net_revenue_usd,
+    type: data.type,
+    meta: data.meta || {},
+  });
+
+  if (error) {
+    console.error('[payment_economics] Error recording:', error);
+  } else {
+    console.log('[payment_economics] Recorded:', {
+      type: data.type,
+      gross: data.gross_amount_usd,
+      fees: data.stripe_fees_usd,
+      net: data.net_revenue_usd,
+    });
+  }
+}
+
+async function resolveUserIdFromCustomer(
+  supabase: SupabaseClient,
+  stripeCustomerId: string | null
+): Promise<string | null> {
+  if (!stripeCustomerId) return null;
+  
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('stripe_customer_id', stripeCustomerId)
+    .maybeSingle();
+  
+  return profile?.id || null;
+}
+
+async function getFallbackFeeConfig(supabase: SupabaseClient): Promise<{ percentage: number; fixedCents: number }> {
+  const { data: configs } = await supabase
+    .from('config_system_costs')
+    .select('key, value')
+    .in('key', ['stripe_fallback_fee_percentage', 'stripe_fallback_fee_fixed_cents']);
+
+  const configMap: Record<string, number> = configs?.reduce(
+    (acc: Record<string, number>, c: { key: string; value: number }) => ({ ...acc, [c.key]: c.value }), 
+    {}
+  ) || {};
+  
+  return {
+    percentage: configMap['stripe_fallback_fee_percentage'] || 0.029,
+    fixedCents: configMap['stripe_fallback_fee_fixed_cents'] || 30,
+  };
+}
+
+function calculateFallbackFee(amountCents: number, fallbackConfig: { percentage: number; fixedCents: number }): number {
+  return (amountCents * fallbackConfig.percentage + fallbackConfig.fixedCents) / 100;
+}
+
+// =============================================================================
 // HANDLER: checkout.session.completed
 // =============================================================================
 
@@ -440,7 +522,7 @@ async function handleSubscriptionDeleted(
 }
 
 // =============================================================================
-// HANDLER: invoice.payment_succeeded
+// HANDLER: invoice.payment_succeeded - WITH REAL STRIPE FEES
 // =============================================================================
 
 async function handleInvoicePaymentSucceeded(
@@ -479,6 +561,58 @@ async function handleInvoicePaymentSucceeded(
 
     // Process affiliate commission
     await processAffiliateCommission(invoice, supabase);
+  }
+
+  // =========================================================================
+  // PHASE 10C: Record REAL Stripe fees from balance_transaction
+  // =========================================================================
+  const paymentIntentId = invoice.payment_intent as string;
+  
+  if (paymentIntentId) {
+    try {
+      // Fetch PaymentIntent with expanded balance_transaction
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+        expand: ['latest_charge.balance_transaction'],
+      });
+
+      const charge = paymentIntent.latest_charge as Stripe.Charge;
+      const balanceTx = charge?.balance_transaction as Stripe.BalanceTransaction;
+
+      const grossUsd = (invoice.amount_paid || 0) / 100;
+      let stripeFeesUsd: number;
+      let netUsd: number;
+
+      if (balanceTx && typeof balanceTx.fee === 'number') {
+        // Use REAL fees from balance_transaction
+        stripeFeesUsd = balanceTx.fee / 100;
+        netUsd = typeof balanceTx.net === 'number' ? balanceTx.net / 100 : grossUsd - stripeFeesUsd;
+        console.log('[invoice.payment_succeeded] Using real balance_transaction fees:', { stripeFeesUsd, netUsd });
+      } else {
+        // Fallback to estimated fees
+        const fallbackConfig = await getFallbackFeeConfig(supabase);
+        stripeFeesUsd = calculateFallbackFee(invoice.amount_paid || 0, fallbackConfig);
+        netUsd = grossUsd - stripeFeesUsd;
+        console.log('[invoice.payment_succeeded] Using fallback fee calculation:', { stripeFeesUsd, netUsd });
+      }
+
+      // Resolve user_id from stripe_customer_id
+      const userId = await resolveUserIdFromCustomer(supabase, invoice.customer as string);
+
+      await recordPaymentEconomics(supabase, {
+        user_id: userId,
+        stripe_customer_id: invoice.customer as string,
+        stripe_invoice_id: invoice.id,
+        stripe_payment_intent_id: paymentIntentId,
+        gross_amount_usd: grossUsd,
+        stripe_fees_usd: stripeFeesUsd,
+        net_revenue_usd: netUsd,
+        type: 'subscription',
+        meta: { source: balanceTx ? 'balance_transaction' : 'fallback_estimate' },
+      });
+
+    } catch (feeError) {
+      console.error('[invoice.payment_succeeded] Error fetching balance_transaction:', feeError);
+    }
   }
 }
 
@@ -561,12 +695,13 @@ async function handleInvoicePaymentFailed(
 }
 
 // =============================================================================
-// HANDLER: payment_intent.succeeded
+// HANDLER: payment_intent.succeeded - WITH REAL STRIPE FEES
 // =============================================================================
 
 async function handlePaymentIntentSucceeded(
   event: Stripe.Event,
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
+  stripe: Stripe
 ): Promise<void> {
   const paymentIntent = event.data.object as Stripe.PaymentIntent;
   
@@ -623,6 +758,50 @@ async function handlePaymentIntentSucceeded(
     }
 
     console.log('[payment_intent.succeeded] ✅ Campaign queued for publishing');
+
+    // =========================================================================
+    // PHASE 10C: Record REAL Stripe fees for ad_budget payments
+    // =========================================================================
+    try {
+      const expandedIntent = await stripe.paymentIntents.retrieve(paymentIntent.id, {
+        expand: ['latest_charge.balance_transaction'],
+      });
+
+      const charge = expandedIntent.latest_charge as Stripe.Charge;
+      const balanceTx = charge?.balance_transaction as Stripe.BalanceTransaction;
+
+      const grossUsd = paymentIntent.amount / 100;
+      let stripeFeesUsd: number;
+      let netUsd: number;
+
+      if (balanceTx && typeof balanceTx.fee === 'number') {
+        stripeFeesUsd = balanceTx.fee / 100;
+        netUsd = typeof balanceTx.net === 'number' ? balanceTx.net / 100 : grossUsd - stripeFeesUsd;
+        console.log('[payment_intent.succeeded] Using real balance_transaction fees:', { stripeFeesUsd, netUsd });
+      } else {
+        const fallbackConfig = await getFallbackFeeConfig(supabase);
+        stripeFeesUsd = calculateFallbackFee(paymentIntent.amount, fallbackConfig);
+        netUsd = grossUsd - stripeFeesUsd;
+        console.log('[payment_intent.succeeded] Using fallback fee calculation:', { stripeFeesUsd, netUsd });
+      }
+
+      await recordPaymentEconomics(supabase, {
+        user_id: userId,
+        stripe_payment_intent_id: paymentIntent.id,
+        stripe_charge_id: charge?.id,
+        gross_amount_usd: grossUsd,
+        stripe_fees_usd: stripeFeesUsd,
+        net_revenue_usd: netUsd,
+        type: 'ad_budget',
+        meta: { 
+          campaign_id: campaignId, 
+          source: balanceTx ? 'balance_transaction' : 'fallback_estimate' 
+        },
+      });
+
+    } catch (feeError) {
+      console.error('[payment_intent.succeeded] Error fetching balance_transaction:', feeError);
+    }
   }
 }
 
@@ -664,6 +843,121 @@ async function handlePaymentIntentFailed(
       console.error('[payment_intent.payment_failed] Failed to handle payment failure:', error);
     }
   }
+}
+
+// =============================================================================
+// HANDLER: charge.refunded - RECORD REAL REFUND FEES
+// =============================================================================
+
+async function handleChargeRefunded(
+  event: Stripe.Event,
+  supabase: SupabaseClient,
+  stripe: Stripe
+): Promise<void> {
+  const charge = event.data.object as Stripe.Charge;
+  
+  console.log('[charge.refunded] Processing:', { chargeId: charge.id, eventId: event.id });
+
+  let stripeFeesUsd = 0;
+  let netUsd = 0;
+
+  // Fetch balance_transaction for actual refund fee impact
+  if (charge.balance_transaction) {
+    try {
+      const balanceTx = await stripe.balanceTransactions.retrieve(
+        charge.balance_transaction as string
+      );
+      stripeFeesUsd = typeof balanceTx.fee === 'number' ? balanceTx.fee / 100 : 0;
+      netUsd = typeof balanceTx.net === 'number' ? balanceTx.net / 100 : 0;
+      console.log('[charge.refunded] Using real balance_transaction:', { stripeFeesUsd, netUsd });
+    } catch (error) {
+      console.error('[charge.refunded] Error fetching balance_transaction:', error);
+    }
+  }
+
+  // Negative gross because money is leaving
+  const grossUsd = -((charge.amount_refunded || charge.amount || 0) / 100);
+
+  // Resolve user_id
+  const userId = await resolveUserIdFromCustomer(supabase, charge.customer as string);
+
+  await recordPaymentEconomics(supabase, {
+    user_id: userId,
+    stripe_customer_id: charge.customer as string,
+    stripe_invoice_id: charge.invoice as string,
+    stripe_payment_intent_id: charge.payment_intent as string,
+    stripe_charge_id: charge.id,
+    gross_amount_usd: grossUsd,
+    stripe_fees_usd: stripeFeesUsd,
+    net_revenue_usd: netUsd || grossUsd,
+    type: 'refund',
+    meta: { source: 'balance_transaction' },
+  });
+
+  console.log('[charge.refunded] Recorded refund economics:', { grossUsd, stripeFeesUsd });
+}
+
+// =============================================================================
+// HANDLER: charge.dispute.created - RECORD CHARGEBACK FEES
+// =============================================================================
+
+async function handleChargeDisputeCreated(
+  event: Stripe.Event,
+  supabase: SupabaseClient,
+  stripe: Stripe
+): Promise<void> {
+  const dispute = event.data.object as Stripe.Dispute;
+  
+  console.log('[charge.dispute.created] Processing:', { disputeId: dispute.id, eventId: event.id });
+
+  // Default Stripe dispute fee is $15
+  let disputeFee = 15.00;
+
+  // Try to get actual fee from balance_transactions if available
+  if (dispute.balance_transactions && dispute.balance_transactions.length > 0) {
+    try {
+      const balanceTxId = dispute.balance_transactions[0] as string;
+      const balanceTx = await stripe.balanceTransactions.retrieve(balanceTxId);
+      disputeFee = typeof balanceTx.fee === 'number' ? balanceTx.fee / 100 : 15.00;
+      console.log('[charge.dispute.created] Using real dispute fee:', disputeFee);
+    } catch (error) {
+      console.error('[charge.dispute.created] Error fetching dispute balance_transaction:', error);
+      // Fall back to config value
+      const { data: feeConfig } = await supabase
+        .from('config_system_costs')
+        .select('value')
+        .eq('key', 'stripe_dispute_fee_usd')
+        .single();
+      disputeFee = feeConfig?.value || 15.00;
+    }
+  }
+
+  // Resolve user_id from the disputed charge
+  let userId: string | null = null;
+  if (dispute.charge) {
+    try {
+      const charge = await stripe.charges.retrieve(dispute.charge as string);
+      userId = await resolveUserIdFromCustomer(supabase, charge.customer as string);
+    } catch (error) {
+      console.error('[charge.dispute.created] Error fetching charge:', error);
+    }
+  }
+
+  await recordPaymentEconomics(supabase, {
+    user_id: userId,
+    stripe_charge_id: dispute.charge as string,
+    gross_amount_usd: 0,
+    stripe_fees_usd: disputeFee,
+    net_revenue_usd: -disputeFee,
+    type: 'chargeback',
+    meta: { 
+      dispute_id: dispute.id, 
+      status: dispute.status,
+      reason: dispute.reason,
+    },
+  });
+
+  console.log('[charge.dispute.created] Recorded chargeback economics:', { disputeFee });
 }
 
 // =============================================================================
@@ -823,11 +1117,19 @@ serve(async (req) => {
           break;
 
         case 'payment_intent.succeeded':
-          await handlePaymentIntentSucceeded(event, supabase);
+          await handlePaymentIntentSucceeded(event, supabase, stripe);
           break;
 
         case 'payment_intent.payment_failed':
           await handlePaymentIntentFailed(event, supabase);
+          break;
+
+        case 'charge.refunded':
+          await handleChargeRefunded(event, supabase, stripe);
+          break;
+
+        case 'charge.dispute.created':
+          await handleChargeDisputeCreated(event, supabase, stripe);
           break;
 
         case 'customer.created':

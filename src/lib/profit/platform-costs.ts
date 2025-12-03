@@ -36,6 +36,7 @@ export interface UserCostProfile {
   userId: string;
   llmCost: number;
   infraCost: number;
+  stripeFees: number;
   totalCost: number;
   tierLimit: number;
   marginRemaining: number;
@@ -48,6 +49,10 @@ export interface UserCostProfile {
   priceTests: number;
   safetyChecks: number;
   apiCalls: number;
+  // Revenue metrics from payment_economics
+  grossRevenue: number;
+  netRevenue: number;
+  trueProfitMargin: number;
 }
 
 /**
@@ -137,9 +142,15 @@ export function formatCostBlockForGemini(profile: UserCostProfile): string {
   "tier": "${profile.tier}",
   "tierLimit": ${profile.tierLimit.toFixed(2)},
   "totalCost": ${profile.totalCost.toFixed(4)},
+  "stripeFees": ${profile.stripeFees.toFixed(2)},
   "marginRemaining": ${profile.marginRemaining.toFixed(4)},
   "marginPercentage": ${(profile.marginPercentage * 100).toFixed(1)}%,
   "status": "${profile.status}",
+  "revenue": {
+    "gross": ${profile.grossRevenue.toFixed(2)},
+    "net": ${profile.netRevenue.toFixed(2)},
+    "trueProfitMargin": ${profile.trueProfitMargin.toFixed(2)}
+  },
   "usage": {
     "autopilotLoops": ${profile.autopilotLoops},
     "conductorExecutions": ${profile.conductorExecutions},
@@ -155,5 +166,6 @@ COST RULES:
 - If margin_remaining < 5% → block all actions except "stop spend"
 - If margin_remaining < 0% → hard stop all AI actions
 - NEVER propose high-cost actions for users with low system margin
-- NEVER run optimization, LLM chain, or safety cycle if remaining allowance is insufficient`;
+- NEVER run optimization, LLM chain, or safety cycle if remaining allowance is insufficient
+- TRUE PROFIT = net_revenue - (llm_cost + infra_cost) [Stripe fees already deducted from net]`;
 }
