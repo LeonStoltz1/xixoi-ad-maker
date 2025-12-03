@@ -411,6 +411,10 @@ export function EnhancedCampaignCard({
     }
   };
 
+  // Determine if campaign has actually been published/has running ads
+  const hasRunningAds = !!(campaign.stripe_payment_id || campaign.total_spent > 0 || 
+    (campaign.is_active && campaign.status === 'active'));
+
   const handleDeleteCampaign = async () => {
     setDeletingCampaign(true);
     try {
@@ -442,8 +446,10 @@ export function EnhancedCampaignCard({
       }
 
       toast({
-        title: 'Campaign deleted safely',
-        description: `${campaign.name} has been stopped on all platforms and deleted`,
+        title: 'Campaign deleted',
+        description: hasRunningAds 
+          ? `${campaign.name} has been stopped on all platforms and deleted`
+          : `${campaign.name} has been deleted`,
       });
 
       setShowDeleteCampaignAlert(false);
@@ -920,9 +926,11 @@ export function EnhancedCampaignCard({
             <AlertDialogTitle>Delete Campaign?</AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
               <p>This will permanently delete "{campaign.name}" from xiXoi™.</p>
-              <p className="font-semibold text-foreground">
-                ⚠️ Safety check: Your ads will be stopped on all social platforms BEFORE deletion to prevent runaway ad spend.
-              </p>
+              {hasRunningAds && (
+                <p className="font-semibold text-foreground">
+                  ⚠️ Safety check: Your ads will be stopped on all social platforms BEFORE deletion to prevent runaway ad spend.
+                </p>
+              )}
               <p className="text-xs">
                 This action cannot be undone. All ad variants, performance data, and settings will be permanently removed.
               </p>
@@ -935,7 +943,9 @@ export function EnhancedCampaignCard({
               disabled={deletingCampaign}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deletingCampaign ? 'Stopping ads & deleting...' : 'Stop Ads & Delete Campaign'}
+              {deletingCampaign 
+                ? (hasRunningAds ? 'Stopping ads & deleting...' : 'Deleting...') 
+                : (hasRunningAds ? 'Stop Ads & Delete Campaign' : 'Delete Campaign')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
