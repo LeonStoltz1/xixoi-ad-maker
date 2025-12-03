@@ -56,7 +56,8 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get price IDs for plan detection
-    const PRICE_ID_QUICKSTART = 'price_1SZmIERfAZMMsSx86QejcQEk';
+    // CRITICAL: Must match the actual Stripe price ID for Quick-Start
+    const PRICE_ID_QUICKSTART = 'price_1SZmlERfAZMMsSx86Qej';
     const PRICE_ID_PRO = Deno.env.get('STRIPE_PRICE_PRO_SUBSCRIPTION');
     const PRICE_ID_ELITE = Deno.env.get('STRIPE_PRICE_ELITE');
     const PRICE_ID_AGENCY = Deno.env.get('STRIPE_PRICE_AGENCY');
@@ -277,6 +278,72 @@ serve(async (req) => {
 
             console.log(`✅ Updated user plan to: ${planType}`);
           }
+        }
+
+        // COMBINED CHECKOUT: Handle ad budget if included with subscription
+        const adBudgetAmount = session.metadata?.ad_budget_amount;
+        const serviceFee = session.metadata?.service_fee;
+        
+        if (adBudgetAmount && parseFloat(adBudgetAmount) > 0 && campaignId) {
+          const budgetAmount = parseFloat(adBudgetAmount);
+          const feeAmount = serviceFee ? parseFloat(serviceFee) : 0;
+          const dailyBudget = budgetAmount / 7; // Weekly budget / 7 days
+          
+          console.log('Processing combined ad budget:', { budgetAmount, feeAmount, dailyBudget, campaignId });
+
+          // Update or create ad wallet
+          const { data: existingWallet } = await supabase
+            .from('ad_wallets')
+            .select('*')
+            .eq('user_id', userId)
+            .maybeSingle();
+
+          if (existingWallet) {
+            await supabase
+              .from('ad_wallets')
+              .update({
+                balance: existingWallet.balance + budgetAmount,
+                total_deposited: existingWallet.total_deposited + budgetAmount,
+                updated_at: new Date().toISOString()
+              })
+              .eq('user_id', userId);
+          } else {
+            await supabase
+              .from('ad_wallets')
+              .insert({
+                user_id: userId,
+                balance: budgetAmount,
+                total_deposited: budgetAmount,
+                total_spent: 0
+              });
+          }
+
+          // Update campaign with daily budget
+          await supabase
+            .from('campaigns')
+            .update({
+              daily_budget: dailyBudget,
+              lifetime_budget: budgetAmount,
+              status: 'pending_publish',
+              stripe_payment_id: session.payment_intent as string || session.id,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', campaignId);
+
+          // Queue campaign for publishing
+          const jitterMs = Math.floor(Math.random() * 20000) + 10000; // 10-30s jitter
+          
+          await supabase
+            .from('quick_start_publish_queue')
+            .insert({
+              user_id: userId,
+              campaign_id: campaignId,
+              platform: 'meta', // Default to Meta for now
+              status: 'queued',
+              next_attempt_at: new Date(Date.now() + jitterMs).toISOString(),
+            });
+
+          console.log('✅ Campaign queued for publishing from combined checkout:', campaignId);
         }
 
         // Legacy: Also check old metadata-based flow for backward compatibility
