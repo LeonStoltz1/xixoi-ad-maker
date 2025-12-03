@@ -161,3 +161,8 @@ verify_jwt = false
 [functions.ai-onboarding]
 verify_jwt = true
 
+[functions.gemini-price-tests]
+verify_jwt = true
+
+[functions.gemini-profit-safety]
+verify_jwt = true
