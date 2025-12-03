@@ -108,7 +108,6 @@ export function URLAdReview({
             <div className="bg-background">
               {/* Post header */}
               <div className="flex items-center gap-3 p-3 border-b">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500" />
                 <div className="flex-1">
                   <p className="text-sm font-semibold">{businessName}</p>
                   <p className="text-xs text-muted-foreground">Sponsored</p>
