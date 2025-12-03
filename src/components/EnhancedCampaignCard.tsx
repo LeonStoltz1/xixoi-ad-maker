@@ -83,6 +83,12 @@ interface AdVariant {
   predicted_roas: number | null;
 }
 
+interface CampaignAsset {
+  id: string;
+  asset_url: string | null;
+  asset_type: string;
+}
+
 interface EnhancedCampaignCardProps {
   campaign: Campaign;
   performance: CampaignPerformance;
@@ -100,6 +106,7 @@ export function EnhancedCampaignCard({
 }: EnhancedCampaignCardProps) {
   const [loading, setLoading] = useState(false);
   const [adVariants, setAdVariants] = useState<AdVariant[]>([]);
+  const [campaignAssets, setCampaignAssets] = useState<CampaignAsset[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<AdVariant | null>(null);
   const [showAdModal, setShowAdModal] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
@@ -122,6 +129,7 @@ export function EnhancedCampaignCard({
 
   useEffect(() => {
     loadAdVariants();
+    loadCampaignAssets();
     loadUserProfile();
     loadWalletBalance();
   }, [campaign.id]);
@@ -198,6 +206,19 @@ export function EnhancedCampaignCard({
 
     if (!error && data) {
       setAdVariants(data);
+    }
+  };
+
+  const loadCampaignAssets = async () => {
+    const { data, error } = await supabase
+      .from('campaign_assets')
+      .select('id, asset_url, asset_type')
+      .eq('campaign_id', campaign.id)
+      .eq('asset_type', 'image')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setCampaignAssets(data);
     }
   };
 
@@ -433,27 +454,31 @@ export function EnhancedCampaignCard({
     }
   };
 
-  // Get first ad variant thumbnail
-  const thumbnailUrl = adVariants.length > 0 ? adVariants[0].creative_url : null;
+  // Get thumbnail: first from ad variants, then from campaign assets
+  const thumbnailUrl = adVariants.find(v => v.creative_url)?.creative_url 
+    || campaignAssets.find(a => a.asset_url)?.asset_url 
+    || null;
 
   return (
     <Card className="relative overflow-hidden">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-4">
           {/* Thumbnail Preview */}
-          {thumbnailUrl && (
-            <div className="w-20 h-20 flex-shrink-0 bg-muted relative overflow-hidden border border-border">
+          <div className="w-20 h-20 flex-shrink-0 bg-muted relative overflow-hidden border border-border flex items-center justify-center">
+            {thumbnailUrl ? (
               <img 
                 src={thumbnailUrl} 
                 alt={campaign.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  // Hide broken image
+                  // Show placeholder on error
                   (e.target as HTMLImageElement).style.display = 'none';
+                  (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
                 }}
               />
-            </div>
-          )}
+            ) : null}
+            <ImageIcon className={`w-8 h-8 text-muted-foreground ${thumbnailUrl ? 'hidden' : ''}`} />
+          </div>
           <div className="space-y-2 flex-1 min-w-0">
             <CardTitle className="text-lg truncate">{campaign.name}</CardTitle>
             <div className="flex items-center gap-2 flex-wrap">
