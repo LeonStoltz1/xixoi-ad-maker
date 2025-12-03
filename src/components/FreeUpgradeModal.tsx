@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { X, ArrowRight, Check, Minus, Plus } from "lucide-react";
+import { X, ArrowRight, Check, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface FreeUpgradeModalProps {
   isOpen: boolean;
@@ -20,6 +21,8 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
   const [selectedPlan, setSelectedPlan] = useState<'quickstart' | 'pro'>('quickstart');
   const [includeAdBudget, setIncludeAdBudget] = useState(true);
   const [dailyBudget, setDailyBudget] = useState(40); // Meta minimum $40/day
+  const [adBudgetType, setAdBudgetType] = useState<'recurring' | 'onetime'>('onetime');
+  const [agreedToRecurring, setAgreedToRecurring] = useState(false);
   const { createCheckoutSession, loading } = useStripeCheckout();
 
   if (!isOpen) return null;
@@ -30,12 +33,18 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
   const totalWithAdBudget = subscriptionPrice + weeklyBudget + serviceFee;
   const totalSubscriptionOnly = subscriptionPrice;
 
+  const canProceed = !includeAdBudget || adBudgetType === 'onetime' || (adBudgetType === 'recurring' && agreedToRecurring);
+
   const handleUpgrade = async () => {
+    if (!canProceed) return;
+    
     const priceType = selectedPlan === 'quickstart' ? 'quickstart_subscription' : 'pro_subscription';
     
     // Pass ad budget info if user wants to include it
     const adBudgetAmount = includeAdBudget ? weeklyBudget : undefined;
-    await createCheckoutSession(priceType, campaignId, false, undefined, adBudgetAmount);
+    const isRecurringBudget = includeAdBudget && adBudgetType === 'recurring';
+    
+    await createCheckoutSession(priceType, campaignId, false, undefined, adBudgetAmount, isRecurringBudget);
   };
 
   return (
@@ -118,7 +127,6 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
                   alt="Ad preview" 
                   className="w-full h-full object-cover"
                 />
-                {/* No watermark - clean */}
               </div>
               <div className="p-4 space-y-2">
                 <h3 className="font-bold text-sm line-clamp-2">{adData.headline}</h3>
@@ -162,17 +170,13 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
                   <div className="text-xs font-bold uppercase tracking-wide mb-1">QUICK-START</div>
                   <div className="text-xl md:text-2xl font-bold">$49/month</div>
                 </div>
-                <div className={`w-5 h-5 border-2 flex items-center justify-center mt-1 ${
-                  selectedPlan === 'quickstart' ? 'border-foreground' : 'border-foreground'
-                }`}>
-                  {selectedPlan === 'quickstart' && (
-                    <div className="w-3 h-3 bg-foreground" />
-                  )}
+                <div className={`w-5 h-5 border-2 flex items-center justify-center mt-1 border-foreground`}>
+                  {selectedPlan === 'quickstart' && <div className="w-3 h-3 bg-foreground" />}
                 </div>
               </div>
               <ul className="space-y-1.5 text-xs md:text-sm">
                 <li>• Publish instantly via xiXoi accounts</li>
-                <li>• $300/week spend cap (5% service fee)</li>
+                <li>• $300/week spend cap (5% service fee on ad budget)</li>
                 <li>• No watermark</li>
                 <li>• AI targeting + variants</li>
               </ul>
@@ -194,17 +198,13 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
                   <div className="text-xs font-bold uppercase tracking-wide mb-1">PUBLISH PRO</div>
                   <div className="text-xl md:text-2xl font-bold">$99/month</div>
                 </div>
-                <div className={`w-5 h-5 border-2 flex items-center justify-center mt-1 ${
-                  selectedPlan === 'pro' ? 'border-foreground' : 'border-foreground'
-                }`}>
-                  {selectedPlan === 'pro' && (
-                    <div className="w-3 h-3 bg-foreground" />
-                  )}
+                <div className={`w-5 h-5 border-2 flex items-center justify-center mt-1 border-foreground`}>
+                  {selectedPlan === 'pro' && <div className="w-3 h-3 bg-foreground" />}
                 </div>
               </div>
               <ul className="space-y-1.5 text-xs md:text-sm">
                 <li>• Use YOUR connected ad accounts</li>
-                <li>• Unlimited spend, no caps or fees</li>
+                <li>• Unlimited spend, no caps or service fees</li>
                 <li>• Full control over targeting</li>
                 <li>• Political ads allowed (FEC compliant)</li>
               </ul>
@@ -216,7 +216,7 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
         <div className="border border-foreground p-4 md:p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <div className="text-xs font-bold uppercase tracking-wide mb-1">ADD FIRST WEEK'S AD BUDGET</div>
+              <div className="text-xs font-bold uppercase tracking-wide mb-1">ADD AD BUDGET</div>
               <p className="text-xs opacity-70">Pre-pay your ad spend to start running ads immediately</p>
             </div>
             <button
@@ -233,6 +233,7 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
 
           {includeAdBudget && (
             <div className="space-y-4">
+              {/* Daily Budget Slider */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Daily Budget</span>
@@ -252,6 +253,81 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
                 </div>
               </div>
 
+              {/* Recurring vs One-time Choice */}
+              <div className="space-y-3">
+                <div className="text-xs font-bold uppercase tracking-wide">Payment Type</div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* One-time Option */}
+                  <button
+                    onClick={() => setAdBudgetType('onetime')}
+                    className={`border p-4 text-left transition-all ${
+                      adBudgetType === 'onetime' ? 'border-2 border-foreground' : 'border-border'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="text-sm font-bold">One-Time Payment</div>
+                      <div className={`w-4 h-4 border-2 rounded-full flex items-center justify-center ${
+                        adBudgetType === 'onetime' ? 'border-foreground' : 'border-muted-foreground'
+                      }`}>
+                        {adBudgetType === 'onetime' && <div className="w-2 h-2 bg-foreground rounded-full" />}
+                      </div>
+                    </div>
+                    <p className="text-xs opacity-70">
+                      Pay ${weeklyBudget.toFixed(0)} for 1 week. Add more budget later when needed.
+                    </p>
+                  </button>
+
+                  {/* Recurring Option */}
+                  <button
+                    onClick={() => setAdBudgetType('recurring')}
+                    className={`border p-4 text-left transition-all ${
+                      adBudgetType === 'recurring' ? 'border-2 border-foreground' : 'border-border'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="text-sm font-bold">Auto-Renew Weekly</div>
+                      <div className={`w-4 h-4 border-2 rounded-full flex items-center justify-center ${
+                        adBudgetType === 'recurring' ? 'border-foreground' : 'border-muted-foreground'
+                      }`}>
+                        {adBudgetType === 'recurring' && <div className="w-2 h-2 bg-foreground rounded-full" />}
+                      </div>
+                    </div>
+                    <p className="text-xs opacity-70">
+                      Auto-charge ${weeklyBudget.toFixed(0)}/week until you cancel.
+                    </p>
+                  </button>
+                </div>
+
+                {/* Recurring Warning & Agreement */}
+                {adBudgetType === 'recurring' && (
+                  <div className="bg-amber-50 border border-amber-200 p-4 space-y-3">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="text-sm font-bold text-amber-800">Important: Recurring Weekly Charge</div>
+                        <p className="text-xs text-amber-700 mt-1">
+                          By selecting auto-renew, you agree to be charged <strong>${weeklyBudget.toFixed(0)}</strong> every week 
+                          {selectedPlan === 'quickstart' && <span> plus ${serviceFee.toFixed(2)} service fee (5%)</span>} until you cancel. 
+                          You can cancel anytime from your dashboard.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="agree-recurring"
+                        checked={agreedToRecurring}
+                        onCheckedChange={(checked) => setAgreedToRecurring(checked as boolean)}
+                      />
+                      <label htmlFor="agree-recurring" className="text-xs text-amber-800 cursor-pointer">
+                        I understand and agree to be charged ${(weeklyBudget + serviceFee).toFixed(2)}/week for my ad budget until I cancel.
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Budget Summary */}
               <div className="bg-muted p-3 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Weekly Ad Budget (7 days)</span>
@@ -263,6 +339,10 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
                     <span className="font-medium">${serviceFee.toFixed(2)}</span>
                   </div>
                 )}
+                <div className="flex justify-between text-sm font-bold pt-2 border-t border-border">
+                  <span>Ad Budget Total {adBudgetType === 'recurring' ? '(per week)' : ''}</span>
+                  <span>${(weeklyBudget + serviceFee).toFixed(2)}</span>
+                </div>
               </div>
 
               <p className="text-xs text-destructive font-medium">
@@ -288,13 +368,15 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
             {includeAdBudget && (
               <>
                 <div className="flex justify-between text-sm">
-                  <span>First Week Ad Budget</span>
-                  <span>${weeklyBudget.toFixed(2)}</span>
+                  <span>
+                    {adBudgetType === 'recurring' ? 'Weekly Ad Budget (auto-renew)' : 'First Week Ad Budget'}
+                  </span>
+                  <span>${weeklyBudget.toFixed(2)}{adBudgetType === 'recurring' ? '/wk' : ''}</span>
                 </div>
                 {selectedPlan === 'quickstart' && serviceFee > 0 && (
                   <div className="flex justify-between text-sm opacity-70">
                     <span>Service Fee (5%)</span>
-                    <span>${serviceFee.toFixed(2)}</span>
+                    <span>${serviceFee.toFixed(2)}{adBudgetType === 'recurring' ? '/wk' : ''}</span>
                   </div>
                 )}
               </>
@@ -303,6 +385,11 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
               <span>Total Due Today</span>
               <span>${includeAdBudget ? totalWithAdBudget.toFixed(2) : totalSubscriptionOnly.toFixed(2)}</span>
             </div>
+            {includeAdBudget && adBudgetType === 'recurring' && (
+              <p className="text-xs opacity-70 text-right">
+                Then ${(weeklyBudget + serviceFee).toFixed(2)}/week for ad budget
+              </p>
+            )}
           </div>
         </div>
 
@@ -312,7 +399,7 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
             size="lg"
             className="w-full text-sm md:text-base lg:text-lg py-6"
             onClick={handleUpgrade}
-            disabled={loading}
+            disabled={loading || !canProceed}
           >
             {loading ? "Processing..." : (
               <>
@@ -321,6 +408,12 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
               </>
             )}
           </Button>
+          
+          {!canProceed && (
+            <p className="text-xs text-destructive text-center">
+              Please agree to the recurring weekly charge terms above
+            </p>
+          )}
           
           <button
             onClick={onClose}
