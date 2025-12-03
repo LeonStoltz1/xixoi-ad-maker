@@ -241,6 +241,9 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Separator */}
+        <div className="my-8 border-t-2 border-foreground" />
+
         {/* Quick-Start Budget Widget */}
         <QuickStartBudgetWidget />
 
