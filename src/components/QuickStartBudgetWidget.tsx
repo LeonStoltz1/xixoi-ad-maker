@@ -32,7 +32,7 @@ export function QuickStartBudgetWidget() {
   if (loading || !derived) return null
 
   return (
-    <div className="border-2 border-black bg-background p-4 flex flex-col gap-3">
+    <div className="border-2 border-foreground bg-background p-4 flex flex-col gap-3">
       <div className="flex items-center justify-between text-xs uppercase tracking-[0.16em] text-foreground/60">
         <span>Quick-Start Budget</span>
         <span>Resets {derived.resetsInLabel}</span>
@@ -46,7 +46,7 @@ export function QuickStartBudgetWidget() {
       </div>
 
       {/* Progress bar (sharp edges, no softness) */}
-      <div className="h-[3px] w-full border-2 border-black bg-foreground/10">
+      <div className="h-[3px] w-full border border-foreground bg-foreground/10">
         <div
           className="h-full bg-foreground"
           style={{ width: `${derived.pct}%` }}
@@ -56,7 +56,7 @@ export function QuickStartBudgetWidget() {
       <div className="flex items-center justify-between mt-1 text-[11px] text-foreground/60">
         <span>Upgrade to remove the $300/week cap.</span>
         <button
-          className="border-2 border-black px-3 py-1 text-[10px] uppercase tracking-[0.16em] bg-background text-foreground hover:bg-foreground hover:text-background transition-colors"
+          className="border border-foreground px-3 py-1 text-[10px] uppercase tracking-[0.16em] bg-background text-foreground hover:bg-foreground hover:text-background transition-colors"
           onClick={() => navigate("/pricing")}
         >
           Upgrade to Pro

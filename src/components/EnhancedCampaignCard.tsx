@@ -466,7 +466,7 @@ export function EnhancedCampaignCard({
     || null;
 
   return (
-    <Card className="relative overflow-hidden">
+    <Card className="relative overflow-hidden border-2 border-foreground">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-4">
           {/* Thumbnail Preview */}

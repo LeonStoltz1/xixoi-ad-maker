@@ -11,7 +11,7 @@ export function AutopilotStatusWidget() {
 
   if (loading) {
     return (
-      <Card className="animate-pulse">
+      <Card className="animate-pulse border-2 border-foreground">
         <CardContent className="p-4">
           <div className="h-16 bg-muted rounded" />
         </CardContent>
@@ -61,7 +61,7 @@ export function AutopilotStatusWidget() {
   const recentAutoActions = logs.filter(l => l.auto_executed).length;
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden border-2 border-foreground">
       <CardContent className="p-0">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">

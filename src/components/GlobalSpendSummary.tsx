@@ -115,7 +115,7 @@ export function GlobalSpendSummary() {
 
   if (loading) {
     return (
-      <Card className="mb-6">
+      <Card className="mb-6 border-2 border-foreground">
         <CardContent className="p-4">
           <Skeleton className="h-12 w-full" />
         </CardContent>
@@ -124,7 +124,7 @@ export function GlobalSpendSummary() {
   }
 
   return (
-    <Card className="mb-6 border-2 border-primary/20">
+    <Card className="mb-6 border-2 border-foreground">
       <CardContent className="p-4">
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="flex items-center gap-2">
