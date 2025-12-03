@@ -48,6 +48,7 @@ import ConnectPlatforms from "./pages/ConnectPlatforms";
 import CustomerIntake from "./pages/CustomerIntake";
 import CampaignStatus from "./pages/CampaignStatus";
 import { AIOnboardingPage } from "./features/onboarding";
+import { AutopilotSettingsPage } from "./components/autopilot";
 
 const queryClient = new QueryClient();
 
@@ -119,6 +120,7 @@ const App = () => (
           <Route path="/admin/tier-testing" element={<TierTestingChecklist />} />
 <Route path="/customer-intake" element={<CustomerIntake />} />
           <Route path="/ai-onboarding" element={<AIOnboardingPage />} />
+          <Route path="/autopilot-settings" element={<AutopilotSettingsPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
