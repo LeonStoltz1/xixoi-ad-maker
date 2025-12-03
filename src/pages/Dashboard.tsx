@@ -284,7 +284,7 @@ export default function Dashboard() {
                     placeholder="Search campaigns..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 border-2 border-foreground"
                   />
                 </div>
               )}
@@ -295,7 +295,7 @@ export default function Dashboard() {
             </div>
           </div>
             {campaigns.length === 0 ? (
-              <div className="text-center py-20 border-2 border-black">
+              <div className="text-center py-20 border-2 border-foreground">
                 <div className="max-w-2xl mx-auto">
                   <h3 className="text-2xl font-bold mb-3">Ready to Launch Your First Ad?</h3>
                   <p className="text-foreground/80 mb-6 text-base leading-relaxed">
@@ -308,7 +308,7 @@ export default function Dashboard() {
                 </div>
               </div>
             ) : filteredCampaigns.length === 0 ? (
-              <div className="text-center py-12 border-2 border-dashed">
+              <div className="text-center py-12 border-2 border-foreground border-dashed">
                 <p className="text-muted-foreground mb-4">No campaigns match your search</p>
                 <Button variant="outline" onClick={() => setSearchQuery("")}>
                   Clear Search
