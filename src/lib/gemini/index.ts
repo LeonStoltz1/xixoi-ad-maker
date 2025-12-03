@@ -37,3 +37,6 @@ export type {
   BrandContext,
   CampaignContext
 } from './context-builder';
+
+// Re-export conductor hook
+export { useConductor } from '@/hooks/useConductor';
