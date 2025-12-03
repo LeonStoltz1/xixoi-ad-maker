@@ -772,6 +772,71 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_tasks: {
+        Row: {
+          attempts: number | null
+          campaign_id: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          last_run: string | null
+          max_attempts: number | null
+          next_run: string | null
+          payload: Json | null
+          priority: number | null
+          project_id: string | null
+          result: Json | null
+          status: string | null
+          task_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          attempts?: number | null
+          campaign_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          last_run?: string | null
+          max_attempts?: number | null
+          next_run?: string | null
+          payload?: Json | null
+          priority?: number | null
+          project_id?: string | null
+          result?: Json | null
+          status?: string | null
+          task_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          attempts?: number | null
+          campaign_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          last_run?: string | null
+          max_attempts?: number | null
+          next_run?: string | null
+          payload?: Json | null
+          priority?: number | null
+          project_id?: string | null
+          result?: Json | null
+          status?: string | null
+          task_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_tasks_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_generation_queue: {
         Row: {
           campaign_id: string | null
@@ -1336,6 +1401,107 @@ export type Database = {
           },
         ]
       }
+      competitor_ads: {
+        Row: {
+          ad_image_url: string | null
+          ad_text: string | null
+          brand_name: string | null
+          category: string
+          created_at: string | null
+          id: string
+          last_seen_at: string | null
+          platform: string | null
+          style_embedding: string | null
+        }
+        Insert: {
+          ad_image_url?: string | null
+          ad_text?: string | null
+          brand_name?: string | null
+          category: string
+          created_at?: string | null
+          id?: string
+          last_seen_at?: string | null
+          platform?: string | null
+          style_embedding?: string | null
+        }
+        Update: {
+          ad_image_url?: string | null
+          ad_text?: string | null
+          brand_name?: string | null
+          category?: string
+          created_at?: string | null
+          id?: string
+          last_seen_at?: string | null
+          platform?: string | null
+          style_embedding?: string | null
+        }
+        Relationships: []
+      }
+      creative_memory: {
+        Row: {
+          ad_image_url: string | null
+          ad_text: string | null
+          body_copy: string | null
+          campaign_id: string | null
+          clicks: number | null
+          conversions: number | null
+          created_at: string | null
+          cta_text: string | null
+          headline: string | null
+          id: string
+          impressions: number | null
+          performance_score: number | null
+          performance_vector: string | null
+          project_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ad_image_url?: string | null
+          ad_text?: string | null
+          body_copy?: string | null
+          campaign_id?: string | null
+          clicks?: number | null
+          conversions?: number | null
+          created_at?: string | null
+          cta_text?: string | null
+          headline?: string | null
+          id?: string
+          impressions?: number | null
+          performance_score?: number | null
+          performance_vector?: string | null
+          project_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ad_image_url?: string | null
+          ad_text?: string | null
+          body_copy?: string | null
+          campaign_id?: string | null
+          clicks?: number | null
+          conversions?: number | null
+          created_at?: string | null
+          cta_text?: string | null
+          headline?: string | null
+          id?: string
+          impressions?: number | null
+          performance_score?: number | null
+          performance_vector?: string | null
+          project_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creative_memory_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_bug_reports: {
         Row: {
           actual_behavior: string | null
@@ -1643,6 +1809,95 @@ export type Database = {
             columns: ["ad_variant_id"]
             isOneToOne: false
             referencedRelation: "ad_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gemini_reflections: {
+        Row: {
+          created_at: string | null
+          id: string
+          improvements: string | null
+          metrics_summary: Json | null
+          prompt_rewrites: Json | null
+          reflection_type: string | null
+          what_failed: string | null
+          what_worked: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          improvements?: string | null
+          metrics_summary?: Json | null
+          prompt_rewrites?: Json | null
+          reflection_type?: string | null
+          what_failed?: string | null
+          what_worked?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          improvements?: string | null
+          metrics_summary?: Json | null
+          prompt_rewrites?: Json | null
+          reflection_type?: string | null
+          what_failed?: string | null
+          what_worked?: string | null
+        }
+        Relationships: []
+      }
+      optimization_logs: {
+        Row: {
+          action: string
+          after_value: number | null
+          auto_executed: boolean | null
+          before_value: number | null
+          campaign_id: string | null
+          confidence: number | null
+          created_at: string | null
+          decision_type: string | null
+          id: string
+          payload: Json | null
+          project_id: string | null
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          after_value?: number | null
+          auto_executed?: boolean | null
+          before_value?: number | null
+          campaign_id?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          decision_type?: string | null
+          id?: string
+          payload?: Json | null
+          project_id?: string | null
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          after_value?: number | null
+          auto_executed?: boolean | null
+          before_value?: number | null
+          campaign_id?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          decision_type?: string | null
+          id?: string
+          payload?: Json | null
+          project_id?: string | null
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "optimization_logs_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
         ]
@@ -2348,6 +2603,45 @@ export type Database = {
           resolved_at?: string | null
           status?: string
           subject?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_autopilot_settings: {
+        Row: {
+          auto_budget_adjustment: boolean | null
+          auto_creative_rotation: boolean | null
+          auto_pause_underperformers: boolean | null
+          autopilot_mode: string | null
+          confidence_threshold: number | null
+          created_at: string | null
+          id: string
+          notifications_enabled: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_budget_adjustment?: boolean | null
+          auto_creative_rotation?: boolean | null
+          auto_pause_underperformers?: boolean | null
+          autopilot_mode?: string | null
+          confidence_threshold?: number | null
+          created_at?: string | null
+          id?: string
+          notifications_enabled?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_budget_adjustment?: boolean | null
+          auto_creative_rotation?: boolean | null
+          auto_pause_underperformers?: boolean | null
+          autopilot_mode?: string | null
+          confidence_threshold?: number | null
+          created_at?: string | null
+          id?: string
+          notifications_enabled?: boolean | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
