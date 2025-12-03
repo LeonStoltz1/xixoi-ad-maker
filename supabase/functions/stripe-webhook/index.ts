@@ -107,6 +107,40 @@ function calculateFallbackFee(amountCents: number, fallbackConfig: { percentage:
   return (amountCents * fallbackConfig.percentage + fallbackConfig.fixedCents) / 100;
 }
 
+// Consolidated balance_transaction fee extraction - single source of truth
+async function extractFeesFromBalanceTransaction(
+  stripe: Stripe,
+  supabase: SupabaseClient,
+  balanceTransactionId: string | null | undefined,
+  grossAmountCents: number
+): Promise<{ stripeFeesUsd: number; netUsd: number; source: string }> {
+  const grossUsd = grossAmountCents / 100;
+  
+  if (balanceTransactionId) {
+    try {
+      const balanceTx = await stripe.balanceTransactions.retrieve(balanceTransactionId);
+      if (typeof balanceTx.fee === 'number') {
+        return {
+          stripeFeesUsd: balanceTx.fee / 100,
+          netUsd: typeof balanceTx.net === 'number' ? balanceTx.net / 100 : grossUsd - (balanceTx.fee / 100),
+          source: 'balance_transaction',
+        };
+      }
+    } catch (error) {
+      console.error('[extractFeesFromBalanceTransaction] Error:', error);
+    }
+  }
+  
+  // Fallback to configured estimates
+  const fallbackConfig = await getFallbackFeeConfig(supabase);
+  const stripeFeesUsd = calculateFallbackFee(grossAmountCents, fallbackConfig);
+  return {
+    stripeFeesUsd,
+    netUsd: grossUsd - stripeFeesUsd,
+    source: 'fallback_estimate',
+  };
+}
+
 // =============================================================================
 // HANDLER: checkout.session.completed
 // =============================================================================
@@ -570,32 +604,15 @@ async function handleInvoicePaymentSucceeded(
   
   if (paymentIntentId) {
     try {
-      // Fetch PaymentIntent with expanded balance_transaction
       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
         expand: ['latest_charge.balance_transaction'],
       });
 
       const charge = paymentIntent.latest_charge as Stripe.Charge;
-      const balanceTx = charge?.balance_transaction as Stripe.BalanceTransaction;
+      const balanceTx = charge?.balance_transaction;
+      const balanceTxId = typeof balanceTx === 'string' ? balanceTx : balanceTx?.id;
 
-      const grossUsd = (invoice.amount_paid || 0) / 100;
-      let stripeFeesUsd: number;
-      let netUsd: number;
-
-      if (balanceTx && typeof balanceTx.fee === 'number') {
-        // Use REAL fees from balance_transaction
-        stripeFeesUsd = balanceTx.fee / 100;
-        netUsd = typeof balanceTx.net === 'number' ? balanceTx.net / 100 : grossUsd - stripeFeesUsd;
-        console.log('[invoice.payment_succeeded] Using real balance_transaction fees:', { stripeFeesUsd, netUsd });
-      } else {
-        // Fallback to estimated fees
-        const fallbackConfig = await getFallbackFeeConfig(supabase);
-        stripeFeesUsd = calculateFallbackFee(invoice.amount_paid || 0, fallbackConfig);
-        netUsd = grossUsd - stripeFeesUsd;
-        console.log('[invoice.payment_succeeded] Using fallback fee calculation:', { stripeFeesUsd, netUsd });
-      }
-
-      // Resolve user_id from stripe_customer_id
+      const fees = await extractFeesFromBalanceTransaction(stripe, supabase, balanceTxId, invoice.amount_paid || 0);
       const userId = await resolveUserIdFromCustomer(supabase, invoice.customer as string);
 
       await recordPaymentEconomics(supabase, {
@@ -603,13 +620,14 @@ async function handleInvoicePaymentSucceeded(
         stripe_customer_id: invoice.customer as string,
         stripe_invoice_id: invoice.id,
         stripe_payment_intent_id: paymentIntentId,
-        gross_amount_usd: grossUsd,
-        stripe_fees_usd: stripeFeesUsd,
-        net_revenue_usd: netUsd,
+        gross_amount_usd: (invoice.amount_paid || 0) / 100,
+        stripe_fees_usd: fees.stripeFeesUsd,
+        net_revenue_usd: fees.netUsd,
         type: 'subscription',
-        meta: { source: balanceTx ? 'balance_transaction' : 'fallback_estimate' },
+        meta: { source: fees.source },
       });
 
+      console.log('[invoice.payment_succeeded] Recorded fees:', fees);
     } catch (feeError) {
       console.error('[invoice.payment_succeeded] Error fetching balance_transaction:', feeError);
     }
@@ -768,37 +786,23 @@ async function handlePaymentIntentSucceeded(
       });
 
       const charge = expandedIntent.latest_charge as Stripe.Charge;
-      const balanceTx = charge?.balance_transaction as Stripe.BalanceTransaction;
+      const balanceTx = charge?.balance_transaction;
+      const balanceTxId = typeof balanceTx === 'string' ? balanceTx : (balanceTx as Stripe.BalanceTransaction)?.id;
 
-      const grossUsd = paymentIntent.amount / 100;
-      let stripeFeesUsd: number;
-      let netUsd: number;
-
-      if (balanceTx && typeof balanceTx.fee === 'number') {
-        stripeFeesUsd = balanceTx.fee / 100;
-        netUsd = typeof balanceTx.net === 'number' ? balanceTx.net / 100 : grossUsd - stripeFeesUsd;
-        console.log('[payment_intent.succeeded] Using real balance_transaction fees:', { stripeFeesUsd, netUsd });
-      } else {
-        const fallbackConfig = await getFallbackFeeConfig(supabase);
-        stripeFeesUsd = calculateFallbackFee(paymentIntent.amount, fallbackConfig);
-        netUsd = grossUsd - stripeFeesUsd;
-        console.log('[payment_intent.succeeded] Using fallback fee calculation:', { stripeFeesUsd, netUsd });
-      }
+      const fees = await extractFeesFromBalanceTransaction(stripe, supabase, balanceTxId, paymentIntent.amount);
 
       await recordPaymentEconomics(supabase, {
         user_id: userId,
         stripe_payment_intent_id: paymentIntent.id,
         stripe_charge_id: charge?.id,
-        gross_amount_usd: grossUsd,
-        stripe_fees_usd: stripeFeesUsd,
-        net_revenue_usd: netUsd,
+        gross_amount_usd: paymentIntent.amount / 100,
+        stripe_fees_usd: fees.stripeFeesUsd,
+        net_revenue_usd: fees.netUsd,
         type: 'ad_budget',
-        meta: { 
-          campaign_id: campaignId, 
-          source: balanceTx ? 'balance_transaction' : 'fallback_estimate' 
-        },
+        meta: { campaign_id: campaignId, source: fees.source },
       });
 
+      console.log('[payment_intent.succeeded] Recorded ad_budget fees:', fees);
     } catch (feeError) {
       console.error('[payment_intent.succeeded] Error fetching balance_transaction:', feeError);
     }
@@ -858,27 +862,14 @@ async function handleChargeRefunded(
   
   console.log('[charge.refunded] Processing:', { chargeId: charge.id, eventId: event.id });
 
-  let stripeFeesUsd = 0;
-  let netUsd = 0;
-
-  // Fetch balance_transaction for actual refund fee impact
-  if (charge.balance_transaction) {
-    try {
-      const balanceTx = await stripe.balanceTransactions.retrieve(
-        charge.balance_transaction as string
-      );
-      stripeFeesUsd = typeof balanceTx.fee === 'number' ? balanceTx.fee / 100 : 0;
-      netUsd = typeof balanceTx.net === 'number' ? balanceTx.net / 100 : 0;
-      console.log('[charge.refunded] Using real balance_transaction:', { stripeFeesUsd, netUsd });
-    } catch (error) {
-      console.error('[charge.refunded] Error fetching balance_transaction:', error);
-    }
-  }
-
   // Negative gross because money is leaving
-  const grossUsd = -((charge.amount_refunded || charge.amount || 0) / 100);
+  const refundAmountCents = charge.amount_refunded || charge.amount || 0;
+  const grossUsd = -(refundAmountCents / 100);
 
-  // Resolve user_id
+  // Get fees from balance_transaction using consolidated helper
+  const balanceTxId = typeof charge.balance_transaction === 'string' ? charge.balance_transaction : null;
+  const fees = await extractFeesFromBalanceTransaction(stripe, supabase, balanceTxId, refundAmountCents);
+
   const userId = await resolveUserIdFromCustomer(supabase, charge.customer as string);
 
   await recordPaymentEconomics(supabase, {
@@ -888,13 +879,13 @@ async function handleChargeRefunded(
     stripe_payment_intent_id: charge.payment_intent as string,
     stripe_charge_id: charge.id,
     gross_amount_usd: grossUsd,
-    stripe_fees_usd: stripeFeesUsd,
-    net_revenue_usd: netUsd || grossUsd,
+    stripe_fees_usd: fees.stripeFeesUsd,
+    net_revenue_usd: fees.netUsd > 0 ? -fees.netUsd : grossUsd, // Ensure negative for refunds
     type: 'refund',
-    meta: { source: 'balance_transaction' },
+    meta: { source: fees.source },
   });
 
-  console.log('[charge.refunded] Recorded refund economics:', { grossUsd, stripeFeesUsd });
+  console.log('[charge.refunded] Recorded refund economics:', { grossUsd, fees });
 }
 
 // =============================================================================
