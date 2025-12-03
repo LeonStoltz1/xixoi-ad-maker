@@ -50,9 +50,9 @@ export function useEffectiveTier(): EffectiveTierResult {
           .single();
 
         // Determine actual tier from profile
-        let actualTier = 'free';
+        let actualTier = profile?.plan || 'free';
         if (profile?.stripe_price_id) {
-          // Match price ID to tier
+          // Match price ID to tier (override plan if price ID matches)
           if (profile.stripe_price_id === PLAN_CONFIG.quickstart) {
             actualTier = 'quickstart';
           } else if (profile.stripe_price_id === PLAN_CONFIG.pro || profile.stripe_price_id === PLAN_CONFIG.proUnlimited) {
@@ -62,8 +62,7 @@ export function useEffectiveTier(): EffectiveTierResult {
           } else if (profile.stripe_price_id === PLAN_CONFIG.agency) {
             actualTier = 'agency';
           }
-        } else if (profile?.plan) {
-          actualTier = profile.plan;
+          // If price ID doesn't match any known tier, keep profile.plan value
         }
 
         const actualIsRealtor = profile?.is_realtor || false;
