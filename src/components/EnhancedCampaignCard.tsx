@@ -21,7 +21,11 @@ import {
   Save,
   Trash2,
   Rocket,
-  Image as ImageIcon
+  Image as ImageIcon,
+  FileText,
+  Circle,
+  Square,
+  CheckCircle
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -333,22 +337,22 @@ export function EnhancedCampaignCard({
   const getStatusBadge = () => {
     // Paused
     if (!campaign.is_active || campaign.status === 'paused') {
-      return <Badge variant="secondary" className="flex items-center gap-1">⏸ Paused</Badge>;
+      return <Badge variant="secondary" className="flex items-center gap-1"><Pause className="w-3 h-3" /> Paused</Badge>;
     }
     
     // Completed
     if (campaign.status === 'completed') {
-      return <Badge variant="outline" className="flex items-center gap-1">⏹ Ended</Badge>;
+      return <Badge variant="outline" className="flex items-center gap-1"><Square className="w-3 h-3" /> Ended</Badge>;
     }
     
     // Draft (never generated variants or payment)
     if (campaign.status === 'draft') {
-      return <Badge variant="outline" className="flex items-center gap-1">📝 Draft</Badge>;
+      return <Badge variant="outline" className="flex items-center gap-1"><FileText className="w-3 h-3" /> Draft</Badge>;
     }
     
     // Ready to publish (generated but not paid)
     if (campaign.status === 'ready' && !campaign.stripe_payment_id && campaign.total_spent === 0) {
-      return <Badge variant="default" className="bg-primary text-primary-foreground flex items-center gap-1">⚡ Ready to Publish</Badge>;
+      return <Badge variant="default" className="bg-primary text-primary-foreground flex items-center gap-1"><Zap className="w-3 h-3" /> Ready to Publish</Badge>;
     }
     
     // Low budget warning (only for published campaigns)
@@ -363,11 +367,11 @@ export function EnhancedCampaignCard({
     
     // Actually active (has payment or spend)
     if (campaign.stripe_payment_id || campaign.total_spent > 0) {
-      return <Badge variant="default" className="flex items-center gap-1 bg-foreground text-background">🟢 Active</Badge>;
+      return <Badge variant="default" className="flex items-center gap-1 bg-foreground text-background"><CheckCircle className="w-3 h-3" /> Active</Badge>;
     }
     
     // Default: unpublished
-    return <Badge variant="outline" className="flex items-center gap-1">📝 Unpublished</Badge>;
+    return <Badge variant="outline" className="flex items-center gap-1"><FileText className="w-3 h-3" /> Unpublished</Badge>;
   };
 
   const handlePauseResume = async () => {
