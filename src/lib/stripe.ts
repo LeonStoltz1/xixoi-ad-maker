@@ -1,5 +1,10 @@
 import { loadStripe } from '@stripe/stripe-js';
 
-const stripePublishableKey = 'pk_live_51SCBbgRfAZMMsSx8IR9Bi1KnF7cCDzvhzaVxJthvxn6ciBFkgoY4rCkyDldC6h7kGmB9wD7thekCE8JmslxWxrnL00wKhH83vw';
+// Use environment variable for Stripe publishable key
+const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
-export const stripePromise = loadStripe(stripePublishableKey);
+if (!stripePublishableKey) {
+  console.error('Missing VITE_STRIPE_PUBLISHABLE_KEY environment variable');
+}
+
+export const stripePromise = loadStripe(stripePublishableKey || '');

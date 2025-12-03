@@ -184,7 +184,15 @@ export const UnifiedHeader = () => {
                 <div className="px-4 py-3 border border-white/20">
                   <span className="text-xs text-white/60 uppercase tracking-wider block mb-1">Current Plan</span>
                   <span className="text-white uppercase tracking-wide font-bold">
-                    {userPlan === 'pro' ? 'PRO' : userPlan === 'elite' ? 'ELITE' : userPlan === 'agency' ? 'AGENCY' : 'FREE'}
+                    {userPlan === 'quickstart' 
+                      ? 'QUICK-START' 
+                      : userPlan === 'pro' 
+                      ? 'PRO' 
+                      : userPlan === 'elite' 
+                      ? 'ELITE' 
+                      : userPlan === 'agency' 
+                      ? 'AGENCY' 
+                      : 'FREE'}
                   </span>
                 </div>
                 
