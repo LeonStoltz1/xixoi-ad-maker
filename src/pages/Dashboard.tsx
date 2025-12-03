@@ -13,7 +13,7 @@ import { GlobalSpendSummary } from "@/components/GlobalSpendSummary";
 import { EnhancedCampaignCard } from "@/components/EnhancedCampaignCard";
 import { CampaignAIRecommendations } from "@/components/CampaignAIRecommendations";
 import { AccountPerformanceInsights } from "@/components/AccountPerformanceInsights";
-import { getCampaignPerformance, CampaignPerformanceMetrics } from "@/utils/campaignPerformance";
+import { getBatchCampaignPerformance, CampaignPerformanceMetrics } from "@/utils/campaignPerformance";
 import {
   Dialog,
   DialogContent,
@@ -110,18 +110,9 @@ export default function Dashboard() {
     if (campaignsData) {
       setCampaigns(campaignsData);
 
-      // Load performance for each campaign
-      const performancePromises = campaignsData.map(async (campaign) => {
-        const perf = await getCampaignPerformance(campaign.id);
-        return { id: campaign.id, perf };
-      });
-
-      const performances = await Promise.all(performancePromises);
-      const perfMap: Record<string, CampaignPerformanceMetrics> = {};
-      performances.forEach(({ id, perf }) => {
-        perfMap[id] = perf;
-      });
-
+      // Batch load performance for all campaigns (2 queries instead of N*3)
+      const campaignIds = campaignsData.map(c => c.id);
+      const perfMap = await getBatchCampaignPerformance(campaignIds);
       setCampaignPerformance(perfMap);
     }
   };

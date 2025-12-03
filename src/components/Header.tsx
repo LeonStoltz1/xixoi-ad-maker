@@ -143,7 +143,15 @@ export const Header = () => {
               {/* Plan Badge */}
               <div className="px-3 py-1.5 border border-white/20 text-sm">
                 <span className="text-white uppercase tracking-wide">
-                  {userPlan === 'pro' ? 'PRO' : userPlan === 'elite' ? 'ELITE' : userPlan === 'agency' ? 'AGENCY' : 'FREE'}
+                  {userPlan === 'quickstart' 
+                    ? 'QUICK-START' 
+                    : userPlan === 'pro' 
+                    ? 'PRO' 
+                    : userPlan === 'elite' 
+                    ? 'ELITE' 
+                    : userPlan === 'agency' 
+                    ? 'AGENCY' 
+                    : 'FREE'}
                 </span>
               </div>
               

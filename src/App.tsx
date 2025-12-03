@@ -35,10 +35,11 @@ import NotFound from "./pages/NotFound";
 import { RealtorIdentification } from "./components/onboarding/RealtorIdentification";
 import { RealtorProvider } from "./contexts/RealtorContext";
 import { PoliticalProvider } from "./contexts/PoliticalContext";
-import VerifyCandidate from "./pages/political/VerifyCandidate";
-import GeneratePoliticalAd from "./pages/political/GeneratePoliticalAd";
-import PoliticalDashboard from "./pages/political/PoliticalDashboard";
-import VerifyAd from "./pages/political/VerifyAd";
+// POLITICAL MODE ARCHIVED - Files moved to src/archive/political/
+// import VerifyCandidate from "./pages/political/VerifyCandidate";
+// import GeneratePoliticalAd from "./pages/political/GeneratePoliticalAd";
+// import PoliticalDashboard from "./pages/political/PoliticalDashboard";
+// import VerifyAd from "./pages/political/VerifyAd";
 import PlatformCredentialsAdmin from "./pages/admin/PlatformCredentialsAdmin";
 import TestMetaPublish from "./pages/admin/TestMetaPublish";
 import SeedTestData from "./pages/admin/SeedTestData";

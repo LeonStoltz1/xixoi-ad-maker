@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const corsHeaders = {
@@ -7,13 +7,761 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// =============================================================================
+// CONFIGURATION
+// =============================================================================
+
+const PRICE_ID_QUICKSTART = 'price_1SZmlERfAZMMsSx86Qej';
+
+function getPlanTypeFromPriceId(priceId: string): string {
+  const PRICE_ID_PRO = Deno.env.get('STRIPE_PRICE_PRO_SUBSCRIPTION');
+  const PRICE_ID_ELITE = Deno.env.get('STRIPE_PRICE_ELITE');
+  const PRICE_ID_AGENCY = Deno.env.get('STRIPE_PRICE_AGENCY');
+  
+  if (priceId === PRICE_ID_QUICKSTART) return 'quickstart';
+  if (priceId === PRICE_ID_PRO) return 'pro';
+  if (priceId === PRICE_ID_ELITE) return 'elite';
+  if (priceId === PRICE_ID_AGENCY) return 'agency';
+  return 'pro'; // default fallback
+}
+
+// =============================================================================
+// HANDLER: checkout.session.completed
+// =============================================================================
+
+async function handleCheckoutSessionCompleted(
+  event: Stripe.Event,
+  supabase: SupabaseClient,
+  stripe: Stripe
+): Promise<void> {
+  const session = event.data.object as Stripe.Checkout.Session;
+  const userId = session.metadata?.user_id;
+  const campaignId = session.metadata?.campaign_id;
+  const priceType = session.metadata?.price_type;
+
+  console.log('[checkout.session.completed] Processing:', { userId, campaignId, priceType, eventId: event.id });
+
+  if (!userId) {
+    console.log('[checkout.session.completed] No userId in metadata, skipping');
+    return;
+  }
+
+  // Update stripe_customer_id if not set
+  if (session.customer) {
+    await supabase
+      .from('profiles')
+      .update({ stripe_customer_id: session.customer as string })
+      .eq('id', userId);
+  }
+
+  // Process affiliate referral
+  await processAffiliateReferral(session, userId, supabase);
+
+  // Handle branding removal
+  if (priceType === 'branding_removal' && campaignId) {
+    await handleBrandingRemoval(session, userId, campaignId, supabase);
+  }
+
+  // Handle watermark tampering charge
+  if (session.metadata?.reason === 'watermark_tampered') {
+    await handleWatermarkTamperingCharge(session, supabase);
+  }
+
+  // Handle subscription creation
+  if (session.subscription) {
+    await handleSubscriptionFromCheckout(session, userId, stripe, supabase);
+  }
+
+  // Handle combined ad budget checkout
+  await handleCombinedAdBudgetCheckout(session, userId, campaignId, supabase);
+
+  // Legacy pro subscription handling
+  if (priceType === 'pro_subscription' && session.subscription) {
+    await handleLegacyProSubscription(session, userId, stripe, supabase);
+  }
+}
+
+async function processAffiliateReferral(
+  session: Stripe.Checkout.Session,
+  userId: string,
+  supabase: SupabaseClient
+): Promise<void> {
+  const affiliateRef = session.metadata?.affiliate_ref;
+  if (!affiliateRef || !session.customer) return;
+
+  console.log('[affiliate] Processing referral:', { affiliateRef, userId, customerId: session.customer });
+
+  const { data: affiliate, error: affiliateError } = await supabase
+    .from('affiliates')
+    .select('id, is_blocked')
+    .eq('code', affiliateRef)
+    .maybeSingle();
+
+  if (affiliate?.is_blocked) {
+    console.log('[affiliate] Affiliate is blocked, skipping referral creation');
+    return;
+  }
+
+  if (affiliateError) {
+    console.error('[affiliate] Error finding affiliate:', affiliateError);
+    return;
+  }
+
+  if (!affiliate) {
+    console.log('[affiliate] No affiliate found for code:', affiliateRef);
+    return;
+  }
+
+  const { data: existingReferral } = await supabase
+    .from('affiliate_referrals')
+    .select('id')
+    .eq('referred_user_id', userId)
+    .maybeSingle();
+
+  if (!existingReferral) {
+    const { error: insertError } = await supabase
+      .from('affiliate_referrals')
+      .insert({
+        affiliate_id: affiliate.id,
+        referred_user_id: userId,
+        stripe_customer_id: session.customer as string,
+      });
+
+    if (insertError) {
+      console.error('[affiliate] Error creating referral:', insertError);
+    } else {
+      console.log('[affiliate] Successfully created referral for user:', userId);
+    }
+  } else {
+    await supabase
+      .from('affiliate_referrals')
+      .update({ stripe_customer_id: session.customer as string })
+      .eq('id', existingReferral.id)
+      .is('stripe_customer_id', null);
+    
+    console.log('[affiliate] Updated existing referral with stripe_customer_id');
+  }
+}
+
+async function handleBrandingRemoval(
+  session: Stripe.Checkout.Session,
+  userId: string,
+  campaignId: string,
+  supabase: SupabaseClient
+): Promise<void> {
+  await supabase
+    .from('campaigns')
+    .update({ 
+      has_watermark: false,
+      stripe_payment_id: session.payment_intent as string
+    })
+    .eq('id', campaignId);
+
+  await supabase
+    .from('payment_transactions')
+    .insert({
+      user_id: userId,
+      campaign_id: campaignId,
+      stripe_payment_intent_id: session.payment_intent as string,
+      amount: session.amount_total || 2900,
+      currency: session.currency || 'usd',
+      status: 'succeeded',
+      payment_type: 'branding_removal',
+    });
+
+  console.log('[branding] Watermark removed for campaign:', campaignId);
+}
+
+async function handleWatermarkTamperingCharge(
+  session: Stripe.Checkout.Session,
+  supabase: SupabaseClient
+): Promise<void> {
+  const variantId = session.metadata?.variant_id;
+  if (!variantId) return;
+
+  await supabase
+    .from('free_ads')
+    .update({ charged: true, tampered: true })
+    .eq('ad_variant_id', variantId);
+
+  const { data: variant } = await supabase
+    .from('ad_variants')
+    .select('campaign_id')
+    .eq('id', variantId)
+    .single();
+
+  if (variant) {
+    await supabase
+      .from('campaigns')
+      .update({ 
+        has_watermark: false,
+        stripe_payment_id: session.payment_intent as string
+      })
+      .eq('id', variant.campaign_id);
+  }
+
+  console.log('[tampering] Charge processed for variant:', variantId);
+}
+
+async function handleSubscriptionFromCheckout(
+  session: Stripe.Checkout.Session,
+  userId: string,
+  stripe: Stripe,
+  supabase: SupabaseClient
+): Promise<void> {
+  const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+  const actualPriceId = subscription.items.data[0]?.price.id;
+  const planType = getPlanTypeFromPriceId(actualPriceId);
+  const isQuickStartPrice = actualPriceId?.startsWith('price_1SZm');
+
+  console.log('[subscription] Created with price:', { actualPriceId, planType });
+
+  if (planType === 'quickstart' || isQuickStartPrice) {
+    await createSubscriptionRecord(subscription, userId, session.customer as string, 'quickstart', supabase);
+    await supabase
+      .from('profiles')
+      .update({ plan: 'quickstart', stripe_price_id: actualPriceId })
+      .eq('id', userId);
+    console.log('[subscription] ✅ Updated user plan to: quickstart');
+  } else if (planType !== 'pro') {
+    await createSubscriptionRecord(subscription, userId, session.customer as string, planType, supabase);
+    await supabase
+      .from('profiles')
+      .update({ plan: planType, stripe_price_id: actualPriceId })
+      .eq('id', userId);
+    console.log(`[subscription] ✅ Updated user plan to: ${planType}`);
+  }
+}
+
+async function createSubscriptionRecord(
+  subscription: Stripe.Subscription,
+  userId: string,
+  customerId: string,
+  planType: string,
+  supabase: SupabaseClient
+): Promise<void> {
+  await supabase
+    .from('subscriptions')
+    .insert({
+      user_id: userId,
+      stripe_subscription_id: subscription.id,
+      stripe_customer_id: customerId,
+      status: subscription.status,
+      plan_type: planType,
+      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      cancel_at_period_end: subscription.cancel_at_period_end,
+    });
+}
+
+async function handleCombinedAdBudgetCheckout(
+  session: Stripe.Checkout.Session,
+  userId: string,
+  campaignId: string | undefined,
+  supabase: SupabaseClient
+): Promise<void> {
+  const adBudgetAmount = session.metadata?.ad_budget_amount;
+  
+  if (!adBudgetAmount || parseFloat(adBudgetAmount) <= 0 || !campaignId) return;
+
+  const budgetAmount = parseFloat(adBudgetAmount);
+  const dailyBudget = budgetAmount / 7;
+  
+  console.log('[combined-checkout] Processing ad budget:', { budgetAmount, dailyBudget, campaignId });
+
+  // Update or create ad wallet
+  const { data: existingWallet } = await supabase
+    .from('ad_wallets')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (existingWallet) {
+    await supabase
+      .from('ad_wallets')
+      .update({
+        balance: existingWallet.balance + budgetAmount,
+        total_deposited: existingWallet.total_deposited + budgetAmount,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId);
+  } else {
+    await supabase
+      .from('ad_wallets')
+      .insert({
+        user_id: userId,
+        balance: budgetAmount,
+        total_deposited: budgetAmount,
+        total_spent: 0
+      });
+  }
+
+  // Update campaign
+  await supabase
+    .from('campaigns')
+    .update({
+      daily_budget: dailyBudget,
+      lifetime_budget: budgetAmount,
+      status: 'pending_publish',
+      stripe_payment_id: session.payment_intent as string || session.id,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', campaignId);
+
+  // Queue for publishing with jitter
+  const jitterMs = Math.floor(Math.random() * 20000) + 10000;
+  
+  await supabase
+    .from('quick_start_publish_queue')
+    .insert({
+      user_id: userId,
+      campaign_id: campaignId,
+      platform: 'meta',
+      status: 'queued',
+      next_attempt_at: new Date(Date.now() + jitterMs).toISOString(),
+    });
+
+  console.log('[combined-checkout] ✅ Campaign queued for publishing:', campaignId);
+}
+
+async function handleLegacyProSubscription(
+  session: Stripe.Checkout.Session,
+  userId: string,
+  stripe: Stripe,
+  supabase: SupabaseClient
+): Promise<void> {
+  const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+  const priceId = subscription.items.data[0]?.price.id;
+  const planType = priceId ? getPlanTypeFromPriceId(priceId) : 'pro';
+
+  console.log('[legacy-pro] Creating subscription:', { planType, priceId });
+
+  await createSubscriptionRecord(subscription, userId, session.customer as string, planType, supabase);
+  
+  await supabase
+    .from('profiles')
+    .update({ plan: planType })
+    .eq('id', userId);
+
+  console.log('[legacy-pro] Updated user plan to:', planType);
+}
+
+// =============================================================================
+// HANDLER: customer.subscription.created / updated
+// =============================================================================
+
+async function handleSubscriptionCreateOrUpdate(
+  event: Stripe.Event,
+  supabase: SupabaseClient
+): Promise<void> {
+  const subscription = event.data.object as Stripe.Subscription;
+  
+  console.log(`[${event.type}] Processing:`, { subscriptionId: subscription.id, eventId: event.id });
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('stripe_customer_id', subscription.customer as string)
+    .maybeSingle();
+
+  if (!profile) {
+    console.log(`[${event.type}] No profile found for customer:`, subscription.customer);
+    return;
+  }
+
+  const priceId = subscription.items.data[0]?.price.id;
+  const planType = priceId ? getPlanTypeFromPriceId(priceId) : 'pro';
+
+  console.log(`[${event.type}] Upserting subscription:`, { planType, status: subscription.status });
+
+  await supabase
+    .from('subscriptions')
+    .upsert({
+      user_id: profile.id,
+      stripe_subscription_id: subscription.id,
+      stripe_customer_id: subscription.customer as string,
+      status: subscription.status,
+      plan_type: planType,
+      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      cancel_at_period_end: subscription.cancel_at_period_end,
+    }, { onConflict: 'stripe_subscription_id' });
+
+  // Update profile plan based on status
+  if (subscription.status === 'active' || subscription.status === 'trialing') {
+    await supabase
+      .from('profiles')
+      .update({ plan: planType })
+      .eq('id', profile.id);
+    console.log(`[${event.type}] Updated profile plan to:`, planType);
+  } else if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
+    await supabase
+      .from('profiles')
+      .update({ plan: 'free' })
+      .eq('id', profile.id);
+    console.log(`[${event.type}] Downgraded profile to free plan`);
+  }
+}
+
+// =============================================================================
+// HANDLER: customer.subscription.deleted
+// =============================================================================
+
+async function handleSubscriptionDeleted(
+  event: Stripe.Event,
+  supabase: SupabaseClient
+): Promise<void> {
+  const subscription = event.data.object as Stripe.Subscription;
+  
+  console.log('[customer.subscription.deleted] Processing:', { subscriptionId: subscription.id, eventId: event.id });
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('stripe_customer_id', subscription.customer as string)
+    .single();
+
+  if (!profile) {
+    console.log('[customer.subscription.deleted] No profile found for customer');
+    return;
+  }
+
+  await supabase
+    .from('subscriptions')
+    .update({ status: 'canceled', cancel_at_period_end: true })
+    .eq('stripe_subscription_id', subscription.id);
+
+  await supabase
+    .from('profiles')
+    .update({ plan: 'free' })
+    .eq('id', profile.id);
+
+  console.log('[customer.subscription.deleted] Downgraded user to free plan');
+}
+
+// =============================================================================
+// HANDLER: invoice.payment_succeeded
+// =============================================================================
+
+async function handleInvoicePaymentSucceeded(
+  event: Stripe.Event,
+  supabase: SupabaseClient,
+  stripe: Stripe
+): Promise<void> {
+  const invoice = event.data.object as Stripe.Invoice;
+  
+  console.log('[invoice.payment_succeeded] Processing:', { invoiceId: invoice.id, eventId: event.id });
+
+  if (!invoice.subscription) return;
+
+  const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+  const priceId = subscription.items.data[0]?.price.id;
+  const planType = priceId ? getPlanTypeFromPriceId(priceId) : 'pro';
+
+  await supabase
+    .from('subscriptions')
+    .update({ status: 'active' })
+    .eq('stripe_subscription_id', invoice.subscription as string);
+
+  const { data: subscriptionRecord } = await supabase
+    .from('subscriptions')
+    .select('user_id')
+    .eq('stripe_subscription_id', invoice.subscription as string)
+    .maybeSingle();
+
+  if (subscriptionRecord) {
+    await supabase
+      .from('profiles')
+      .update({ plan: planType })
+      .eq('id', subscriptionRecord.user_id);
+    
+    console.log('[invoice.payment_succeeded] Updated user plan:', planType);
+
+    // Process affiliate commission
+    await processAffiliateCommission(invoice, supabase);
+  }
+}
+
+async function processAffiliateCommission(
+  invoice: Stripe.Invoice,
+  supabase: SupabaseClient
+): Promise<void> {
+  if (!invoice.customer || !invoice.amount_paid) return;
+
+  const stripeCustomerId = String(invoice.customer);
+  const amount = invoice.amount_paid / 100;
+
+  const { data: referral, error: refError } = await supabase
+    .from('affiliate_referrals')
+    .select(`*, affiliates!inner(id, is_blocked, stripe_account_id)`)
+    .eq('stripe_customer_id', stripeCustomerId)
+    .maybeSingle();
+
+  if (!referral || refError) return;
+
+  const affiliate = Array.isArray(referral.affiliates) 
+    ? referral.affiliates[0] 
+    : referral.affiliates;
+
+  if (affiliate?.is_blocked) {
+    console.log('[affiliate-commission] Affiliate blocked, skipping');
+    return;
+  }
+
+  const commissionRate = 0.2;
+  const commission = amount * commissionRate;
+
+  await supabase
+    .from('affiliate_referrals')
+    .update({
+      total_revenue: (referral.total_revenue ?? 0) + amount,
+      affiliate_earnings: (referral.affiliate_earnings ?? 0) + commission,
+      first_payment_at: referral.first_payment_at ?? new Date().toISOString(),
+    })
+    .eq('id', referral.id);
+
+  const { data: currentAffiliate } = await supabase
+    .from('affiliates')
+    .select('total_earned')
+    .eq('id', referral.affiliate_id)
+    .single();
+
+  if (currentAffiliate) {
+    await supabase
+      .from('affiliates')
+      .update({ total_earned: (currentAffiliate.total_earned ?? 0) + commission })
+      .eq('id', referral.affiliate_id);
+    
+    console.log('[affiliate-commission] Updated earnings:', { 
+      affiliateId: referral.affiliate_id, 
+      commission,
+      newTotal: (currentAffiliate.total_earned ?? 0) + commission 
+    });
+  }
+}
+
+// =============================================================================
+// HANDLER: invoice.payment_failed
+// =============================================================================
+
+async function handleInvoicePaymentFailed(
+  event: Stripe.Event,
+  supabase: SupabaseClient
+): Promise<void> {
+  const invoice = event.data.object as Stripe.Invoice;
+  
+  console.log('[invoice.payment_failed] Processing:', { invoiceId: invoice.id, eventId: event.id });
+
+  if (invoice.subscription) {
+    await supabase
+      .from('subscriptions')
+      .update({ status: 'past_due' })
+      .eq('stripe_subscription_id', invoice.subscription as string);
+  }
+}
+
+// =============================================================================
+// HANDLER: payment_intent.succeeded
+// =============================================================================
+
+async function handlePaymentIntentSucceeded(
+  event: Stripe.Event,
+  supabase: SupabaseClient
+): Promise<void> {
+  const paymentIntent = event.data.object as Stripe.PaymentIntent;
+  
+  console.log('[payment_intent.succeeded] Processing:', { paymentIntentId: paymentIntent.id, eventId: event.id });
+
+  // Update or create payment transaction
+  await supabase
+    .from('payment_transactions')
+    .upsert({
+      stripe_payment_intent_id: paymentIntent.id,
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency,
+      status: 'succeeded',
+      payment_type: 'branding_removal',
+    }, { onConflict: 'stripe_payment_intent_id', ignoreDuplicates: false });
+
+  // Handle ad budget payment - CRITICAL BUSINESS REQUIREMENT
+  const metadata = paymentIntent.metadata;
+  
+  if (metadata.payment_type === 'ad_budget' && metadata.campaign_id && metadata.user_id) {
+    const campaignId = metadata.campaign_id;
+    const userId = metadata.user_id;
+    const platforms = metadata.platforms?.split(',') || ['meta'];
+
+    console.log('[payment_intent.succeeded] ✅ Ad budget payment confirmed, queueing campaign:', { 
+      campaignId, userId, platforms 
+    });
+
+    await supabase
+      .from('campaigns')
+      .update({ stripe_payment_id: paymentIntent.id, status: 'paid' })
+      .eq('id', campaignId);
+
+    // Queue for publishing ONLY after payment succeeds
+    for (const platform of platforms) {
+      await supabase
+        .from('quick_start_publish_queue')
+        .insert({
+          user_id: userId,
+          campaign_id: campaignId,
+          platform: platform.trim(),
+          status: 'queued',
+          next_attempt_at: new Date().toISOString(),
+        });
+      
+      console.log(`[payment_intent.succeeded] ✅ Queued campaign ${campaignId} for platform: ${platform}`);
+    }
+
+    if (metadata.reload_id) {
+      await supabase
+        .from('ad_budget_reloads')
+        .update({ payment_status: 'completed' })
+        .eq('id', metadata.reload_id);
+    }
+
+    console.log('[payment_intent.succeeded] ✅ Campaign queued for publishing');
+  }
+}
+
+// =============================================================================
+// HANDLER: payment_intent.payment_failed
+// =============================================================================
+
+async function handlePaymentIntentFailed(
+  event: Stripe.Event,
+  supabase: SupabaseClient
+): Promise<void> {
+  const paymentIntent = event.data.object as Stripe.PaymentIntent;
+  
+  console.log('[payment_intent.payment_failed] Processing:', { paymentIntentId: paymentIntent.id, eventId: event.id });
+
+  await supabase
+    .from('payment_transactions')
+    .update({ status: 'failed' })
+    .eq('stripe_payment_intent_id', paymentIntent.id);
+
+  const { data: reload } = await supabase
+    .from('ad_budget_reloads')
+    .select('*')
+    .eq('stripe_payment_intent_id', paymentIntent.id)
+    .single();
+
+  if (reload) {
+    console.log('[payment_intent.payment_failed] Ad budget reload failed, pausing campaigns for user:', reload.user_id);
+    
+    try {
+      await supabase.functions.invoke('handle-payment-failure', {
+        body: {
+          userId: reload.user_id,
+          reloadId: reload.id,
+          failureReason: paymentIntent.last_payment_error?.message || 'Payment failed',
+        },
+      });
+    } catch (error) {
+      console.error('[payment_intent.payment_failed] Failed to handle payment failure:', error);
+    }
+  }
+}
+
+// =============================================================================
+// HANDLER: customer.created / updated
+// =============================================================================
+
+async function handleCustomerCreateOrUpdate(
+  event: Stripe.Event,
+  supabase: SupabaseClient
+): Promise<void> {
+  const customer = event.data.object as Stripe.Customer;
+  const userId = customer.metadata?.supabase_user_id;
+  
+  console.log(`[${event.type}] Processing:`, { customerId: customer.id, userId, eventId: event.id });
+
+  if (!userId) return;
+
+  await supabase
+    .from('profiles')
+    .update({ stripe_customer_id: customer.id })
+    .eq('id', userId);
+
+  await supabase
+    .from('stripe_customers')
+    .upsert({
+      user_id: userId,
+      stripe_customer_id: customer.id,
+      email: customer.email || '',
+    }, { onConflict: 'stripe_customer_id' });
+
+  await supabase
+    .from('affiliate_referrals')
+    .update({ stripe_customer_id: customer.id })
+    .eq('referred_user_id', userId)
+    .is('stripe_customer_id', null);
+}
+
+// =============================================================================
+// HANDLER: account.updated (Stripe Connect)
+// =============================================================================
+
+async function handleAccountUpdated(
+  event: Stripe.Event,
+  supabase: SupabaseClient
+): Promise<void> {
+  const account = event.data.object as Stripe.Account;
+  
+  console.log('[account.updated] Processing:', { accountId: account.id, eventId: event.id });
+
+  const { data: affiliate } = await supabase
+    .from('affiliates')
+    .select('id, user_id')
+    .eq('stripe_account_id', account.id)
+    .maybeSingle();
+
+  if (!affiliate) {
+    console.log('[account.updated] No affiliate found for account:', account.id);
+    return;
+  }
+
+  let accountStatus = 'pending';
+  
+  if (account.charges_enabled && account.payouts_enabled) {
+    accountStatus = 'verified';
+  } else if (account.requirements?.disabled_reason) {
+    accountStatus = account.requirements.disabled_reason === 'rejected.fraud' 
+      ? 'rejected' 
+      : 'restricted';
+  } else if (account.requirements?.currently_due && account.requirements.currently_due.length > 0) {
+    accountStatus = 'pending';
+  }
+
+  await supabase
+    .from('affiliates')
+    .update({
+      stripe_account_status: accountStatus,
+      stripe_onboarding_complete: account.charges_enabled && account.payouts_enabled,
+    })
+    .eq('id', affiliate.id);
+
+  console.log('[account.updated] Updated affiliate status:', { 
+    affiliateId: affiliate.id, 
+    accountStatus,
+    chargesEnabled: account.charges_enabled,
+    payoutsEnabled: account.payouts_enabled 
+  });
+}
+
+// =============================================================================
+// MAIN HANDLER - Event Router
+// =============================================================================
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Initialize Stripe
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
     
@@ -21,9 +769,7 @@ serve(async (req) => {
       throw new Error('Stripe keys not configured');
     }
 
-    const stripe = new Stripe(stripeKey, {
-      apiVersion: '2023-10-16',
-    });
+    const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
 
     // Verify webhook signature
     const signature = req.headers.get('stripe-signature');
@@ -35,781 +781,82 @@ serve(async (req) => {
     let event: Stripe.Event;
 
     try {
-      event = await stripe.webhooks.constructEventAsync(
-        body,
-        signature,
-        webhookSecret
-      );
+      event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
     } catch (err) {
-      console.error('Webhook signature verification failed:', err);
+      console.error('[stripe-webhook] Signature verification failed:', err);
       return new Response(
         JSON.stringify({ error: 'Invalid signature' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Webhook event received:', event.type);
+    console.log(`[stripe-webhook] Event received: ${event.type} (${event.id})`);
 
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Initialize Supabase
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
 
-    // Get price IDs for plan detection
-    // CRITICAL: Must match the actual Stripe price ID for Quick-Start
-    const PRICE_ID_QUICKSTART = 'price_1SZmlERfAZMMsSx86Qej';
-    const PRICE_ID_PRO = Deno.env.get('STRIPE_PRICE_PRO_SUBSCRIPTION');
-    const PRICE_ID_ELITE = Deno.env.get('STRIPE_PRICE_ELITE');
-    const PRICE_ID_AGENCY = Deno.env.get('STRIPE_PRICE_AGENCY');
-
-    // Helper function to determine plan type from price ID
-    const getPlanTypeFromPriceId = (priceId: string): string => {
-      if (priceId === PRICE_ID_QUICKSTART) return 'quickstart';
-      if (priceId === PRICE_ID_PRO) return 'pro';
-      if (priceId === PRICE_ID_ELITE) return 'elite';
-      if (priceId === PRICE_ID_AGENCY) return 'agency';
-      return 'pro'; // default fallback
-    };
-
-    // Handle different event types
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const userId = session.metadata?.user_id;
-        const campaignId = session.metadata?.campaign_id;
-        const priceType = session.metadata?.price_type;
-
-        console.log('Checkout completed:', { userId, campaignId, priceType });
-
-        if (!userId) break;
-
-        // Update stripe_customer_id if not set
-        if (session.customer) {
-          await supabase
-            .from('profiles')
-            .update({ stripe_customer_id: session.customer as string })
-            .eq('id', userId);
-        }
-
-        // AFFILIATE TRACKING: Create affiliate referral if ref code exists
-        const affiliateRef = session.metadata?.affiliate_ref;
-        if (affiliateRef && session.customer) {
-          console.log('Processing affiliate referral:', { affiliateRef, userId, customerId: session.customer });
-
-          // Find affiliate by code
-          const { data: affiliate, error: affiliateError } = await supabase
-            .from('affiliates')
-            .select('id, is_blocked')
-            .eq('code', affiliateRef)
-            .maybeSingle();
-
-          if (affiliate && !affiliate.is_blocked) {
-            // Check if referral already exists
-            const { data: existingReferral } = await supabase
-              .from('affiliate_referrals')
-              .select('id')
-              .eq('referred_user_id', userId)
-              .maybeSingle();
-
-            if (!existingReferral) {
-              // Create affiliate referral
-              const { error: insertError } = await supabase
-                .from('affiliate_referrals')
-                .insert({
-                  affiliate_id: affiliate.id,
-                  referred_user_id: userId,
-                  stripe_customer_id: session.customer as string,
-                });
-
-              if (insertError) {
-                console.error('Error creating affiliate referral:', insertError);
-              } else {
-                console.log('Successfully created affiliate referral for user:', userId);
-              }
-            } else {
-              // Update existing referral with stripe_customer_id if missing
-              await supabase
-                .from('affiliate_referrals')
-                .update({ stripe_customer_id: session.customer as string })
-                .eq('id', existingReferral.id)
-                .is('stripe_customer_id', null);
-              
-              console.log('Updated existing referral with stripe_customer_id');
-            }
-          } else if (affiliate?.is_blocked) {
-            console.log('Affiliate is blocked, skipping referral creation');
-          } else if (affiliateError) {
-            console.error('Error finding affiliate:', affiliateError);
-          }
-        }
-
-        if (priceType === 'branding_removal' && campaignId) {
-          // Handle one-time branding removal payment
-          await supabase
-            .from('campaigns')
-            .update({ 
-              has_watermark: false,
-              stripe_payment_id: session.payment_intent as string
-            })
-            .eq('id', campaignId);
-
-          // Create payment transaction
-          await supabase
-            .from('payment_transactions')
-            .insert({
-              user_id: userId,
-              campaign_id: campaignId,
-              stripe_payment_intent_id: session.payment_intent as string,
-              amount: session.amount_total || 2900,
-              currency: session.currency || 'usd',
-              status: 'succeeded',
-              payment_type: 'branding_removal',
-            });
-
-          console.log('Branding watermark removed for campaign:', campaignId);
-        }
-
-        // Handle watermark tampering auto-charge
-        if (session.metadata?.reason === 'watermark_tampered') {
-          const variantId = session.metadata?.variant_id;
-          
-          if (variantId) {
-            // Mark as charged and tampered in free_ads
-            await supabase
-              .from('free_ads')
-              .update({ 
-                charged: true,
-                tampered: true
-              })
-              .eq('ad_variant_id', variantId);
-
-            // Get campaign from variant
-            const { data: variant } = await supabase
-              .from('ad_variants')
-              .select('campaign_id')
-              .eq('id', variantId)
-              .single();
-
-            if (variant) {
-              // Remove watermark since they paid the $29
-              await supabase
-                .from('campaigns')
-                .update({ 
-                  has_watermark: false,
-                  stripe_payment_id: session.payment_intent as string
-                })
-                .eq('id', variant.campaign_id);
-            }
-
-            console.log('Watermark tampering charge processed for variant:', variantId);
-          }
-        }
-
-        // CRITICAL FIX: Check subscription by actual price ID, not just metadata
-        // This handles cases where price IDs may differ from hardcoded values
-        if (session.subscription) {
-          const subscription = await stripe.subscriptions.retrieve(
-            session.subscription as string
-          );
-
-          // Extract the actual price ID from the subscription
-          const actualPriceId = subscription.items.data[0]?.price.id;
-          console.log('Subscription created with price:', actualPriceId);
-
-          // Determine plan type from actual price ID
-          const planType = getPlanTypeFromPriceId(actualPriceId);
-          
-          // Also check if price looks like Quick-Start (price_1SZm... pattern)
-          const isQuickStartPrice = actualPriceId?.startsWith('price_1SZm');
-          
-          if (planType === 'quickstart' || isQuickStartPrice) {
-            console.log('Creating Quick-Start subscription:', subscription.id);
-
-            await supabase
-              .from('subscriptions')
-              .insert({
-                user_id: userId,
-                stripe_subscription_id: subscription.id,
-                stripe_customer_id: session.customer as string,
-                status: subscription.status,
-                plan_type: 'quickstart',
-                current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                cancel_at_period_end: subscription.cancel_at_period_end,
-              });
-
-            // Update user's plan in profiles with actual price ID
-            await supabase
-              .from('profiles')
-              .update({ 
-                plan: 'quickstart',
-                stripe_price_id: actualPriceId 
-              })
-              .eq('id', userId);
-
-            console.log('✅ Updated user plan to: quickstart with price:', actualPriceId);
-
-            // NOTE: Do NOT queue for publishing here - users must separately pay for ad budget
-            // Publishing only happens after payment_intent.succeeded for ad_budget payment type
-          } else if (planType !== 'pro') {
-            // Handle other subscription types (Pro, Elite, Agency)
-            console.log(`Creating ${planType} subscription:`, subscription.id);
-            
-            await supabase
-              .from('subscriptions')
-              .insert({
-                user_id: userId,
-                stripe_subscription_id: subscription.id,
-                stripe_customer_id: session.customer as string,
-                status: subscription.status,
-                plan_type: planType,
-                current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                cancel_at_period_end: subscription.cancel_at_period_end,
-              });
-
-            await supabase
-              .from('profiles')
-              .update({ 
-                plan: planType,
-                stripe_price_id: actualPriceId 
-              })
-              .eq('id', userId);
-
-            console.log(`✅ Updated user plan to: ${planType}`);
-          }
-        }
-
-        // COMBINED CHECKOUT: Handle ad budget if included with subscription
-        const adBudgetAmount = session.metadata?.ad_budget_amount;
-        const serviceFee = session.metadata?.service_fee;
-        
-        if (adBudgetAmount && parseFloat(adBudgetAmount) > 0 && campaignId) {
-          const budgetAmount = parseFloat(adBudgetAmount);
-          const feeAmount = serviceFee ? parseFloat(serviceFee) : 0;
-          const dailyBudget = budgetAmount / 7; // Weekly budget / 7 days
-          
-          console.log('Processing combined ad budget:', { budgetAmount, feeAmount, dailyBudget, campaignId });
-
-          // Update or create ad wallet
-          const { data: existingWallet } = await supabase
-            .from('ad_wallets')
-            .select('*')
-            .eq('user_id', userId)
-            .maybeSingle();
-
-          if (existingWallet) {
-            await supabase
-              .from('ad_wallets')
-              .update({
-                balance: existingWallet.balance + budgetAmount,
-                total_deposited: existingWallet.total_deposited + budgetAmount,
-                updated_at: new Date().toISOString()
-              })
-              .eq('user_id', userId);
-          } else {
-            await supabase
-              .from('ad_wallets')
-              .insert({
-                user_id: userId,
-                balance: budgetAmount,
-                total_deposited: budgetAmount,
-                total_spent: 0
-              });
-          }
-
-          // Update campaign with daily budget
-          await supabase
-            .from('campaigns')
-            .update({
-              daily_budget: dailyBudget,
-              lifetime_budget: budgetAmount,
-              status: 'pending_publish',
-              stripe_payment_id: session.payment_intent as string || session.id,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', campaignId);
-
-          // Queue campaign for publishing
-          const jitterMs = Math.floor(Math.random() * 20000) + 10000; // 10-30s jitter
-          
-          await supabase
-            .from('quick_start_publish_queue')
-            .insert({
-              user_id: userId,
-              campaign_id: campaignId,
-              platform: 'meta', // Default to Meta for now
-              status: 'queued',
-              next_attempt_at: new Date(Date.now() + jitterMs).toISOString(),
-            });
-
-          console.log('✅ Campaign queued for publishing from combined checkout:', campaignId);
-        }
-
-        // Legacy: Also check old metadata-based flow for backward compatibility
-        if (priceType === 'quickstart_subscription' && !session.subscription) {
-          console.warn('⚠️ Old checkout flow without subscription - metadata only');
-        }
-
-        if (priceType === 'pro_subscription' && session.subscription) {
-          // Handle Pro subscription
-          const subscription = await stripe.subscriptions.retrieve(
-            session.subscription as string
-          );
-
-          // Determine plan type from price ID
-          const priceId = subscription.items.data[0]?.price.id;
-          const planType = priceId ? getPlanTypeFromPriceId(priceId) : 'pro';
-
-          console.log('Creating subscription:', { planType, priceId });
-
-          await supabase
-            .from('subscriptions')
-            .insert({
-              user_id: userId,
-              stripe_subscription_id: subscription.id,
-              stripe_customer_id: session.customer as string,
-              status: subscription.status,
-              plan_type: planType,
-              current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-              cancel_at_period_end: subscription.cancel_at_period_end,
-            });
-
-          // Update user's plan in profiles
-          await supabase
-            .from('profiles')
-            .update({ plan: planType })
-            .eq('id', userId);
-
-          console.log('Updated user plan to:', planType);
-        }
-        break;
-      }
-
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription;
-        
-        console.log('Subscription event:', event.type, subscription.id);
-
-        // Find user by customer ID
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('stripe_customer_id', subscription.customer as string)
-          .maybeSingle();
-
-        if (!profile) {
-          console.log('No profile found for customer:', subscription.customer);
+    // Route to appropriate handler
+    try {
+      switch (event.type) {
+        case 'checkout.session.completed':
+          await handleCheckoutSessionCompleted(event, supabase, stripe);
           break;
-        }
 
-        // Determine plan type from price ID
-        const priceId = subscription.items.data[0]?.price.id;
-        const planType = priceId ? getPlanTypeFromPriceId(priceId) : 'pro';
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated':
+          await handleSubscriptionCreateOrUpdate(event, supabase);
+          break;
 
-        console.log('Upserting subscription:', { planType, status: subscription.status });
+        case 'customer.subscription.deleted':
+          await handleSubscriptionDeleted(event, supabase);
+          break;
 
-        // Upsert subscription
-        await supabase
-          .from('subscriptions')
-          .upsert({
-            user_id: profile.id,
-            stripe_subscription_id: subscription.id,
-            stripe_customer_id: subscription.customer as string,
-            status: subscription.status,
-            plan_type: planType,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            cancel_at_period_end: subscription.cancel_at_period_end,
-          }, {
-            onConflict: 'stripe_subscription_id'
-          });
+        case 'invoice.payment_succeeded':
+          await handleInvoicePaymentSucceeded(event, supabase, stripe);
+          break;
 
-        // Update profile plan based on subscription status
-        if (subscription.status === 'active' || subscription.status === 'trialing') {
-          await supabase
-            .from('profiles')
-            .update({ plan: planType })
-            .eq('id', profile.id);
-          
-          console.log('Updated profile plan to:', planType);
-        } else if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
-          // Downgrade to free if subscription is canceled or unpaid
-          await supabase
-            .from('profiles')
-            .update({ plan: 'free' })
-            .eq('id', profile.id);
-          
-          console.log('Downgraded profile to free plan');
-        }
-        break;
+        case 'invoice.payment_failed':
+          await handleInvoicePaymentFailed(event, supabase);
+          break;
+
+        case 'payment_intent.succeeded':
+          await handlePaymentIntentSucceeded(event, supabase);
+          break;
+
+        case 'payment_intent.payment_failed':
+          await handlePaymentIntentFailed(event, supabase);
+          break;
+
+        case 'customer.created':
+        case 'customer.updated':
+          await handleCustomerCreateOrUpdate(event, supabase);
+          break;
+
+        case 'account.updated':
+          await handleAccountUpdated(event, supabase);
+          break;
+
+        default:
+          console.log(`[stripe-webhook] Unhandled event type: ${event.type}`);
       }
-
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
-        
-        // Find user by customer ID
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('stripe_customer_id', subscription.customer as string)
-          .single();
-
-        if (!profile) break;
-
-        // Update subscription status
-        await supabase
-          .from('subscriptions')
-          .update({ 
-            status: 'canceled',
-            cancel_at_period_end: true
-          })
-          .eq('stripe_subscription_id', subscription.id);
-
-        // Downgrade user to free plan
-        await supabase
-          .from('profiles')
-          .update({ plan: 'free' })
-          .eq('id', profile.id);
-        break;
-      }
-
-      case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Stripe.Invoice;
-        
-        console.log('Invoice payment succeeded:', invoice.id);
-
-        if (invoice.subscription) {
-          // Get subscription to determine plan type
-          const subscription = await stripe.subscriptions.retrieve(
-            invoice.subscription as string
-          );
-
-          const priceId = subscription.items.data[0]?.price.id;
-          const planType = priceId ? getPlanTypeFromPriceId(priceId) : 'pro';
-
-          // Update subscription as active
-          await supabase
-            .from('subscriptions')
-            .update({ status: 'active' })
-            .eq('stripe_subscription_id', invoice.subscription as string);
-
-          // Find user and update their plan
-          const { data: subscriptionRecord } = await supabase
-            .from('subscriptions')
-            .select('user_id')
-            .eq('stripe_subscription_id', invoice.subscription as string)
-            .maybeSingle();
-
-          if (subscriptionRecord) {
-            await supabase
-              .from('profiles')
-              .update({ plan: planType })
-              .eq('id', subscriptionRecord.user_id);
-            
-            console.log('Updated user plan after payment:', planType);
-
-              // AFFILIATE TRACKING: Update affiliate earnings (20% commission)
-              if (invoice.customer && invoice.amount_paid) {
-                const stripeCustomerId = String(invoice.customer);
-                const amount = invoice.amount_paid / 100; // cents to dollars
-
-                // Find referral by stripe_customer_id
-                const { data: referral, error: refError } = await supabase
-                  .from('affiliate_referrals')
-                  .select(`
-                    *,
-                    affiliates!inner(id, is_blocked, stripe_account_id)
-                  `)
-                  .eq('stripe_customer_id', stripeCustomerId)
-                  .maybeSingle();
-
-                if (referral && !refError) {
-                  // Check if affiliate is blocked
-                  const affiliate = Array.isArray(referral.affiliates) 
-                    ? referral.affiliates[0] 
-                    : referral.affiliates;
-
-                  if (affiliate?.is_blocked) {
-                    console.log('Affiliate is blocked, skipping commission for referral:', referral.id);
-                  } else {
-                    const commissionRate = 0.2; // 20% lifetime recurring commission
-                    const commission = amount * commissionRate;
-
-                    // Update referral totals
-                    await supabase
-                      .from('affiliate_referrals')
-                      .update({
-                        total_revenue: (referral.total_revenue ?? 0) + amount,
-                        affiliate_earnings: (referral.affiliate_earnings ?? 0) + commission,
-                        first_payment_at: referral.first_payment_at ?? new Date().toISOString(),
-                      })
-                      .eq('id', referral.id);
-
-                    // Update affiliate total_earned
-                    const { data: currentAffiliate } = await supabase
-                      .from('affiliates')
-                      .select('total_earned')
-                      .eq('id', referral.affiliate_id)
-                      .single();
-
-                    if (currentAffiliate) {
-                      await supabase
-                        .from('affiliates')
-                        .update({
-                          total_earned: (currentAffiliate.total_earned ?? 0) + commission,
-                        })
-                        .eq('id', referral.affiliate_id);
-                      
-                      console.log('Updated affiliate earnings:', {
-                        affiliateId: referral.affiliate_id,
-                        commission,
-                        newTotal: (currentAffiliate.total_earned ?? 0) + commission,
-                      });
-                    }
-                  }
-                }
-              }
-          }
-        }
-        break;
-      }
-
-      case 'invoice.payment_failed': {
-        const invoice = event.data.object as Stripe.Invoice;
-        
-        console.log('Invoice payment failed:', invoice.id);
-
-        if (invoice.subscription) {
-          // Update subscription as past_due
-          await supabase
-            .from('subscriptions')
-            .update({ status: 'past_due' })
-            .eq('stripe_subscription_id', invoice.subscription as string);
-
-          // Note: We don't immediately downgrade the user's plan
-          // Stripe will handle retries and eventually cancel if needed
-        }
-        break;
-      }
-
-      case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        
-        // Update or create payment transaction
-        await supabase
-          .from('payment_transactions')
-          .upsert({
-            stripe_payment_intent_id: paymentIntent.id,
-            amount: paymentIntent.amount,
-            currency: paymentIntent.currency,
-            status: 'succeeded',
-            payment_type: 'branding_removal',
-          }, {
-            onConflict: 'stripe_payment_intent_id',
-            ignoreDuplicates: false
-          });
-        break;
-      }
-
-      case 'payment_intent.payment_failed': {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        console.log('Payment intent failed:', paymentIntent.id);
-        
-        // Update payment transaction
-        await supabase
-          .from('payment_transactions')
-          .update({ status: 'failed' })
-          .eq('stripe_payment_intent_id', paymentIntent.id);
-
-        // Check if this is an ad budget reload
-        const { data: reload } = await supabase
-          .from('ad_budget_reloads')
-          .select('*')
-          .eq('stripe_payment_intent_id', paymentIntent.id)
-          .single();
-
-        if (reload) {
-          console.log('Ad budget reload payment failed, pausing campaigns for user:', reload.user_id);
-          
-          // Call handle-payment-failure function to pause all campaigns
-          try {
-            await supabase.functions.invoke('handle-payment-failure', {
-              body: {
-                userId: reload.user_id,
-                reloadId: reload.id,
-                failureReason: paymentIntent.last_payment_error?.message || 'Payment failed',
-              },
-            });
-          } catch (error) {
-            console.error('Failed to handle payment failure:', error);
-          }
-        }
-        break;
-      }
-
-      case 'customer.created':
-      case 'customer.updated': {
-        const customer = event.data.object as Stripe.Customer;
-        const userId = customer.metadata?.supabase_user_id;
-        
-        if (userId) {
-          await supabase
-            .from('profiles')
-            .update({ stripe_customer_id: customer.id })
-            .eq('id', userId);
-
-          // Upsert stripe_customers record
-          await supabase
-            .from('stripe_customers')
-            .upsert({
-              user_id: userId,
-              stripe_customer_id: customer.id,
-              email: customer.email || '',
-            }, {
-              onConflict: 'stripe_customer_id'
-            });
-
-          // Update affiliate referral with stripe_customer_id if exists
-          await supabase
-            .from('affiliate_referrals')
-            .update({ stripe_customer_id: customer.id })
-            .eq('referred_user_id', userId)
-            .is('stripe_customer_id', null);
-        }
-        break;
-      }
-
-      case 'account.updated': {
-        const account = event.data.object as Stripe.Account;
-        
-        console.log('Stripe Connect account updated:', account.id);
-
-        // Find affiliate with this Stripe account
-        const { data: affiliate } = await supabase
-          .from('affiliates')
-          .select('id, user_id')
-          .eq('stripe_account_id', account.id)
-          .maybeSingle();
-
-        if (affiliate) {
-          // Determine account status
-          let accountStatus = 'pending';
-          
-          if (account.charges_enabled && account.payouts_enabled) {
-            accountStatus = 'verified';
-          } else if (account.requirements?.disabled_reason) {
-            // Account is restricted or rejected
-            accountStatus = account.requirements.disabled_reason === 'rejected.fraud' 
-              ? 'rejected' 
-              : 'restricted';
-          } else if (account.requirements?.currently_due && account.requirements.currently_due.length > 0) {
-            accountStatus = 'pending';
-          }
-
-          // Update affiliate record
-          await supabase
-            .from('affiliates')
-            .update({
-              stripe_account_status: accountStatus,
-              stripe_onboarding_complete: account.charges_enabled && account.payouts_enabled,
-            })
-            .eq('id', affiliate.id);
-
-          console.log('Updated affiliate account status:', { 
-            affiliateId: affiliate.id, 
-            accountStatus,
-            chargesEnabled: account.charges_enabled,
-            payoutsEnabled: account.payouts_enabled 
-          });
-        }
-        break;
-      }
-
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
-    }
-
-    // CRITICAL BUSINESS REQUIREMENT: Handle payment_intent.succeeded for ad budget payments
-    // This is the ONLY place where campaigns are queued for publishing
-    // If payment fails, this event never fires, and ads NEVER run
-    // This protects the business from running ads without payment
-    if (event.type === 'payment_intent.succeeded') {
-      const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      const metadata = paymentIntent.metadata;
-      
-      console.log('Payment intent succeeded:', { 
-        paymentIntentId: paymentIntent.id, 
-        metadata 
-      });
-
-      // Check if this is an ad budget payment (NOT subscription payment)
-      if (metadata.payment_type === 'ad_budget' && metadata.campaign_id && metadata.user_id) {
-        const campaignId = metadata.campaign_id;
-        const userId = metadata.user_id;
-        const platforms = metadata.platforms?.split(',') || ['meta'];
-
-        console.log('✅ Ad budget payment confirmed - NOW queueing campaign for publishing:', { 
-          campaignId, 
-          userId, 
-          platforms 
-        });
-
-        // Update campaign with payment ID and mark as paid
-        await supabase
-          .from('campaigns')
-          .update({ 
-            stripe_payment_id: paymentIntent.id,
-            status: 'paid' // ONLY set to 'paid' after payment succeeds
-          })
-          .eq('id', campaignId);
-
-        // Queue for publishing on each selected platform
-        // Campaigns are ONLY queued AFTER payment succeeds
-        for (const platform of platforms) {
-          await supabase
-            .from('quick_start_publish_queue')
-            .insert({
-              user_id: userId,
-              campaign_id: campaignId,
-              platform: platform.trim(),
-              status: 'queued',
-              next_attempt_at: new Date().toISOString(),
-            });
-          
-          console.log(`✅ Queued campaign ${campaignId} for platform: ${platform}`);
-        }
-
-        // Mark reload as completed
-        if (metadata.reload_id) {
-          await supabase
-            .from('ad_budget_reloads')
-            .update({ payment_status: 'completed' })
-            .eq('id', metadata.reload_id);
-        }
-
-        console.log('✅ Campaign successfully queued for publishing ONLY after successful payment');
-      }
+    } catch (handlerError) {
+      console.error(`[stripe-webhook] Handler error for ${event.type} (${event.id}):`, handlerError);
+      // Don't throw - return 200 to Stripe to prevent retries for handler errors
     }
 
     return new Response(
       JSON.stringify({ received: true }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error: any) {
-    console.error('Error in stripe-webhook:', error);
+    console.error('[stripe-webhook] Fatal error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });
