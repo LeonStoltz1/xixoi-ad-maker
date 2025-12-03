@@ -1736,6 +1736,72 @@ export type Database = {
           },
         ]
       }
+      elasticity_tests: {
+        Row: {
+          baseline_conversion_rate: number | null
+          baseline_price: number
+          calculated_elasticity: number | null
+          clicks: number | null
+          completed_at: string | null
+          conversions: number | null
+          created_at: string
+          demand_change_percent: number | null
+          id: string
+          impressions: number | null
+          price_change_percent: number | null
+          product_id: string
+          revenue: number | null
+          started_at: string | null
+          status: string | null
+          test_conversion_rate: number | null
+          test_duration_hours: number | null
+          test_price: number
+          user_id: string
+        }
+        Insert: {
+          baseline_conversion_rate?: number | null
+          baseline_price: number
+          calculated_elasticity?: number | null
+          clicks?: number | null
+          completed_at?: string | null
+          conversions?: number | null
+          created_at?: string
+          demand_change_percent?: number | null
+          id?: string
+          impressions?: number | null
+          price_change_percent?: number | null
+          product_id: string
+          revenue?: number | null
+          started_at?: string | null
+          status?: string | null
+          test_conversion_rate?: number | null
+          test_duration_hours?: number | null
+          test_price: number
+          user_id: string
+        }
+        Update: {
+          baseline_conversion_rate?: number | null
+          baseline_price?: number
+          calculated_elasticity?: number | null
+          clicks?: number | null
+          completed_at?: string | null
+          conversions?: number | null
+          created_at?: string
+          demand_change_percent?: number | null
+          id?: string
+          impressions?: number | null
+          price_change_percent?: number | null
+          product_id?: string
+          revenue?: number | null
+          started_at?: string | null
+          status?: string | null
+          test_conversion_rate?: number | null
+          test_duration_hours?: number | null
+          test_price?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       fraud_checks: {
         Row: {
           action_taken: string | null
@@ -2263,6 +2329,63 @@ export type Database = {
         }
         Relationships: []
       }
+      product_profitability: {
+        Row: {
+          base_price: number
+          cost_of_goods: number
+          created_at: string
+          elasticity_coefficient: number | null
+          id: string
+          last_tested_at: string | null
+          margin: number | null
+          margin_percentage: number | null
+          max_tested_price: number | null
+          min_viable_price: number | null
+          optimal_price: number | null
+          pricing_strategy: string | null
+          product_id: string
+          product_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          base_price?: number
+          cost_of_goods?: number
+          created_at?: string
+          elasticity_coefficient?: number | null
+          id?: string
+          last_tested_at?: string | null
+          margin?: number | null
+          margin_percentage?: number | null
+          max_tested_price?: number | null
+          min_viable_price?: number | null
+          optimal_price?: number | null
+          pricing_strategy?: string | null
+          product_id: string
+          product_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          base_price?: number
+          cost_of_goods?: number
+          created_at?: string
+          elasticity_coefficient?: number | null
+          id?: string
+          last_tested_at?: string | null
+          margin?: number | null
+          margin_percentage?: number | null
+          max_tested_price?: number | null
+          min_viable_price?: number | null
+          optimal_price?: number | null
+          pricing_strategy?: string | null
+          product_id?: string
+          product_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           brokerage_name: string | null
@@ -2328,6 +2451,71 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      profit_logs: {
+        Row: {
+          auto_executed: boolean | null
+          campaign_id: string | null
+          confidence: number | null
+          created_at: string
+          decision_rationale: string | null
+          event_type: string
+          id: string
+          margin_after: number | null
+          margin_before: number | null
+          new_price: number | null
+          old_price: number | null
+          payload: Json | null
+          product_id: string | null
+          profit_impact: number | null
+          revenue_impact: number | null
+          user_id: string
+        }
+        Insert: {
+          auto_executed?: boolean | null
+          campaign_id?: string | null
+          confidence?: number | null
+          created_at?: string
+          decision_rationale?: string | null
+          event_type: string
+          id?: string
+          margin_after?: number | null
+          margin_before?: number | null
+          new_price?: number | null
+          old_price?: number | null
+          payload?: Json | null
+          product_id?: string | null
+          profit_impact?: number | null
+          revenue_impact?: number | null
+          user_id: string
+        }
+        Update: {
+          auto_executed?: boolean | null
+          campaign_id?: string | null
+          confidence?: number | null
+          created_at?: string
+          decision_rationale?: string | null
+          event_type?: string
+          id?: string
+          margin_after?: number | null
+          margin_before?: number | null
+          new_price?: number | null
+          old_price?: number | null
+          payload?: Json | null
+          product_id?: string | null
+          profit_impact?: number | null
+          revenue_impact?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profit_logs_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quick_start_publish_queue: {
         Row: {

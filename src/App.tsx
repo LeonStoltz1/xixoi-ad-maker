@@ -49,6 +49,7 @@ import CustomerIntake from "./pages/CustomerIntake";
 import CampaignStatus from "./pages/CampaignStatus";
 import { AIOnboardingPage } from "./features/onboarding";
 import { AutopilotSettingsPage } from "./components/autopilot";
+import ProfitDashboard from "./pages/ProfitDashboard";
 
 const queryClient = new QueryClient();
 
@@ -121,6 +122,7 @@ const App = () => (
 <Route path="/customer-intake" element={<CustomerIntake />} />
           <Route path="/ai-onboarding" element={<AIOnboardingPage />} />
           <Route path="/autopilot-settings" element={<AutopilotSettingsPage />} />
+          <Route path="/profit-dashboard" element={<ProfitDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
