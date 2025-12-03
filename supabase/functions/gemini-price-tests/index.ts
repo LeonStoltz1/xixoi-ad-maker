@@ -7,6 +7,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Tier-based LLM cost limits (USD per month)
+const TIER_LLM_COST_LIMITS: Record<string, number> = {
+  free: 0.16,
+  quickstart: 0.99,
+  pro: 6.00,
+  proUnlimited: 12.00,
+  elite: 29.00,
+  agency: 199.00,
+  autopilotProfitLite: 40.00,
+  autopilotProfitPro: 80.00,
+  autopilotProfitUltra: 160.00,
+  autopilotProfitEnterprise: 500.00,
+};
+
+const PRICE_TEST_COST = 0.02; // Estimated cost per price test
+
 const PRICE_TEST_SCHEMA = {
   name: "propose_price_tests",
   description: "Propose price tests for products to determine optimal pricing",
@@ -65,6 +81,84 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // ============= PLATFORM COST PROTECTION =============
+    // Get user's profile and plan
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', userId)
+      .single();
+
+    const userPlan = profile?.plan || 'free';
+    const tierLimit = TIER_LLM_COST_LIMITS[userPlan] || TIER_LLM_COST_LIMITS.free;
+
+    // Get current month's usage
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    const monthStartStr = monthStart.toISOString().split('T')[0];
+
+    const { data: usage } = await supabase
+      .from('user_llm_usage')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('month_start', monthStartStr)
+      .maybeSingle();
+
+    const currentCost = Number(usage?.llm_cost_usd || 0) + Number(usage?.total_infra_cost || 0);
+    const marginRemaining = tierLimit - currentCost;
+    const marginPercentage = tierLimit > 0 ? marginRemaining / tierLimit : 0;
+
+    // HARD BLOCK: Cannot run price tests if margin < 10%
+    if (marginPercentage < 0.10) {
+      // Log the blocked action
+      await supabase.from('profit_logs').insert({
+        user_id: userId,
+        event_type: 'action_blocked_platform_cost',
+        decision_rationale: `Price test blocked: user margin at ${(marginPercentage * 100).toFixed(1)}%`,
+        confidence: 1.0,
+        payload: { 
+          action: 'price_test',
+          marginRemaining,
+          tierLimit,
+          blocked_reason: 'platform_profit_protection'
+        }
+      });
+
+      return new Response(JSON.stringify({ 
+        error: 'AI usage limit reached',
+        blocked_reason: 'platform_profit_protection',
+        marginPercentage,
+        tests: [],
+        summary: 'Price testing is disabled until your AI usage resets. Upgrade your plan for higher limits.'
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Check if action would exceed remaining allowance
+    if (PRICE_TEST_COST > marginRemaining) {
+      await supabase.from('profit_logs').insert({
+        user_id: userId,
+        event_type: 'action_blocked_platform_cost',
+        decision_rationale: `Price test blocked: insufficient margin (${marginRemaining.toFixed(4)} < ${PRICE_TEST_COST})`,
+        confidence: 1.0,
+        payload: { action: 'price_test', marginRemaining, actionCost: PRICE_TEST_COST }
+      });
+
+      return new Response(JSON.stringify({ 
+        error: 'Insufficient AI budget remaining',
+        blocked_reason: 'platform_profit_protection',
+        marginRemaining,
+        tests: [],
+        summary: 'Not enough AI budget remaining for price tests this month.'
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    // ============= END PLATFORM COST PROTECTION =============
 
     // Fetch products and their history
     const { data: products } = await supabase
@@ -181,6 +275,14 @@ Propose 1-3 price tests that would help optimize profitability.
         }
       });
     }
+
+    // Track LLM usage for this action
+    await supabase.rpc('increment_user_llm_usage', {
+      p_user_id: userId,
+      p_cost: PRICE_TEST_COST,
+      p_price_tests: 1,
+      p_infra_cost: PRICE_TEST_COST
+    });
 
     return new Response(JSON.stringify({
       success: true,
