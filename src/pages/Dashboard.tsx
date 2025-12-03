@@ -31,6 +31,7 @@ import { CampaignContactSection } from "@/components/CampaignContactSection";
 import { detectContactInfo, removeContactInfo } from "@/utils/contactDetection";
 import { QuickStartBudgetWidget } from "@/components/QuickStartBudgetWidget";
 import { QueueStatusIndicator } from "@/components/QueueStatusIndicator";
+import { AutopilotStatusWidget } from "@/components/autopilot";
 
 interface Campaign {
   id: string;
@@ -232,6 +233,13 @@ export default function Dashboard() {
       <AISupportChat />
       <AppLayout title="Dashboard">
         <GlobalSpendSummary />
+
+        {/* Gemini Autopilot Widget */}
+        {campaigns.length > 0 && (
+          <div className="mt-6">
+            <AutopilotStatusWidget />
+          </div>
+        )}
 
         {/* Quick-Start Budget Widget */}
         <QuickStartBudgetWidget />
