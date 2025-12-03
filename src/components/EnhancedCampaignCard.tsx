@@ -466,16 +466,14 @@ export function EnhancedCampaignCard({
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-4">
           {/* Thumbnail Preview */}
-          <div className="w-20 h-20 flex-shrink-0 bg-muted relative overflow-hidden border border-border flex items-center justify-center">
-            {thumbnailUrl && !imageError ? (
+          <div className="w-20 h-20 flex-shrink-0 bg-muted relative overflow-hidden border border-border">
+            {thumbnailUrl && !imageError && (
               <img 
                 src={thumbnailUrl} 
                 alt={campaign.name}
                 className="w-full h-full object-cover"
                 onError={() => setImageError(true)}
               />
-            ) : (
-              <ImageIcon className="w-8 h-8 text-muted-foreground" />
             )}
           </div>
           <div className="space-y-2 flex-1 min-w-0">
