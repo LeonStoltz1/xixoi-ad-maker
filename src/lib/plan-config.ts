@@ -12,6 +12,20 @@ export const PLAN_CONFIG = {
   autopilotProfitEnterprise: "price_autopilot_profit_enterprise", // $1499/mo
 } as const;
 
+// Tier-based LLM cost limits (USD per month)
+export const TIER_LLM_COST_LIMITS: Record<string, number> = {
+  free: 0.16,
+  quickstart: 0.99,
+  pro: 6.00,
+  proUnlimited: 12.00,
+  elite: 29.00,
+  agency: 199.00,
+  autopilotProfitLite: 40.00,
+  autopilotProfitPro: 80.00,
+  autopilotProfitUltra: 160.00,
+  autopilotProfitEnterprise: 500.00,
+};
+
 export type PlanTier = keyof typeof PLAN_CONFIG;
 
 // Profit tier features configuration

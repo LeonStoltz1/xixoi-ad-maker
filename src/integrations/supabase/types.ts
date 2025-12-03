@@ -1437,6 +1437,30 @@ export type Database = {
         }
         Relationships: []
       }
+      config_system_costs: {
+        Row: {
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: []
+      }
       creative_memory: {
         Row: {
           ad_image_url: string | null
@@ -2834,6 +2858,57 @@ export type Database = {
         }
         Relationships: []
       }
+      user_llm_usage: {
+        Row: {
+          api_calls: number
+          autopilot_loops: number
+          conductor_executions: number
+          created_at: string
+          creative_generations: number
+          id: string
+          llm_cost_usd: number
+          llm_tokens_used: number
+          month_start: string
+          price_tests: number
+          safety_checks: number
+          total_infra_cost: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_calls?: number
+          autopilot_loops?: number
+          conductor_executions?: number
+          created_at?: string
+          creative_generations?: number
+          id?: string
+          llm_cost_usd?: number
+          llm_tokens_used?: number
+          month_start?: string
+          price_tests?: number
+          safety_checks?: number
+          total_infra_cost?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_calls?: number
+          autopilot_loops?: number
+          conductor_executions?: number
+          created_at?: string
+          creative_generations?: number
+          id?: string
+          llm_cost_usd?: number
+          llm_tokens_used?: number
+          month_start?: string
+          price_tests?: number
+          safety_checks?: number
+          total_infra_cost?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -2963,6 +3038,42 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_user_llm_usage: {
+        Args: {
+          p_api_calls?: number
+          p_autopilot_loops?: number
+          p_conductor_executions?: number
+          p_cost?: number
+          p_creative_generations?: number
+          p_infra_cost?: number
+          p_price_tests?: number
+          p_safety_checks?: number
+          p_tokens?: number
+          p_user_id: string
+        }
+        Returns: {
+          api_calls: number
+          autopilot_loops: number
+          conductor_executions: number
+          created_at: string
+          creative_generations: number
+          id: string
+          llm_cost_usd: number
+          llm_tokens_used: number
+          month_start: string
+          price_tests: number
+          safety_checks: number
+          total_infra_cost: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_llm_usage"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       lease_ai_jobs: {

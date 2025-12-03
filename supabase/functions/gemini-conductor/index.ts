@@ -7,6 +7,88 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Tier-based LLM cost limits (USD per month)
+const TIER_LLM_COST_LIMITS: Record<string, number> = {
+  free: 0.16,
+  quickstart: 0.99,
+  pro: 6.00,
+  proUnlimited: 12.00,
+  elite: 29.00,
+  agency: 199.00,
+  autopilotProfitLite: 40.00,
+  autopilotProfitPro: 80.00,
+  autopilotProfitUltra: 160.00,
+  autopilotProfitEnterprise: 500.00,
+};
+
+const CONDUCTOR_EXECUTION_COST = 0.025; // Estimated cost per conductor run
+
+// Helper to get user cost profile
+async function getUserCostProfile(supabase: any, userId: string) {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('plan')
+    .eq('id', userId)
+    .single();
+
+  const userPlan = profile?.plan || 'free';
+  const tierLimit = TIER_LLM_COST_LIMITS[userPlan] || TIER_LLM_COST_LIMITS.free;
+
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  const monthStartStr = monthStart.toISOString().split('T')[0];
+
+  const { data: usage } = await supabase
+    .from('user_llm_usage')
+    .select('*')
+    .eq('user_id', userId)
+    .gte('month_start', monthStartStr)
+    .maybeSingle();
+
+  const totalCost = Number(usage?.llm_cost_usd || 0) + Number(usage?.total_infra_cost || 0);
+  const marginRemaining = tierLimit - totalCost;
+  const marginPercentage = tierLimit > 0 ? marginRemaining / tierLimit : 0;
+
+  return {
+    userId,
+    tier: userPlan,
+    tierLimit,
+    totalCost,
+    marginRemaining,
+    marginPercentage,
+    status: marginPercentage < 0 ? 'exceeded' : 
+            marginPercentage < 0.05 ? 'blocked' : 
+            marginPercentage < 0.10 ? 'critical' : 
+            marginPercentage < 0.20 ? 'warning' : 'healthy'
+  };
+}
+
+// Format cost block for Gemini context
+function formatCostBlockForGemini(profile: any): string {
+  return `
+### SYSTEM COST BLOCK
+{
+  "userId": "${profile.userId}",
+  "tier": "${profile.tier}",
+  "tierLimit": ${profile.tierLimit.toFixed(2)},
+  "totalCost": ${profile.totalCost.toFixed(4)},
+  "marginRemaining": ${profile.marginRemaining.toFixed(4)},
+  "marginPercentage": ${(profile.marginPercentage * 100).toFixed(1)}%,
+  "status": "${profile.status}"
+}
+
+COST RULES (MUST OBEY):
+- You must ensure xiXoi remains profitable
+- If margin_remaining < 20% → downgrade recommendations, avoid high-cost actions
+- If margin_remaining < 10% → disable auto-execute for all decisions
+- If margin_remaining < 5% → block all actions except "stop spend" or "pause_campaign"  
+- If margin_remaining < 0% → hard stop ALL AI actions
+- NEVER propose high-cost actions for users with low system margin
+- NEVER run optimization if remaining allowance is insufficient
+- Always check this cost block before making ANY decision
+`;
+}
+
 // Enhanced decision schema with profit awareness
 const CONDUCTOR_DECISION_SCHEMA = {
   name: 'conductor_decisions',
@@ -129,6 +211,18 @@ serve(async (req) => {
 
     const settingsMap = new Map(autopilotSettings?.map(s => [s.user_id, s]) || []);
 
+    // 4.5 Get user cost profiles for platform profit protection
+    const userCostProfiles = new Map<string, any>();
+    for (const userId of userIds) {
+      const profile = await getUserCostProfile(supabaseClient, userId);
+      userCostProfiles.set(userId, profile);
+      
+      // Log if user is at risk
+      if (profile.status !== 'healthy') {
+        console.log(`User ${userId} cost status: ${profile.status} (${(profile.marginPercentage * 100).toFixed(1)}% remaining)`);
+      }
+    }
+
     // 5. Get product profitability data
     const { data: products } = await supabaseClient
       .from('product_profitability')
@@ -160,9 +254,17 @@ serve(async (req) => {
       '- Margin-adjusted ROAS > 1.0 means profitable, < 1.0 means losing money',
       '- Break-even ROAS = 100 / margin_percentage',
       '- Prioritize high-margin campaigns over high-volume campaigns',
-      '',
-      '=== ACTIVE CAMPAIGNS ==='
+      ''
     ];
+
+    // Add PLATFORM COST PROTECTION block for each user
+    contextParts.push('=== PLATFORM COST PROTECTION (PER USER) ===');
+    for (const [userId, costProfile] of userCostProfiles) {
+      contextParts.push(formatCostBlockForGemini(costProfile));
+    }
+    contextParts.push('');
+
+    contextParts.push('=== ACTIVE CAMPAIGNS ===');
 
     for (const campaign of campaigns) {
       const perf = performance?.filter(p => p.campaign_id === campaign.id) || [];
@@ -322,6 +424,37 @@ serve(async (req) => {
 
       if (decision.confidence < threshold) continue;
 
+      // PLATFORM COST PROTECTION: Check user's cost margin before auto-executing
+      const userCostProfile = userCostProfiles.get(campaign.user_id);
+      if (userCostProfile) {
+        // If margin < 10%, disable auto-execute entirely
+        if (userCostProfile.marginPercentage < 0.10) {
+          console.log(`BLOCKED: Auto-execute disabled for user ${campaign.user_id} - cost margin at ${(userCostProfile.marginPercentage * 100).toFixed(1)}%`);
+          
+          // Log the blocked action
+          await supabaseClient.from('profit_logs').insert({
+            user_id: campaign.user_id,
+            campaign_id: decision.campaign_id,
+            event_type: 'autopilot_suspended_platform_margin',
+            decision_rationale: `Auto-execute blocked: user cost margin at ${(userCostProfile.marginPercentage * 100).toFixed(1)}%`,
+            confidence: decision.confidence / 100,
+            payload: { 
+              decision_type: decision.decision_type,
+              blocked_reason: 'platform_profit_protection',
+              marginRemaining: userCostProfile.marginRemaining
+            }
+          });
+          continue;
+        }
+        
+        // If margin < 5%, only allow stop/pause actions
+        if (userCostProfile.marginPercentage < 0.05 && 
+            !['pause_campaign', 'budget_decrease'].includes(decision.decision_type)) {
+          console.log(`BLOCKED: Only stop/pause actions allowed for user ${campaign.user_id} - cost margin critical`);
+          continue;
+        }
+      }
+
       // PROFIT SAFETY: Check if action would increase spend on unprofitable campaign
       if (decision.decision_type === 'budget_increase') {
         const perf = performance?.filter(p => p.campaign_id === decision.campaign_id) || [];
@@ -389,6 +522,16 @@ serve(async (req) => {
     }
 
     console.log(`Conductor complete. Executed ${executedDecisions.length} auto-decisions.`);
+
+    // Track LLM usage for all users involved
+    for (const userId of userIds) {
+      await supabaseClient.rpc('increment_user_llm_usage', {
+        p_user_id: userId,
+        p_cost: CONDUCTOR_EXECUTION_COST / userIds.length, // Split cost across users
+        p_conductor_executions: 1,
+        p_infra_cost: CONDUCTOR_EXECUTION_COST / userIds.length
+      });
+    }
 
     return new Response(
       JSON.stringify({

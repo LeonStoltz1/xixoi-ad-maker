@@ -25,6 +25,8 @@ import {
   type ProductMargin,
   type CampaignMetrics 
 } from '@/lib/profit/calculations';
+import { PlatformCostWarning } from '@/components/PlatformCostWarning';
+import { usePlatformCosts } from '@/hooks/usePlatformCosts';
 
 interface ProductData {
   id: string;
@@ -79,6 +81,7 @@ export default function ProfitDashboard() {
     totalCampaigns: 0,
   });
   const { toast } = useToast();
+  const { costProfile, showCritical } = usePlatformCosts();
 
   useEffect(() => {
     loadData();
@@ -265,6 +268,9 @@ export default function ProfitDashboard() {
   return (
     <AppLayout title="Profit Dashboard" showBack backTo="/dashboard">
       <div className="space-y-6">
+        {/* Platform Cost Warning Banner */}
+        <PlatformCostWarning />
+        
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
@@ -326,11 +332,20 @@ export default function ProfitDashboard() {
 
         {/* Action Buttons */}
         <div className="flex gap-3">
-          <Button onClick={runPriceTests} disabled={runningTest}>
+          <Button 
+            onClick={runPriceTests} 
+            disabled={runningTest || showCritical}
+            title={showCritical ? 'AI usage limit reached' : undefined}
+          >
             <Zap className="h-4 w-4 mr-2" />
             {runningTest ? 'Generating...' : 'Generate Price Tests'}
           </Button>
-          <Button variant="outline" onClick={runSafetyCheck}>
+          <Button 
+            variant="outline" 
+            onClick={runSafetyCheck}
+            disabled={showCritical}
+            title={showCritical ? 'AI usage limit reached' : undefined}
+          >
             <AlertTriangle className="h-4 w-4 mr-2" />
             Run Safety Check
           </Button>

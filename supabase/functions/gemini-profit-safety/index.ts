@@ -7,6 +7,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Tier-based LLM cost limits (USD per month)
+const TIER_LLM_COST_LIMITS: Record<string, number> = {
+  free: 0.16,
+  quickstart: 0.99,
+  pro: 6.00,
+  proUnlimited: 12.00,
+  elite: 29.00,
+  agency: 199.00,
+  autopilotProfitLite: 40.00,
+  autopilotProfitPro: 80.00,
+  autopilotProfitUltra: 160.00,
+  autopilotProfitEnterprise: 500.00,
+};
+
+const SAFETY_CHECK_COST = 0.008; // Estimated cost per safety check
+
 const SAFETY_ACTION_SCHEMA = {
   name: "profit_safety_actions",
   description: "Evaluate campaigns for profit risks and recommend safety actions",
@@ -70,6 +86,54 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // ============= PLATFORM COST PROTECTION =============
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', userId)
+      .single();
+
+    const userPlan = profile?.plan || 'free';
+    const tierLimit = TIER_LLM_COST_LIMITS[userPlan] || TIER_LLM_COST_LIMITS.free;
+
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    const monthStartStr = monthStart.toISOString().split('T')[0];
+
+    const { data: usage } = await supabase
+      .from('user_llm_usage')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('month_start', monthStartStr)
+      .maybeSingle();
+
+    const currentCost = Number(usage?.llm_cost_usd || 0) + Number(usage?.total_infra_cost || 0);
+    const marginRemaining = tierLimit - currentCost;
+    const marginPercentage = tierLimit > 0 ? marginRemaining / tierLimit : 0;
+
+    // SOFT BLOCK: Safety checks can run at lower margins but not if exceeded
+    if (marginPercentage < 0.05) {
+      await supabase.from('profit_logs').insert({
+        user_id: userId,
+        event_type: 'action_blocked_platform_cost',
+        decision_rationale: `Safety check blocked: user margin at ${(marginPercentage * 100).toFixed(1)}%`,
+        confidence: 1.0,
+        payload: { action: 'safety_check', marginRemaining, tierLimit }
+      });
+
+      return new Response(JSON.stringify({ 
+        error: 'AI usage limit exceeded',
+        blocked_reason: 'platform_profit_protection',
+        actions: [],
+        overallRiskLevel: 'unknown',
+        summary: 'Safety checks disabled until AI usage resets.'
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    // ============= END PLATFORM COST PROTECTION =============
 
     // Fetch user's autopilot settings
     const { data: autopilotSettings } = await supabase
@@ -250,6 +314,14 @@ Evaluate each campaign and recommend appropriate safety actions.
         }
       });
     }
+
+    // Track LLM usage for this action
+    await supabase.rpc('increment_user_llm_usage', {
+      p_user_id: userId,
+      p_cost: SAFETY_CHECK_COST,
+      p_safety_checks: 1,
+      p_infra_cost: SAFETY_CHECK_COST
+    });
 
     return new Response(JSON.stringify({
       success: true,
