@@ -23,10 +23,13 @@ interface SavedImagesLibraryProps {
 
 export function SavedImagesLibrary({ isOpen, onClose, onSelectImage }: SavedImagesLibraryProps) {
   const { toast } = useToast();
-  const { tier } = useEffectiveTier();
+  const { tier, loading: tierLoading } = useEffectiveTier();
   const [savedImages, setSavedImages] = useState<SavedImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  // Check if user has any paid subscription (not free)
+  const hasSubscription = tier !== 'free' && tier !== null;
 
   useEffect(() => {
     if (isOpen) {
@@ -85,7 +88,7 @@ export function SavedImagesLibrary({ isOpen, onClose, onSelectImage }: SavedImag
 
   const handleSelectImage = async (imageUrl: string, imageId: string) => {
     // Check if user has subscription
-    if (tier === 'free') {
+    if (!hasSubscription && !tierLoading) {
       toast({
         title: "Subscription required",
         description: "Upgrade to use saved images in your campaigns",
@@ -154,8 +157,8 @@ export function SavedImagesLibrary({ isOpen, onClose, onSelectImage }: SavedImag
                     onContextMenu={(e) => e.preventDefault()}
                   />
                   
-                  {/* Screenshot protection overlay */}
-                  {tier === 'free' && (
+                  {/* Screenshot protection overlay - only show for free tier when loaded */}
+                  {!tierLoading && !hasSubscription && (
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
                       <span className="text-white text-xs font-semibold">Subscription Required</span>
                     </div>
