@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, ArrowRight, Check, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FreeUpgradeModalProps {
   isOpen: boolean;
@@ -23,20 +24,81 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
   const [dailyBudget, setDailyBudget] = useState(40); // Meta minimum $40/day
   const [adBudgetType, setAdBudgetType] = useState<'recurring' | 'onetime'>('onetime');
   const [agreedToRecurring, setAgreedToRecurring] = useState(false);
+  const [existingPlan, setExistingPlan] = useState<string | null>(null);
   const { createCheckoutSession, loading } = useStripeCheckout();
+
+  // Fetch user's existing plan
+  useEffect(() => {
+    const fetchUserPlan = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('plan')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile) {
+          setExistingPlan(profile.plan);
+          // If user already has quickstart, default to that
+          if (profile.plan === 'quickstart') {
+            setSelectedPlan('quickstart');
+          } else if (profile.plan === 'pro') {
+            setSelectedPlan('pro');
+          }
+        }
+      }
+    };
+    
+    if (isOpen) {
+      fetchUserPlan();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
+  // Check if user already has an active subscription
+  const hasExistingSubscription = existingPlan === 'quickstart' || existingPlan === 'pro' || existingPlan === 'elite' || existingPlan === 'agency';
+  const isQuickStartUser = existingPlan === 'quickstart';
+
   const weeklyBudget = dailyBudget * 7;
-  const serviceFee = selectedPlan === 'quickstart' ? weeklyBudget * 0.05 : 0;
+  // 5% service fee for Quick-Start users (both existing and new)
+  const serviceFee = (selectedPlan === 'quickstart' || isQuickStartUser) ? weeklyBudget * 0.05 : 0;
   const subscriptionPrice = selectedPlan === 'quickstart' ? 49 : 99;
-  const totalWithAdBudget = subscriptionPrice + weeklyBudget + serviceFee;
-  const totalSubscriptionOnly = subscriptionPrice;
+  
+  // If user has subscription, don't charge subscription again
+  const subscriptionCharge = hasExistingSubscription ? 0 : subscriptionPrice;
+  const totalWithAdBudget = subscriptionCharge + weeklyBudget + serviceFee;
+  const totalSubscriptionOnly = subscriptionCharge;
 
   const canProceed = !includeAdBudget || adBudgetType === 'onetime' || (adBudgetType === 'recurring' && agreedToRecurring);
 
   const handleUpgrade = async () => {
     if (!canProceed) return;
+    
+    // If user already has subscription, just process ad budget payment
+    if (hasExistingSubscription && includeAdBudget) {
+      // Call ad budget payment endpoint instead of subscription checkout
+      const { data, error } = await supabase.functions.invoke('create-ad-budget-payment', {
+        body: { 
+          amount: weeklyBudget * 100, // Convert to cents
+          platforms: ['meta'],
+          campaignId 
+        }
+      });
+      
+      if (error) {
+        console.error('Error creating ad budget payment:', error);
+        return;
+      }
+      
+      // Redirect to Stripe checkout for ad budget
+      if (data?.clientSecret) {
+        // Need to handle embedded checkout for ad budget
+        window.location.href = `/campaign/${campaignId}/publish`;
+      }
+      return;
+    }
     
     const priceType = selectedPlan === 'quickstart' ? 'quickstart_subscription' : 'pro_subscription';
     
@@ -153,64 +215,79 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
           </div>
         </div>
 
-        {/* Plan Selection */}
-        <div className="space-y-4 mb-6">
-          {/* Quick-Start Option */}
-          <button
-            onClick={() => setSelectedPlan('quickstart')}
-            className={`w-full border text-left transition-all ${
-              selectedPlan === 'quickstart'
-                ? 'border-[2px] border-foreground'
-                : 'border border-foreground'
-            }`}
-          >
-            <div className="p-4 md:p-6">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <div className="text-xs font-bold uppercase tracking-wide mb-1">QUICK-START</div>
-                  <div className="text-xl md:text-2xl font-bold">$49/month</div>
+        {/* Plan Selection - Only show if user doesn't have subscription */}
+        {!hasExistingSubscription && (
+          <div className="space-y-4 mb-6">
+            {/* Quick-Start Option */}
+            <button
+              onClick={() => setSelectedPlan('quickstart')}
+              className={`w-full border text-left transition-all ${
+                selectedPlan === 'quickstart'
+                  ? 'border-[2px] border-foreground'
+                  : 'border border-foreground'
+              }`}
+            >
+              <div className="p-4 md:p-6">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <div className="text-xs font-bold uppercase tracking-wide mb-1">QUICK-START</div>
+                    <div className="text-xl md:text-2xl font-bold">$49/month</div>
+                  </div>
+                  <div className={`w-5 h-5 border-2 flex items-center justify-center mt-1 border-foreground`}>
+                    {selectedPlan === 'quickstart' && <div className="w-3 h-3 bg-foreground" />}
+                  </div>
                 </div>
-                <div className={`w-5 h-5 border-2 flex items-center justify-center mt-1 border-foreground`}>
-                  {selectedPlan === 'quickstart' && <div className="w-3 h-3 bg-foreground" />}
-                </div>
+                <ul className="space-y-1.5 text-xs md:text-sm">
+                  <li>• Publish instantly via xiXoi accounts</li>
+                  <li>• $300/week spend cap (5% service fee on ad budget)</li>
+                  <li>• No watermark</li>
+                  <li>• AI targeting + variants</li>
+                </ul>
               </div>
-              <ul className="space-y-1.5 text-xs md:text-sm">
-                <li>• Publish instantly via xiXoi accounts</li>
-                <li>• $300/week spend cap (5% service fee on ad budget)</li>
-                <li>• No watermark</li>
-                <li>• AI targeting + variants</li>
-              </ul>
-            </div>
-          </button>
+            </button>
 
-          {/* Publish Pro Option */}
-          <button
-            onClick={() => setSelectedPlan('pro')}
-            className={`w-full border text-left transition-all ${
-              selectedPlan === 'pro'
-                ? 'border-[2px] border-foreground'
-                : 'border border-foreground'
-            }`}
-          >
-            <div className="p-4 md:p-6">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <div className="text-xs font-bold uppercase tracking-wide mb-1">PUBLISH PRO</div>
-                  <div className="text-xl md:text-2xl font-bold">$99/month</div>
+            {/* Publish Pro Option */}
+            <button
+              onClick={() => setSelectedPlan('pro')}
+              className={`w-full border text-left transition-all ${
+                selectedPlan === 'pro'
+                  ? 'border-[2px] border-foreground'
+                  : 'border border-foreground'
+              }`}
+            >
+              <div className="p-4 md:p-6">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <div className="text-xs font-bold uppercase tracking-wide mb-1">PUBLISH PRO</div>
+                    <div className="text-xl md:text-2xl font-bold">$99/month</div>
+                  </div>
+                  <div className={`w-5 h-5 border-2 flex items-center justify-center mt-1 border-foreground`}>
+                    {selectedPlan === 'pro' && <div className="w-3 h-3 bg-foreground" />}
+                  </div>
                 </div>
-                <div className={`w-5 h-5 border-2 flex items-center justify-center mt-1 border-foreground`}>
-                  {selectedPlan === 'pro' && <div className="w-3 h-3 bg-foreground" />}
-                </div>
+                <ul className="space-y-1.5 text-xs md:text-sm">
+                  <li>• Use YOUR connected ad accounts</li>
+                  <li>• Unlimited spend, no caps or service fees</li>
+                  <li>• Full control over targeting</li>
+                  <li>• Political ads allowed (FEC compliant)</li>
+                </ul>
               </div>
-              <ul className="space-y-1.5 text-xs md:text-sm">
-                <li>• Use YOUR connected ad accounts</li>
-                <li>• Unlimited spend, no caps or service fees</li>
-                <li>• Full control over targeting</li>
-                <li>• Political ads allowed (FEC compliant)</li>
-              </ul>
+            </button>
+          </div>
+        )}
+
+        {/* Show existing subscription info */}
+        {hasExistingSubscription && (
+          <div className="bg-muted border border-border p-4 mb-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Check className="w-5 h-5 text-primary" />
+              <span className="font-bold capitalize">{existingPlan} Subscription Active</span>
             </div>
-          </button>
-        </div>
+            <p className="text-sm opacity-70">
+              You already have an active subscription. Just add your ad budget below to start publishing.
+            </p>
+          </div>
+        )}
 
         {/* Ad Budget Section */}
         <div className="border border-foreground p-4 md:p-6 mb-6">
@@ -308,7 +385,7 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
                         <div className="text-sm font-bold text-amber-800">Important: Recurring Weekly Charge</div>
                         <p className="text-xs text-amber-700 mt-1">
                           By selecting auto-renew, you agree to be charged <strong>${weeklyBudget.toFixed(0)}</strong> every week 
-                          {selectedPlan === 'quickstart' && <span> plus ${serviceFee.toFixed(2)} service fee (5%)</span>} until you cancel. 
+                          {(selectedPlan === 'quickstart' || isQuickStartUser) && <span> plus ${serviceFee.toFixed(2)} service fee (5%)</span>} until you cancel. 
                           You can cancel anytime from your dashboard.
                         </p>
                       </div>
@@ -333,7 +410,7 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
                   <span>Weekly Ad Budget (7 days)</span>
                   <span className="font-medium">${weeklyBudget.toFixed(2)}</span>
                 </div>
-                {selectedPlan === 'quickstart' && (
+                {(selectedPlan === 'quickstart' || isQuickStartUser) && (
                   <div className="flex justify-between text-sm">
                     <span>Service Fee (5%)</span>
                     <span className="font-medium">${serviceFee.toFixed(2)}</span>
@@ -351,7 +428,7 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
             </div>
           )}
 
-          {!includeAdBudget && (
+          {!includeAdBudget && !hasExistingSubscription && (
             <p className="text-xs opacity-70">
               You can add ad budget later from your dashboard. Subscription only gets you access to publish.
             </p>
@@ -361,10 +438,12 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
         {/* Total Summary */}
         <div className="border-t border-foreground pt-4 mb-6">
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>{selectedPlan === 'quickstart' ? 'Quick-Start' : 'Publish Pro'} Subscription</span>
-              <span>${subscriptionPrice}/mo</span>
-            </div>
+            {!hasExistingSubscription && (
+              <div className="flex justify-between text-sm">
+                <span>{selectedPlan === 'quickstart' ? 'Quick-Start' : 'Publish Pro'} Subscription</span>
+                <span>${subscriptionPrice}/mo</span>
+              </div>
+            )}
             {includeAdBudget && (
               <>
                 <div className="flex justify-between text-sm">
@@ -373,7 +452,7 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
                   </span>
                   <span>${weeklyBudget.toFixed(2)}{adBudgetType === 'recurring' ? '/wk' : ''}</span>
                 </div>
-                {selectedPlan === 'quickstart' && serviceFee > 0 && (
+                {(selectedPlan === 'quickstart' || isQuickStartUser) && serviceFee > 0 && (
                   <div className="flex justify-between text-sm opacity-70">
                     <span>Service Fee (5%)</span>
                     <span>${serviceFee.toFixed(2)}{adBudgetType === 'recurring' ? '/wk' : ''}</span>
@@ -399,11 +478,14 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
             size="lg"
             className="w-full text-sm md:text-base lg:text-lg py-6"
             onClick={handleUpgrade}
-            disabled={loading || !canProceed}
+            disabled={loading || !canProceed || (hasExistingSubscription && !includeAdBudget)}
           >
             {loading ? "Processing..." : (
               <>
-                {includeAdBudget ? 'Subscribe & Fund Ads' : 'Subscribe Now'}
+                {hasExistingSubscription 
+                  ? (includeAdBudget ? 'Fund Ads' : 'Already Subscribed')
+                  : (includeAdBudget ? 'Subscribe & Fund Ads' : 'Subscribe Now')
+                }
                 <ArrowRight className="w-5 h-5 ml-2" />
               </>
             )}
@@ -419,7 +501,7 @@ export const FreeUpgradeModal = ({ isOpen, onClose, campaignId, adData }: FreeUp
             onClick={onClose}
             className="w-full text-sm hover:opacity-70 transition-opacity py-2"
           >
-            Stay on Free (Cannot Publish)
+            {hasExistingSubscription ? 'Cancel' : 'Stay on Free (Cannot Publish)'}
           </button>
         </div>
 
