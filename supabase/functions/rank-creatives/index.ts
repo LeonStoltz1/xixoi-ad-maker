@@ -84,9 +84,53 @@ interface DecisionProvenance {
   final_utility: number;
   genome_bonus: number;
   gates_applied: string[];
-  penalties: Array<{ reason: string; amount: number }>;
+  penalties: Array<{ reason: string; amount: number; match_type?: string }>;
   boosts: Array<{ reason: string; amount: number }>;
   regret_matches: string[];
+  total_regret_penalty: number;
+  regret_penalty_capped: boolean;
+}
+
+// Entropy state transition tracking
+interface EntropyTransition {
+  from_state: 'healthy' | 'warning' | 'critical';
+  to_state: 'healthy' | 'warning' | 'critical';
+  normalized_entropy: number;
+  timestamp: string;
+}
+
+function getEntropyState(normalizedEntropy: number): 'healthy' | 'warning' | 'critical' {
+  if (normalizedEntropy >= 0.6) return 'healthy';
+  if (normalizedEntropy >= 0.4) return 'warning';
+  return 'critical';
+}
+
+// Simple hash for provenance (store full logs only on anomalies)
+function hashProvenance(provenance: DecisionProvenance): string {
+  const str = JSON.stringify({
+    id: provenance.creative_id,
+    base: provenance.base_utility.toFixed(4),
+    final: provenance.final_utility.toFixed(4),
+    gates: provenance.gates_applied.length,
+    penalties: provenance.penalties.length,
+    boosts: provenance.boosts.length,
+  });
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return hash.toString(16);
+}
+
+// Determine if provenance is anomalous (should store full log)
+function isAnomalousProvenance(provenance: DecisionProvenance): boolean {
+  return (
+    provenance.gates_applied.length > 0 ||
+    provenance.regret_penalty_capped ||
+    provenance.total_regret_penalty > provenance.base_utility * 0.2 ||
+    Math.abs(provenance.final_utility - provenance.base_utility) > provenance.base_utility * 0.3
+  );
 }
 
 serve(async (req) => {
@@ -145,11 +189,22 @@ serve(async (req) => {
 
     // Normalized entropy for drift detection
     const normalizedEntropy = calculateNormalizedEntropy(clusterDistribution);
+    const currentEntropyState = getEntropyState(normalizedEntropy);
+    
+    // Track entropy state transitions
+    let entropyTransition: EntropyTransition | null = null;
+    const previousEntropyKey = `entropy_state_${user.id}`;
+    // Note: In production, store this in a cache or user session
     const isLowEntropy = normalizedEntropy < 0.4 && totalCreatives > 10;
 
     const rankedCreatives = [];
     const gatedCreatives = [];
     const provenanceLog: DecisionProvenance[] = [];
+    const provenanceHashes: string[] = [];
+    const anomalousProvenance: DecisionProvenance[] = [];
+
+    // Regret penalty cap constant (40% of base utility max)
+    const REGRET_PENALTY_CAP_RATIO = 0.4;
 
     for (const creative of inputCreatives) {
       const metrics = (creative.performance_metrics || {}) as Record<string, unknown>;
@@ -161,6 +216,8 @@ serve(async (req) => {
         base_utility: 0,
         final_utility: 0,
         genome_bonus: 0,
+        total_regret_penalty: 0,
+        regret_penalty_capped: false,
         gates_applied: [],
         penalties: [],
         boosts: [],
@@ -213,16 +270,29 @@ serve(async (req) => {
 
       provenance.base_utility = utility;
 
-      // === REGRET PENALTIES (time-decayed) ===
+      // === REGRET PENALTIES (time-decayed, differentiated by match type, capped) ===
+      let totalRegretPenalty = 0;
       for (const regret of regretMemory || []) {
         const decayedSeverity = getDecayedSeverity(regret.severity || 0.5, regret.created_at);
         if (decayedSeverity < 0.1) continue; // Skip stale regrets
 
         const ctx = regret.context || {};
-        if (ctx.style_cluster === styleCluster || ctx.platform === platform) {
-          const penalty = decayedSeverity * 0.1 * regret.tier;
-          utility -= penalty;
-          provenance.penalties.push({ reason: `regret_match_tier${regret.tier}`, amount: penalty });
+        const styleMatch = ctx.style_cluster === styleCluster;
+        const platformMatch = ctx.platform === platform;
+        
+        if (styleMatch || platformMatch) {
+          // Differentiated weighting: style match (1.0) > platform match (0.6)
+          const matchWeight = styleMatch ? 1.0 : 0.6;
+          const matchType = styleMatch ? 'style' : 'platform';
+          const basePenalty = decayedSeverity * 0.1 * regret.tier;
+          const penalty = basePenalty * matchWeight;
+          
+          totalRegretPenalty += penalty;
+          provenance.penalties.push({ 
+            reason: `regret_${matchType}_match_tier${regret.tier}`, 
+            amount: penalty,
+            match_type: matchType
+          });
           provenance.regret_matches.push(regret.id);
         }
 
@@ -232,6 +302,20 @@ serve(async (req) => {
           utility += boost;
           provenance.boosts.push({ reason: 'near_miss_promotion', amount: boost });
         }
+      }
+
+      // Apply capped regret penalty (max 40% of base utility)
+      const maxRegretPenalty = provenance.base_utility * REGRET_PENALTY_CAP_RATIO;
+      const appliedRegretPenalty = Math.min(totalRegretPenalty, maxRegretPenalty);
+      provenance.total_regret_penalty = totalRegretPenalty;
+      provenance.regret_penalty_capped = totalRegretPenalty > maxRegretPenalty;
+      utility -= appliedRegretPenalty;
+      
+      if (provenance.regret_penalty_capped) {
+        provenance.penalties.push({ 
+          reason: `regret_penalty_capped_from_${totalRegretPenalty.toFixed(3)}_to_${appliedRegretPenalty.toFixed(3)}`, 
+          amount: totalRegretPenalty - appliedRegretPenalty 
+        });
       }
 
       // === GENOME BONUS (Wilson-smoothed, capped at 25%) ===
@@ -264,13 +348,21 @@ serve(async (req) => {
       }
 
       provenance.final_utility = utility;
+      
+      // Store provenance hash, full log only for anomalies
+      const provenanceHash = hashProvenance(provenance);
+      provenanceHashes.push(provenanceHash);
+      if (isAnomalousProvenance(provenance)) {
+        anomalousProvenance.push(provenance);
+      }
       provenanceLog.push(provenance);
 
       rankedCreatives.push({
         ...creative,
         utility_score: utility,
         genome_boosted: genome?.genome_confidence > 0.5,
-        provenance,
+        provenance_hash: provenanceHash,
+        provenance: isAnomalousProvenance(provenance) ? provenance : undefined, // Only include full provenance for anomalies in response
         rank_position: 0,
       });
     }
@@ -278,6 +370,11 @@ serve(async (req) => {
     // Sort and assign ranks
     rankedCreatives.sort((a, b) => (b.utility_score || 0) - (a.utility_score || 0));
     rankedCreatives.forEach((c, i) => { c.rank_position = i + 1; });
+
+    // Log entropy state transition if changed
+    if (currentEntropyState !== 'healthy' || totalCreatives > 10) {
+      console.log(`[CRL Entropy] user=${user.id} state=${currentEntropyState} normalized=${normalizedEntropy.toFixed(3)} clusters=${Object.keys(clusterDistribution).length}`);
+    }
 
     // Store ranked creatives
     if (campaign_id) {
@@ -296,20 +393,23 @@ serve(async (req) => {
       }
     }
 
-    console.log(`[CRL] user=${user.id} ranked=${rankedCreatives.length} gated=${gatedCreatives.length} entropy=${normalizedEntropy.toFixed(2)}`);
+    console.log(`[CRL] user=${user.id} ranked=${rankedCreatives.length} gated=${gatedCreatives.length} entropy=${normalizedEntropy.toFixed(2)} anomalies=${anomalousProvenance.length}`);
 
     return new Response(
       JSON.stringify({
         ranked: rankedCreatives,
         gated: gatedCreatives,
-        provenance: provenanceLog,
+        provenance_hashes: provenanceHashes,
+        anomalous_provenance: anomalousProvenance, // Full logs only for anomalies
         metadata: {
           total_input: inputCreatives.length,
           total_ranked: rankedCreatives.length,
           total_gated: gatedCreatives.length,
           normalized_entropy: normalizedEntropy,
+          entropy_state: currentEntropyState,
           low_entropy_warning: isLowEntropy,
           genome_active: genome?.genome_confidence > 0.5,
+          regret_penalties_capped: rankedCreatives.filter(c => c.provenance?.regret_penalty_capped).length,
         },
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
