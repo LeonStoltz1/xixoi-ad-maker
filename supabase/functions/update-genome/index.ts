@@ -79,6 +79,26 @@ function calculateIntraGenomeEntropy(styleClusters: Record<string, number>): num
   return entropy;
 }
 
+// Normalized entropy for consistent state tracking
+function calculateNormalizedEntropy(styleClusters: Record<string, number>): number {
+  const values = Object.values(styleClusters);
+  const total = values.reduce((a, b) => a + b, 0);
+  const k = values.filter(v => v > 0).length;
+  if (total === 0 || k <= 1) return 1;
+  let entropy = 0;
+  for (const count of values) {
+    const p = count / total;
+    if (p > 0) entropy -= p * Math.log2(p);
+  }
+  return entropy / Math.log2(k);
+}
+
+function getEntropyState(normalizedEntropy: number): 'healthy' | 'warning' | 'critical' {
+  if (normalizedEntropy >= 0.6) return 'healthy';
+  if (normalizedEntropy >= 0.4) return 'warning';
+  return 'critical';
+}
+
 function createOutcomeEmbedding(metrics: Record<string, unknown>, isProfitable: boolean, isStable: boolean): number[] {
   return [
     (metrics.roas as number) || 0,
@@ -289,11 +309,14 @@ serve(async (req) => {
       ? 'profitable_stable_outcomes_processed' 
       : 'no_profitable_stable_outcomes';
 
-    const intraGenomeEntropy = calculateIntraGenomeEntropy(
-      Object.fromEntries(Object.entries(styleClusters).map(([k, v]) => [k, (v as { count: number }).count || 0]))
+    const clusterCounts = Object.fromEntries(
+      Object.entries(styleClusters).map(([k, v]) => [k, (v as { count: number }).count || 0])
     );
+    const intraGenomeEntropy = calculateIntraGenomeEntropy(clusterCounts);
+    const normalizedEntropy = calculateNormalizedEntropy(clusterCounts);
+    const entropyState = getEntropyState(normalizedEntropy);
 
-    // Save genome
+    // Save genome with entropy state for CRL transition tracking
     const { data: savedGenome, error: updateError } = await supabase
       .from('creator_genomes')
       .update({
@@ -306,6 +329,8 @@ serve(async (req) => {
         genome_confidence: genomeConfidence,
         intra_genome_entropy: intraGenomeEntropy,
         mutation_history: mutationHistory,
+        last_entropy_state: entropyState,
+        last_entropy_value: normalizedEntropy,
         updated_at: new Date().toISOString(),
       })
       .eq('user_id', user.id)
