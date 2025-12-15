@@ -236,7 +236,8 @@ serve(async (req) => {
       const policyFlags = metrics.policy_flags as string[];
       if (policyFlags?.length > 0) {
         provenance.gates_applied.push(`policy_flags: ${policyFlags.join(', ')}`);
-        gatedCreatives.push({ ...creative, gated: true, gate_reason: 'policy_violation', provenance });
+        const gatedHash = hashProvenance(provenance);
+        gatedCreatives.push({ ...creative, gated: true, gate_reason: 'policy_violation', regret_penalty_capped: false, provenance_hash: gatedHash, provenance });
         provenanceLog.push(provenance);
         continue;
       }
@@ -244,7 +245,8 @@ serve(async (req) => {
       const roas = metrics.roas as number;
       if (roas !== null && roas < 0) {
         provenance.gates_applied.push('negative_roi');
-        gatedCreatives.push({ ...creative, gated: true, gate_reason: 'negative_roi', provenance });
+        const gatedHash = hashProvenance(provenance);
+        gatedCreatives.push({ ...creative, gated: true, gate_reason: 'negative_roi', regret_penalty_capped: false, provenance_hash: gatedHash, provenance });
         provenanceLog.push(provenance);
         continue;
       }
@@ -257,7 +259,8 @@ serve(async (req) => {
         );
         if (clusterRegrets.length > 2) {
           provenance.gates_applied.push(`cluster_saturation: ${styleCluster} at ${((clusterCount/totalCreatives)*100).toFixed(0)}%`);
-          gatedCreatives.push({ ...creative, gated: true, gate_reason: 'cluster_saturation_with_regret', provenance });
+          const gatedHash = hashProvenance(provenance);
+          gatedCreatives.push({ ...creative, gated: true, gate_reason: 'cluster_saturation_with_regret', regret_penalty_capped: false, provenance_hash: gatedHash, provenance });
           provenanceLog.push(provenance);
           continue;
         }
