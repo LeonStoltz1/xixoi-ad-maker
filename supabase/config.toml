@@ -178,3 +178,9 @@ verify_jwt = true
 
 [functions.test-crl-genome]
 verify_jwt = true
+
+[functions.mutate-creatives]
+verify_jwt = true
+
+[functions.test-mutation-engine]
+verify_jwt = false

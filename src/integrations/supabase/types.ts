@@ -2135,6 +2135,72 @@ export type Database = {
         }
         Relationships: []
       }
+      mutation_events: {
+        Row: {
+          applied: boolean | null
+          base_style_cluster: string | null
+          campaign_id: string | null
+          created_at: string | null
+          creative_id: string | null
+          id: string
+          mutation_score: number | null
+          mutations: Json
+          outcome_class: string | null
+          outcome_metrics: Json | null
+          platform: string
+          rank_after: number | null
+          rank_before: number | null
+          user_id: string
+        }
+        Insert: {
+          applied?: boolean | null
+          base_style_cluster?: string | null
+          campaign_id?: string | null
+          created_at?: string | null
+          creative_id?: string | null
+          id?: string
+          mutation_score?: number | null
+          mutations?: Json
+          outcome_class?: string | null
+          outcome_metrics?: Json | null
+          platform: string
+          rank_after?: number | null
+          rank_before?: number | null
+          user_id: string
+        }
+        Update: {
+          applied?: boolean | null
+          base_style_cluster?: string | null
+          campaign_id?: string | null
+          created_at?: string | null
+          creative_id?: string | null
+          id?: string
+          mutation_score?: number | null
+          mutations?: Json
+          outcome_class?: string | null
+          outcome_metrics?: Json | null
+          platform?: string
+          rank_after?: number | null
+          rank_before?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mutation_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mutation_events_creative_id_fkey"
+            columns: ["creative_id"]
+            isOneToOne: false
+            referencedRelation: "creatives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       optimization_logs: {
         Row: {
           action: string

@@ -285,6 +285,29 @@ serve(async (req) => {
         .update({ performance_metrics: metrics, published_at: new Date().toISOString() })
         .eq('id', outcome.creative_id)
         .eq('user_id', user.id);
+
+      // === CLOSE THE MUTATION LOOP ===
+      // Update mutation_events with outcomes for any creatives that were mutations
+      const outcomeClass = isProfitable && isStable ? 'win' 
+        : isProfitable ? 'near_miss'
+        : isStable ? 'loss'
+        : 'unstable';
+
+      await supabase
+        .from('mutation_events')
+        .update({
+          outcome_metrics: {
+            roas: metrics.roas,
+            ctr: metrics.ctr,
+            stability_score: metrics.stability_score,
+            spend: metrics.spend,
+            conversions: metrics.conversions,
+          },
+          outcome_class: outcomeClass,
+        })
+        .eq('creative_id', outcome.creative_id)
+        .eq('user_id', user.id)
+        .is('outcome_class', null); // Only update if not already set
     }
 
     // === SHOCK DECAY (always check) ===
