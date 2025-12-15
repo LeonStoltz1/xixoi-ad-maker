@@ -240,10 +240,62 @@ Deno.serve(async (req) => {
     
     console.log(`CRITICAL: Enforcing user platform selections - only publishing to: ${placements.join(', ')}`);
 
+    // Step 3a: Upload image to Meta to get image_hash (required - image_url is not supported)
+    let imageHash = "";
+    const imageUrl = creativeAsset?.asset_url || variant.creative_url;
+    
+    if (imageUrl) {
+      console.log("Uploading image to Meta:", imageUrl);
+      
+      const imageUploadParams = new URLSearchParams({
+        url: imageUrl,
+        access_token: token
+      });
+
+      const imageUploadResponse = await fetch(
+        `${baseUrl}/${adAccountId}/adimages`,
+        {
+          method: "POST",
+          body: imageUploadParams
+        }
+      );
+
+      const imageUploadData = await imageUploadResponse.json();
+      
+      if (!imageUploadResponse.ok) {
+        console.error("Meta image upload failed:", imageUploadData);
+        return new Response(
+          JSON.stringify({ error: "Failed to upload image to Meta", details: imageUploadData }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Extract image hash from response (format: { images: { [filename]: { hash: "..." } } })
+      const images = imageUploadData.images;
+      if (images) {
+        const firstImageKey = Object.keys(images)[0];
+        imageHash = images[firstImageKey]?.hash || "";
+      }
+      
+      console.log("Image uploaded successfully, hash:", imageHash);
+    }
+
+    if (!imageHash) {
+      console.error("No image hash obtained - cannot create creative without image");
+      return new Response(
+        JSON.stringify({ 
+          error: "IMAGE_REQUIRED", 
+          message: "A valid image is required to create Meta ads. Please upload an image for this campaign." 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Step 3b: Create Ad Creative with image_hash
     const creativeParams = new URLSearchParams({
       name: `${campaign.name} - Creative`,
       object_story_spec: JSON.stringify({
-        page_id: pageId, // Use real Facebook Page ID from credentials
+        page_id: pageId,
         link_data: {
           link: campaign.landing_url || "https://xixoi.com",
           message: variant.body_copy || campaign.name,
@@ -251,7 +303,7 @@ Deno.serve(async (req) => {
           call_to_action: {
             type: "LEARN_MORE"
           },
-          image_url: creativeAsset?.asset_url || ""
+          image_hash: imageHash
         }
       }),
       degrees_of_freedom_spec: JSON.stringify({
