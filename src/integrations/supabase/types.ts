@@ -1458,6 +1458,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "campaigns_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "vw_genome_health"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       competitor_ads: {
@@ -2146,6 +2153,7 @@ export type Database = {
           mutated_fields: Json | null
           mutation_key: string | null
           mutation_score: number | null
+          mutation_source: string | null
           mutations: Json
           outcome_class: string | null
           outcome_metrics: Json | null
@@ -2164,6 +2172,7 @@ export type Database = {
           mutated_fields?: Json | null
           mutation_key?: string | null
           mutation_score?: number | null
+          mutation_source?: string | null
           mutations?: Json
           outcome_class?: string | null
           outcome_metrics?: Json | null
@@ -2182,6 +2191,7 @@ export type Database = {
           mutated_fields?: Json | null
           mutation_key?: string | null
           mutation_score?: number | null
+          mutation_source?: string | null
           mutations?: Json
           outcome_class?: string | null
           outcome_metrics?: Json | null
@@ -2356,6 +2366,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "vw_genome_health"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -3032,6 +3049,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "stripe_customers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "vw_genome_health"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       subscriptions: {
@@ -3081,6 +3105,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "vw_genome_health"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -3360,6 +3391,59 @@ export type Database = {
           current_tier: string | null
           growth_rate: number | null
           total_referrals: number | null
+        }
+        Relationships: []
+      }
+      vw_genome_health: {
+        Row: {
+          campaigns_impacted: number | null
+          genome_confidence: number | null
+          intra_genome_entropy: number | null
+          total_mutations_with_outcomes: number | null
+          user_avg_roas: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      vw_mutation_by_source: {
+        Row: {
+          avg_roas: number | null
+          losses: number | null
+          mutation_source: string | null
+          total_mutations: number | null
+          wins: number | null
+          with_outcomes: number | null
+        }
+        Relationships: []
+      }
+      vw_mutation_lift: {
+        Row: {
+          base_roas: number | null
+          mutated_roas: number | null
+          mutation_source: string | null
+          mutations_with_outcomes: number | null
+          roas_lift_pct: number | null
+        }
+        Relationships: []
+      }
+      vw_mutation_lift_delayed: {
+        Row: {
+          base_roas: number | null
+          effective_date: string | null
+          mutated_roas_delayed: number | null
+          mutation_source: string | null
+          roas_lift_pct_delayed: number | null
+        }
+        Relationships: []
+      }
+      vw_top_mutation_patterns: {
+        Row: {
+          avg_roas: number | null
+          backfill_rate: number | null
+          pattern: string | null
+          times_used: number | null
+          win_rate: number | null
+          wins: number | null
         }
         Relationships: []
       }
