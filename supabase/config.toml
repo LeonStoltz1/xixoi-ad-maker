@@ -169,3 +169,12 @@ verify_jwt = true
 
 [functions.system-calculate-user-costs]
 verify_jwt = true
+
+[functions.rank-creatives]
+verify_jwt = true
+
+[functions.update-genome]
+verify_jwt = true
+
+[functions.test-crl-genome]
+verify_jwt = true
