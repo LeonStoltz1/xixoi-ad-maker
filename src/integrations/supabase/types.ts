@@ -1360,6 +1360,7 @@ export type Database = {
           media_rights_confirmed_at: string | null
           meta_sub_platforms: Json | null
           name: string
+          outcomes: Json | null
           paused_at: string | null
           paused_reason: string | null
           payment_failures: number | null
@@ -1395,6 +1396,7 @@ export type Database = {
           media_rights_confirmed_at?: string | null
           meta_sub_platforms?: Json | null
           name: string
+          outcomes?: Json | null
           paused_at?: string | null
           paused_reason?: string | null
           payment_failures?: number | null
@@ -1430,6 +1432,7 @@ export type Database = {
           media_rights_confirmed_at?: string | null
           meta_sub_platforms?: Json | null
           name?: string
+          outcomes?: Json | null
           paused_at?: string | null
           paused_reason?: string | null
           payment_failures?: number | null
@@ -1581,6 +1584,140 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      creatives: {
+        Row: {
+          campaign_id: string | null
+          created_at: string | null
+          creative_data: Json
+          generated_at: string | null
+          id: string
+          performance_metrics: Json | null
+          platform: string
+          published_at: string | null
+          rank_position: number | null
+          style_cluster: string | null
+          updated_at: string | null
+          user_feedback: Json | null
+          user_id: string
+          utility_score: number | null
+          variants: Json[] | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string | null
+          creative_data?: Json
+          generated_at?: string | null
+          id?: string
+          performance_metrics?: Json | null
+          platform: string
+          published_at?: string | null
+          rank_position?: number | null
+          style_cluster?: string | null
+          updated_at?: string | null
+          user_feedback?: Json | null
+          user_id: string
+          utility_score?: number | null
+          variants?: Json[] | null
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string | null
+          creative_data?: Json
+          generated_at?: string | null
+          id?: string
+          performance_metrics?: Json | null
+          platform?: string
+          published_at?: string | null
+          rank_position?: number | null
+          style_cluster?: string | null
+          updated_at?: string | null
+          user_feedback?: Json | null
+          user_id?: string
+          utility_score?: number | null
+          variants?: Json[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creatives_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_genomes: {
+        Row: {
+          baseline_risk_appetite: number | null
+          contextual_risk_modifier: number | null
+          created_at: string | null
+          decay_sensitivity: number | null
+          edit_patterns: Json | null
+          gap_vectors: string[] | null
+          genome_confidence: number | null
+          intra_genome_entropy: number | null
+          mutation_history: Json | null
+          next_best_mutations: string[] | null
+          outcome_embedding: number[] | null
+          platform_success: Json | null
+          profitable_creatives: number | null
+          regret_sensitivity: Json | null
+          style_clusters: Json | null
+          style_embedding: number[] | null
+          text_embedding: number[] | null
+          total_creatives: number | null
+          updated_at: string | null
+          user_id: string
+          vertical_preferences: string[] | null
+        }
+        Insert: {
+          baseline_risk_appetite?: number | null
+          contextual_risk_modifier?: number | null
+          created_at?: string | null
+          decay_sensitivity?: number | null
+          edit_patterns?: Json | null
+          gap_vectors?: string[] | null
+          genome_confidence?: number | null
+          intra_genome_entropy?: number | null
+          mutation_history?: Json | null
+          next_best_mutations?: string[] | null
+          outcome_embedding?: number[] | null
+          platform_success?: Json | null
+          profitable_creatives?: number | null
+          regret_sensitivity?: Json | null
+          style_clusters?: Json | null
+          style_embedding?: number[] | null
+          text_embedding?: number[] | null
+          total_creatives?: number | null
+          updated_at?: string | null
+          user_id: string
+          vertical_preferences?: string[] | null
+        }
+        Update: {
+          baseline_risk_appetite?: number | null
+          contextual_risk_modifier?: number | null
+          created_at?: string | null
+          decay_sensitivity?: number | null
+          edit_patterns?: Json | null
+          gap_vectors?: string[] | null
+          genome_confidence?: number | null
+          intra_genome_entropy?: number | null
+          mutation_history?: Json | null
+          next_best_mutations?: string[] | null
+          outcome_embedding?: number[] | null
+          platform_success?: Json | null
+          profitable_creatives?: number | null
+          regret_sensitivity?: Json | null
+          style_clusters?: Json | null
+          style_embedding?: number[] | null
+          text_embedding?: number[] | null
+          total_creatives?: number | null
+          updated_at?: string | null
+          user_id?: string
+          vertical_preferences?: string[] | null
+        }
+        Relationships: []
       }
       customer_bug_reports: {
         Row: {
@@ -2703,6 +2840,53 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      regret_memory: {
+        Row: {
+          context: Json
+          created_at: string | null
+          creative_id: string | null
+          id: string
+          outcome_type: string | null
+          regret_vector: Json
+          severity: number | null
+          tier: number
+          user_id: string
+          volatility_score: number | null
+        }
+        Insert: {
+          context?: Json
+          created_at?: string | null
+          creative_id?: string | null
+          id?: string
+          outcome_type?: string | null
+          regret_vector?: Json
+          severity?: number | null
+          tier: number
+          user_id: string
+          volatility_score?: number | null
+        }
+        Update: {
+          context?: Json
+          created_at?: string | null
+          creative_id?: string | null
+          id?: string
+          outcome_type?: string | null
+          regret_vector?: Json
+          severity?: number | null
+          tier?: number
+          user_id?: string
+          volatility_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regret_memory_creative_id_fkey"
+            columns: ["creative_id"]
+            isOneToOne: false
+            referencedRelation: "creatives"
             referencedColumns: ["id"]
           },
         ]
