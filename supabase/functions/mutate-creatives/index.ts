@@ -18,6 +18,7 @@ interface Mutation {
 
 interface MutationProvenance {
   creative_id: string;
+  mutation_key: string;
   base_style_cluster: string;
   platform: string;
   mutations: Mutation[];
@@ -26,9 +27,33 @@ interface MutationProvenance {
   rank_before: number;
 }
 
+interface MutationEventInsert {
+  user_id: string;
+  creative_id: string;
+  mutation_key: string;
+  campaign_id?: string | null;
+  platform?: string;
+  base_style_cluster?: string;
+  mutations: Mutation[];
+  mutation_score?: number;
+  rank_before: number;
+  applied: boolean;
+}
+
 // Constants
 const MAX_NEW_VARIANTS = 12;
 const MAX_MUTATIONS_PER_CREATIVE = 3;
+
+// Deterministic seeded pick to replace Math.random()
+function seededPick(seedStr: string, options: string[]): string {
+  let hash = 0;
+  for (let i = 0; i < seedStr.length; i++) {
+    hash = (hash << 5) - hash + seedStr.charCodeAt(i);
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  const index = Math.abs(hash) % options.length;
+  return options[index];
+}
 
 // Wilson score for Bayesian smoothing
 function wilsonScore(wins: number, total: number): number {
@@ -55,42 +80,53 @@ function generateExploitMutations(
   rankPosition: number
 ): { mutated: Record<string, unknown>; provenance: MutationProvenance }[] {
   const results: { mutated: Record<string, unknown>; provenance: MutationProvenance }[] = [];
-  const platformSuccess = genome.platform_success as Record<string, { wins: number; total: number; avg_roas: number }> || {};
-  const styleClusters = genome.style_clusters as Record<string, number> || {};
-  const creativeData = creative.creative_data as Record<string, unknown> || {};
+  const platformSuccess = genome.platform_success as Record<string, { wins?: number; successes?: number; total?: number; count?: number; avg_roas?: number; smoothed_rate?: number }> || {};
+  const styleClusters = genome.style_clusters as Record<string, { count?: number; successes?: number; smoothed_rate?: number; success_rate?: number; avg_roas?: number } | number> || {};
+  const creativeData = (creative.creative_data as Record<string, unknown>) || {};
   const baseCluster = (creative.style_cluster || creativeData.style_cluster || 'unknown') as string;
   const basePlatform = creative.platform as string;
 
-  // Find top platforms by Wilson-smoothed rate
+  // Find top platforms by composite score (Wilson + ROAS)
   const platformScores = Object.entries(platformSuccess)
-    .map(([platform, stats]) => ({
-      platform,
-      score: wilsonScore(stats.wins || 0, stats.total || 0),
-      total: stats.total || 0,
-    }))
+    .map(([platform, stats]) => {
+      const wins = stats.wins ?? stats.successes ?? 0;
+      const total = stats.total ?? stats.count ?? 0;
+      const avgRoas = stats.avg_roas ?? 1.0;
+      const wilsonPart = wilsonScore(wins, total) * 0.7;
+      const roasPart = Math.min(avgRoas / 2.0, 1.0) * 0.3;
+      return {
+        platform,
+        score: wilsonPart + roasPart,
+        total,
+      };
+    })
     .filter(p => p.total >= 3)
     .sort((a, b) => b.score - a.score);
 
   // Generate platform expansion variant if top platform differs
   if (platformScores.length > 0 && platformScores[0].platform !== basePlatform) {
     const topPlatform = platformScores[0];
+    const mutationKey = `platform:${topPlatform.platform}`;
     results.push({
       mutated: {
         ...creative,
-        id: `${creative.id}_mut_platform_${topPlatform.platform}`,
-        platform: topPlatform.platform,
+        id: creative.id, // Keep original ID unchanged
         is_mutation: true,
+        mutation_parent_id: creative.id,
+        mutation_key: mutationKey,
+        platform: topPlatform.platform,
         mutation_source: 'exploit',
       },
       provenance: {
         creative_id: creative.id as string,
+        mutation_key: mutationKey,
         base_style_cluster: baseCluster,
         platform: topPlatform.platform,
         mutations: [{
           type: 'platform_expansion',
           param: 'platform',
           delta: topPlatform.platform,
-          reason: `Top platform by Wilson score (${topPlatform.score.toFixed(3)})`,
+          reason: `Top platform by composite score (${topPlatform.score.toFixed(3)})`,
         }],
         mutation_score: topPlatform.score,
         source: 'exploit',
@@ -99,34 +135,50 @@ function generateExploitMutations(
     });
   }
 
-  // Find top style clusters
+  // Find top style clusters - handle both schema formats
   const topClusters = Object.entries(styleClusters)
     .filter(([cluster]) => cluster !== baseCluster)
-    .sort(([, a], [, b]) => b - a)
+    .map(([cluster, data]) => {
+      // Handle both formats: number (affinity) or object (with smoothed_rate/count)
+      if (typeof data === 'number') {
+        return { cluster, rate: data, total: 1 };
+      }
+      return {
+        cluster,
+        rate: data.smoothed_rate ?? data.success_rate ?? 0.5,
+        total: data.count ?? 0,
+      };
+    })
+    .filter(x => typeof x.total === 'number' ? x.total >= 3 || x.rate > 0.6 : true)
+    .sort((a, b) => b.rate - a.rate)
     .slice(0, 2);
 
-  for (const [cluster, affinity] of topClusters) {
-    if (affinity > 0.6 && results.length < MAX_MUTATIONS_PER_CREATIVE) {
+  for (const { cluster, rate } of topClusters) {
+    if (rate > 0.6 && results.length < MAX_MUTATIONS_PER_CREATIVE) {
+      const mutationKey = `style:${cluster}`;
       results.push({
         mutated: {
           ...creative,
-          id: `${creative.id}_mut_style_${cluster}`,
+          id: creative.id, // Keep original ID unchanged
+          is_mutation: true,
+          mutation_parent_id: creative.id,
+          mutation_key: mutationKey,
           style_cluster: cluster,
           creative_data: { ...(creative.creative_data as Record<string, unknown> || {}), style_cluster: cluster },
-          is_mutation: true,
           mutation_source: 'exploit',
         },
         provenance: {
           creative_id: creative.id as string,
+          mutation_key: mutationKey,
           base_style_cluster: baseCluster,
           platform: basePlatform,
           mutations: [{
             type: 'style_shift',
             param: 'style_cluster',
             delta: cluster,
-            reason: `High genome affinity (${affinity.toFixed(3)})`,
+            reason: `High smoothed_rate (${rate.toFixed(3)})`,
           }],
-          mutation_score: affinity,
+          mutation_score: rate,
           source: 'exploit',
           rank_before: rankPosition,
         },
@@ -145,8 +197,8 @@ function generateExploreMutations(
   rankPosition: number
 ): { mutated: Record<string, unknown>; provenance: MutationProvenance }[] {
   const results: { mutated: Record<string, unknown>; provenance: MutationProvenance }[] = [];
-  const platformSuccess = genome.platform_success as Record<string, { wins: number; total: number; avg_roas: number }> || {};
-  const creativeData = creative.creative_data as Record<string, unknown> || {};
+  const platformSuccess = genome.platform_success as Record<string, { wins?: number; successes?: number; total?: number; count?: number; avg_roas?: number }> || {};
+  const creativeData = (creative.creative_data as Record<string, unknown>) || {};
   const baseCluster = (creative.style_cluster || creativeData.style_cluster || 'unknown') as string;
   const basePlatform = creative.platform as string;
   const riskAppetite = (genome.baseline_risk_appetite as number || 0.5) + (genome.contextual_risk_modifier as number || 0);
@@ -157,30 +209,38 @@ function generateExploreMutations(
   // Find under-explored platforms with decent avg_roas
   const underExploredPlatforms = Object.entries(platformSuccess)
     .filter(([platform, stats]) => {
+      const total = stats.total ?? stats.count ?? 0;
       return platform !== basePlatform && 
-             stats.total < 5 && 
-             stats.total >= 1 && 
+             total < 5 && 
+             total >= 1 && 
              (stats.avg_roas || 0) > 0.8;
     })
-    .map(([platform, stats]) => ({
-      platform,
-      potential: (stats.avg_roas || 1) * (1 + explorationBoost) * riskAppetite,
-      total: stats.total,
-    }))
+    .map(([platform, stats]) => {
+      const total = stats.total ?? stats.count ?? 0;
+      return {
+        platform,
+        potential: (stats.avg_roas || 1) * (1 + explorationBoost) * riskAppetite,
+        total,
+      };
+    })
     .sort((a, b) => b.potential - a.potential);
 
   for (const candidate of underExploredPlatforms.slice(0, 2)) {
     if (results.length < MAX_MUTATIONS_PER_CREATIVE) {
+      const mutationKey = `explore:${candidate.platform}`;
       results.push({
         mutated: {
           ...creative,
-          id: `${creative.id}_mut_explore_${candidate.platform}`,
-          platform: candidate.platform,
+          id: creative.id, // Keep original ID unchanged
           is_mutation: true,
+          mutation_parent_id: creative.id,
+          mutation_key: mutationKey,
+          platform: candidate.platform,
           mutation_source: 'explore',
         },
         provenance: {
           creative_id: creative.id as string,
+          mutation_key: mutationKey,
           base_style_cluster: baseCluster,
           platform: candidate.platform,
           mutations: [{
@@ -197,22 +257,27 @@ function generateExploreMutations(
     }
   }
 
-  // CTA variant for exploration
+  // CTA variant for exploration - use deterministic selection
   if (normalizedEntropy < 0.4 && results.length < MAX_MUTATIONS_PER_CREATIVE) {
     const ctaVariants = ['Shop Now', 'Learn More', 'Get Started', 'Try Free', 'Sign Up'];
     const currentCta = (creative.creative_data as Record<string, unknown>)?.cta_text || 'Learn More';
-    const newCta = ctaVariants.find(c => c !== currentCta) || 'Shop Now';
+    const availableCtas = ctaVariants.filter(c => c !== currentCta);
+    const newCta = seededPick(`${creative.id}:cta`, availableCtas);
+    const mutationKey = `cta:${newCta.toLowerCase().replace(/\s+/g, '_')}`;
     
     results.push({
       mutated: {
         ...creative,
-        id: `${creative.id}_mut_cta`,
-        creative_data: { ...(creative.creative_data as Record<string, unknown> || {}), cta_text: newCta },
+        id: creative.id, // Keep original ID unchanged
         is_mutation: true,
+        mutation_parent_id: creative.id,
+        mutation_key: mutationKey,
+        creative_data: { ...(creative.creative_data as Record<string, unknown> || {}), cta_text: newCta },
         mutation_source: 'explore',
       },
       provenance: {
         creative_id: creative.id as string,
+        mutation_key: mutationKey,
         base_style_cluster: baseCluster,
         platform: basePlatform,
         mutations: [{
@@ -238,7 +303,7 @@ function generateRegretAvoidanceMutations(
   rankPosition: number
 ): { mutated: Record<string, unknown>; provenance: MutationProvenance }[] {
   const results: { mutated: Record<string, unknown>; provenance: MutationProvenance }[] = [];
-  const creativeData = creative.creative_data as Record<string, unknown> || {};
+  const creativeData = (creative.creative_data as Record<string, unknown>) || {};
   const baseCluster = (creative.style_cluster || creativeData.style_cluster || 'unknown') as string;
   const basePlatform = creative.platform as string;
 
@@ -253,26 +318,29 @@ function generateRegretAvoidanceMutations(
 
   for (const regret of relevantRegrets) {
     const ctx = regret.context as Record<string, unknown> || {};
-    const regretVector = regret.regret_vector as Record<string, unknown> || {};
     
     // Mutate away from regret pattern
     if (ctx.style_cluster === baseCluster && results.length < MAX_MUTATIONS_PER_CREATIVE) {
-      // Shift to different style
+      // Shift to different style using deterministic selection
       const alternativeStyles = ['minimalist', 'bold', 'professional', 'playful', 'elegant']
         .filter(s => s !== baseCluster);
-      const newStyle = alternativeStyles[Math.floor(Math.random() * alternativeStyles.length)];
+      const newStyle = seededPick(`${creative.id}:${regret.id}`, alternativeStyles);
+      const mutationKey = `avoid:${regret.id}:${newStyle}`;
       
       results.push({
         mutated: {
           ...creative,
-          id: `${creative.id}_mut_avoid_${regret.id}`,
+          id: creative.id, // Keep original ID unchanged
+          is_mutation: true,
+          mutation_parent_id: creative.id,
+          mutation_key: mutationKey,
           style_cluster: newStyle,
           creative_data: { ...(creative.creative_data as Record<string, unknown> || {}), style_cluster: newStyle },
-          is_mutation: true,
           mutation_source: 'regret_avoidance',
         },
         provenance: {
           creative_id: creative.id as string,
+          mutation_key: mutationKey,
           base_style_cluster: baseCluster,
           platform: basePlatform,
           mutations: [{
@@ -362,7 +430,7 @@ serve(async (req) => {
     const normalizedEntropy = calculateNormalizedEntropy(clusterDistribution);
 
     const allMutations: { mutated: Record<string, unknown>; provenance: MutationProvenance }[] = [];
-    const mutationEvents: Omit<Record<string, unknown>, 'id'>[] = [];
+    const mutationEvents: MutationEventInsert[] = [];
 
     // Only mutate top-ranked creatives (first 4)
     const topCreatives = ranked_creatives
@@ -397,13 +465,14 @@ serve(async (req) => {
     // Deduplicate and cap
     const uniqueMutations = allMutations
       .slice(0, MAX_NEW_VARIANTS)
-      .filter((m, i, arr) => arr.findIndex(x => x.mutated.id === m.mutated.id) === i);
+      .filter((m, i, arr) => arr.findIndex(x => x.provenance.mutation_key === m.provenance.mutation_key) === i);
 
-    // Store mutation events
+    // Store mutation events with mutation_key for reliable outcome matching
     for (const { mutated, provenance } of uniqueMutations) {
-      const event = {
+      const event: MutationEventInsert = {
         user_id: user.id,
         creative_id: provenance.creative_id,
+        mutation_key: provenance.mutation_key,
         campaign_id: campaign_id || null,
         platform: provenance.platform,
         base_style_cluster: provenance.base_style_cluster,
