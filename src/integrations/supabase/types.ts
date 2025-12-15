@@ -2143,6 +2143,7 @@ export type Database = {
           created_at: string | null
           creative_id: string | null
           id: string
+          mutation_key: string | null
           mutation_score: number | null
           mutations: Json
           outcome_class: string | null
@@ -2159,6 +2160,7 @@ export type Database = {
           created_at?: string | null
           creative_id?: string | null
           id?: string
+          mutation_key?: string | null
           mutation_score?: number | null
           mutations?: Json
           outcome_class?: string | null
@@ -2175,6 +2177,7 @@ export type Database = {
           created_at?: string | null
           creative_id?: string | null
           id?: string
+          mutation_key?: string | null
           mutation_score?: number | null
           mutations?: Json
           outcome_class?: string | null
