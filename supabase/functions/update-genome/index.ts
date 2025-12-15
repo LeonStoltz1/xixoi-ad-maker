@@ -6,175 +6,103 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// EMA decay factor
 const EMA_DECAY = 0.2;
+const CONFIDENCE_INCREMENT = 0.02;
+const MAX_CONFIDENCE = 0.95;
+const SHOCK_WINDOW = 5;
 
-interface CreativeOutcome {
-  creative_id: string;
-  platform: string;
-  style_cluster: string;
-  performance_metrics: {
-    roas: number | null;
-    ctr: number | null;
-    conversion_rate: number | null;
-    stability_score: number | null;
-    spend: number;
-  };
-  is_profitable: boolean;
-  is_stable: boolean;
+// Wilson score for platform success smoothing (95% lower bound)
+function wilsonScore(wins: number, total: number): number {
+  if (total === 0) return 0.5;
+  const z = 1.96;
+  const p = wins / total;
+  const denominator = 1 + z * z / total;
+  const center = p + z * z / (2 * total);
+  const spread = z * Math.sqrt((p * (1 - p) + z * z / (4 * total)) / total);
+  return (center - spread) / denominator;
 }
 
-interface PlatformSuccess {
-  wins: number;
-  total: number;
-  avg_roas: number | null;
+// Confidence shock decay: reduce confidence when recent performance drops
+function calculateShockDecay(
+  currentConfidence: number,
+  recentOutcomes: Array<{ roas?: number; stability_score?: number }>
+): { newConfidence: number; shockApplied: boolean; shockReason?: string } {
+  if (recentOutcomes.length < SHOCK_WINDOW) {
+    return { newConfidence: currentConfidence, shockApplied: false };
+  }
+
+  const recent = recentOutcomes.slice(-SHOCK_WINDOW);
+  const avgRoas = recent.reduce((sum, o) => sum + (o.roas || 1), 0) / recent.length;
+  const avgStability = recent.reduce((sum, o) => sum + (o.stability_score || 0.5), 0) / recent.length;
+
+  // Shock: ROAS dropped below 0.7 for rolling window
+  if (avgRoas < 0.7) {
+    const decay = Math.min(0.2, currentConfidence * 0.3);
+    return { 
+      newConfidence: Math.max(0.1, currentConfidence - decay), 
+      shockApplied: true,
+      shockReason: `low_roas_avg=${avgRoas.toFixed(2)}`
+    };
+  }
+
+  // Shock: Stability dropped below 0.3
+  if (avgStability < 0.3) {
+    const decay = Math.min(0.15, currentConfidence * 0.2);
+    return { 
+      newConfidence: Math.max(0.1, currentConfidence - decay), 
+      shockApplied: true,
+      shockReason: `low_stability_avg=${avgStability.toFixed(2)}`
+    };
+  }
+
+  return { newConfidence: currentConfidence, shockApplied: false };
 }
 
-interface GenomeData {
-  user_id: string;
-  genome_confidence: number;
-  style_embedding: number[];
-  text_embedding: number[];
-  outcome_embedding: number[];
-  platform_success: Record<string, PlatformSuccess>;
-  style_clusters: Record<string, number>;
-  baseline_risk_appetite: number;
-  decay_sensitivity: number;
-  regret_sensitivity: { positive: number; negative: number };
-  total_creatives: number;
-  profitable_creatives: number;
-  intra_genome_entropy: number;
-  vertical_preferences: string[];
-}
-
-// EMA update for embeddings
 function emaUpdate(current: number[], newValue: number[], decay: number): number[] {
-  if (current.length === 0) return newValue;
-  if (newValue.length === 0) return current;
-  
+  if (!current?.length) return newValue;
+  if (!newValue?.length) return current;
   const maxLen = Math.max(current.length, newValue.length);
-  const result: number[] = [];
-  
-  for (let i = 0; i < maxLen; i++) {
-    const c = current[i] || 0;
-    const n = newValue[i] || 0;
-    result.push(c * (1 - decay) + n * decay);
-  }
-  
-  return result;
+  return Array.from({ length: maxLen }, (_, i) => 
+    (current[i] || 0) * (1 - decay) + (newValue[i] || 0) * decay
+  );
 }
 
-// Calculate genome confidence based on data quality
-function calculateGenomeConfidence(genome: GenomeData): number {
-  const dataPoints = genome.total_creatives;
-  const profitRatio = dataPoints > 0 ? genome.profitable_creatives / dataPoints : 0;
-  const entropy = genome.intra_genome_entropy;
-  
-  // Confidence grows with more data, higher profit ratio, and moderate entropy
-  let confidence = 0;
-  
-  // Data quantity factor (0-0.4)
-  confidence += Math.min(0.4, dataPoints / 50);
-  
-  // Profit ratio factor (0-0.3)
-  confidence += profitRatio * 0.3;
-  
-  // Entropy factor - prefer moderate entropy (0-0.3)
-  // Very low entropy = overfit, very high = random
-  const entropyScore = entropy > 0.5 && entropy < 2.5 ? 0.3 : 0.15;
-  confidence += entropyScore;
-  
-  return Math.min(1, confidence);
-}
-
-// Calculate intra-genome entropy
 function calculateIntraGenomeEntropy(styleClusters: Record<string, number>): number {
-  const total = Object.values(styleClusters).reduce((a, b) => a + b, 0);
+  const values = Object.values(styleClusters);
+  const total = values.reduce((a, b) => a + b, 0);
   if (total === 0) return 0;
-  
   let entropy = 0;
-  for (const count of Object.values(styleClusters)) {
+  for (const count of values) {
     const p = count / total;
-    if (p > 0) {
-      entropy -= p * Math.log2(p);
-    }
+    if (p > 0) entropy -= p * Math.log2(p);
   }
-  
   return entropy;
 }
 
-// Create outcome embedding from metrics
-function createOutcomeEmbedding(outcome: CreativeOutcome): number[] {
-  const metrics = outcome.performance_metrics;
+function createOutcomeEmbedding(metrics: Record<string, unknown>, isProfitable: boolean, isStable: boolean): number[] {
   return [
-    metrics.roas || 0,
-    metrics.ctr || 0,
-    metrics.conversion_rate || 0,
-    metrics.stability_score || 0.5,
-    outcome.is_profitable ? 1 : 0,
-    outcome.is_stable ? 1 : 0,
+    (metrics.roas as number) || 0,
+    (metrics.ctr as number) || 0,
+    (metrics.conversion_rate as number) || 0,
+    (metrics.stability_score as number) || 0.5,
+    isProfitable ? 1 : 0,
+    isStable ? 1 : 0,
   ];
 }
 
-// Create style embedding placeholder (in production, use actual embeddings)
 function createStyleEmbedding(styleCluster: string): number[] {
-  // Simple hash-based embedding for demo
   const hash = styleCluster.split('').reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0), 0);
-  const embedding: number[] = [];
-  for (let i = 0; i < 8; i++) {
-    embedding.push(Math.sin(hash * (i + 1)) * 0.5 + 0.5);
-  }
-  return embedding;
+  return Array.from({ length: 8 }, (_, i) => Math.sin(hash * (i + 1)) * 0.5 + 0.5);
 }
 
-// Update regret memory based on outcome
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function updateRegretMemory(
-  supabase: any,
-  userId: string,
-  outcome: CreativeOutcome
-): Promise<void> {
-  const metrics = outcome.performance_metrics;
-  
-  // Determine tier based on outcome quality
-  let tier: number;
-  let severity: number;
-  
-  if (!outcome.is_profitable && metrics.roas !== null && metrics.roas < 0) {
-    tier = 1; // Critical regret - negative ROI
-    severity = Math.min(1, Math.abs(metrics.roas));
-  } else if (!outcome.is_profitable) {
-    tier = 2; // Near-miss - not profitable but not negative
-    severity = 0.5;
-  } else if (!outcome.is_stable) {
-    tier = 3; // Learning signal - profitable but unstable
-    severity = 0.3;
-  } else {
-    return; // No regret for profitable + stable outcomes
-  }
-  
-  // Calculate volatility from performance variance
-  const volatility = metrics.stability_score !== null ? 1 - metrics.stability_score : 0.5;
-  
-  await supabase.from('regret_memory').insert({
-    user_id: userId,
-    creative_id: outcome.creative_id,
-    tier,
-    context: {
-      platform: outcome.platform,
-      style_cluster: outcome.style_cluster,
-      roas: metrics.roas,
-      spend: metrics.spend,
-    },
-    regret_vector: {
-      style_cluster: outcome.style_cluster,
-      platform: outcome.platform,
-      outcome_type: tier === 1 ? 'negative_roi' : tier === 2 ? 'near_miss' : 'unstable',
-    },
-    volatility_score: volatility,
-    severity,
-    outcome_type: tier === 1 ? 'negative_roi' : tier === 2 ? 'near_miss' : 'unstable',
-  });
+interface UpdateLog {
+  updated: boolean;
+  reason: string;
+  shock_applied: boolean;
+  shock_reason?: string;
+  confidence_before: number;
+  confidence_after: number;
+  mutations: string[];
 }
 
 serve(async (req) => {
@@ -189,159 +117,210 @@ serve(async (req) => {
     );
 
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Missing authorization header');
-    }
+    if (!authHeader) throw new Error('Missing authorization header');
 
     const { data: { user }, error: authError } = await supabase.auth.getUser(
       authHeader.replace('Bearer ', '')
     );
     if (authError || !user) throw new Error('Unauthorized');
 
-    const { outcomes } = await req.json() as { outcomes: CreativeOutcome[] };
-
+    const { outcomes } = await req.json();
     if (!outcomes || !Array.isArray(outcomes)) {
       throw new Error('outcomes array required');
     }
 
     // Fetch or create genome
-    let { data: genome, error: genomeError } = await supabase
+    let { data: genome } = await supabase
       .from('creator_genomes')
       .select('*')
       .eq('user_id', user.id)
       .single();
 
-    if (genomeError || !genome) {
-      // Create new genome
-      const newGenome: Partial<GenomeData> = {
-        user_id: user.id,
-        genome_confidence: 0,
-        style_embedding: [],
-        text_embedding: [],
-        outcome_embedding: [],
-        platform_success: {
-          meta: { wins: 0, total: 0, avg_roas: null },
-          google: { wins: 0, total: 0, avg_roas: null },
-          tiktok: { wins: 0, total: 0, avg_roas: null },
-          linkedin: { wins: 0, total: 0, avg_roas: null },
-          x: { wins: 0, total: 0, avg_roas: null },
-        },
-        style_clusters: {},
-        baseline_risk_appetite: 0.5,
-        decay_sensitivity: 0.5,
-        regret_sensitivity: { positive: 0.5, negative: 0.5 },
-        total_creatives: 0,
-        profitable_creatives: 0,
-        intra_genome_entropy: 0,
-        vertical_preferences: [],
-      };
-
+    if (!genome) {
       const { data: created, error: createError } = await supabase
         .from('creator_genomes')
-        .insert(newGenome)
+        .insert({
+          user_id: user.id,
+          genome_confidence: 0.1,
+          style_embedding: [],
+          text_embedding: [],
+          outcome_embedding: [],
+          platform_success: {},
+          style_clusters: {},
+          baseline_risk_appetite: 0.5,
+          decay_sensitivity: 0.5,
+          regret_sensitivity: { positive: 0.5, negative: 0.5 },
+          total_creatives: 0,
+          profitable_creatives: 0,
+          intra_genome_entropy: 0,
+          vertical_preferences: [],
+          mutation_history: [],
+        })
         .select()
         .single();
-
       if (createError) throw createError;
       genome = created;
     }
 
-    // Process each outcome
-    let updatedStyleEmbedding = genome.style_embedding || [];
-    let updatedOutcomeEmbedding = genome.outcome_embedding || [];
-    const platformSuccess = { ...genome.platform_success } as Record<string, PlatformSuccess>;
-    const styleClusters = { ...genome.style_clusters } as Record<string, number>;
+    // Fetch recent outcomes for shock decay calculation
+    const { data: recentCreatives } = await supabase
+      .from('creatives')
+      .select('performance_metrics')
+      .eq('user_id', user.id)
+      .not('performance_metrics', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    const recentOutcomes = (recentCreatives || []).map(c => c.performance_metrics as Record<string, unknown>);
+
+    const updateLog: UpdateLog = {
+      updated: false,
+      reason: '',
+      shock_applied: false,
+      confidence_before: genome.genome_confidence || 0,
+      confidence_after: genome.genome_confidence || 0,
+      mutations: [],
+    };
+
+    let styleEmbedding = genome.style_embedding || [];
+    let outcomeEmbedding = genome.outcome_embedding || [];
+    const platformSuccess = { ...(genome.platform_success || {}) };
+    const styleClusters = { ...(genome.style_clusters || {}) };
     let totalCreatives = genome.total_creatives || 0;
     let profitableCreatives = genome.profitable_creatives || 0;
+    let genomeConfidence = genome.genome_confidence || 0.1;
+    let mutationHistory = genome.mutation_history || [];
 
     for (const outcome of outcomes) {
+      const metrics = outcome.performance_metrics || {};
+      const isProfitable = (metrics.roas || 0) >= 1.0;
+      const isStable = (metrics.stability_score || 0.5) >= 0.5;
+
       // Only update genome for profitable + stable outcomes (drift resistance)
-      if (outcome.is_profitable && outcome.is_stable) {
-        // EMA update for style embedding
-        const newStyleEmb = createStyleEmbedding(outcome.style_cluster);
-        updatedStyleEmbedding = emaUpdate(updatedStyleEmbedding, newStyleEmb, EMA_DECAY);
-
-        // EMA update for outcome embedding
-        const newOutcomeEmb = createOutcomeEmbedding(outcome);
-        updatedOutcomeEmbedding = emaUpdate(updatedOutcomeEmbedding, newOutcomeEmb, EMA_DECAY);
-
+      if (isProfitable && isStable) {
+        styleEmbedding = emaUpdate(styleEmbedding, createStyleEmbedding(outcome.style_cluster || 'unknown'), EMA_DECAY);
+        outcomeEmbedding = emaUpdate(outcomeEmbedding, createOutcomeEmbedding(metrics, isProfitable, isStable), EMA_DECAY);
         profitableCreatives++;
+        genomeConfidence = Math.min(MAX_CONFIDENCE, genomeConfidence + CONFIDENCE_INCREMENT);
+        updateLog.updated = true;
+        updateLog.mutations.push(`ema_update_${outcome.creative_id}`);
       }
 
-      // Always update platform success stats
-      const platform = outcome.platform.toLowerCase();
-      if (platformSuccess[platform]) {
-        platformSuccess[platform].total++;
-        if (outcome.is_profitable) {
-          platformSuccess[platform].wins++;
-        }
-        // Update avg ROAS
+      // Always update platform success with Wilson smoothing
+      const platform = (outcome.platform || 'unknown').toLowerCase();
+      if (!platformSuccess[platform]) {
+        platformSuccess[platform] = { wins: 0, total: 0, smoothed_rate: 0.5, avg_roas: null };
+      }
+      platformSuccess[platform].total++;
+      if (isProfitable) platformSuccess[platform].wins++;
+      platformSuccess[platform].smoothed_rate = wilsonScore(
+        platformSuccess[platform].wins,
+        platformSuccess[platform].total
+      );
+      if (metrics.roas !== null && metrics.roas !== undefined) {
         const ps = platformSuccess[platform];
-        if (outcome.performance_metrics.roas !== null) {
-          ps.avg_roas = ps.avg_roas !== null
-            ? ps.avg_roas * (1 - EMA_DECAY) + outcome.performance_metrics.roas * EMA_DECAY
-            : outcome.performance_metrics.roas;
-        }
+        ps.avg_roas = ps.avg_roas !== null
+          ? ps.avg_roas * (1 - EMA_DECAY) + metrics.roas * EMA_DECAY
+          : metrics.roas;
       }
 
-      // Update style cluster counts
+      // Update style clusters with Wilson smoothing
       const cluster = outcome.style_cluster || 'unknown';
-      styleClusters[cluster] = (styleClusters[cluster] || 0) + 1;
+      if (!styleClusters[cluster]) {
+        styleClusters[cluster] = { count: 0, successes: 0, smoothed_rate: 0.5 };
+      }
+      styleClusters[cluster].count++;
+      if (isProfitable) styleClusters[cluster].successes++;
+      styleClusters[cluster].smoothed_rate = wilsonScore(
+        styleClusters[cluster].successes,
+        styleClusters[cluster].count
+      );
 
       totalCreatives++;
 
-      // Update regret memory
-      await updateRegretMemory(supabase, user.id, outcome);
+      // Update regret memory for non-profitable outcomes
+      if (!isProfitable || !isStable) {
+        const tier = (metrics.roas || 0) < 0 ? 1 : (metrics.roas || 0) < 0.8 ? 2 : 3;
+        const severity = Math.max(0, 1 - (metrics.roas || 0)) * (isStable ? 0.5 : 1);
+        
+        await supabase.from('regret_memory').insert({
+          user_id: user.id,
+          creative_id: outcome.creative_id,
+          tier,
+          context: {
+            platform: outcome.platform,
+            style_cluster: outcome.style_cluster,
+            roas: metrics.roas,
+            spend: metrics.spend,
+          },
+          regret_vector: { style_cluster: outcome.style_cluster, platform: outcome.platform },
+          volatility_score: 1 - (metrics.stability_score || 0.5),
+          severity,
+        });
+      }
 
-      // Update creative record with final metrics
+      // Update creative record
       await supabase
         .from('creatives')
-        .update({
-          performance_metrics: outcome.performance_metrics,
-          published_at: new Date().toISOString(),
-        })
+        .update({ performance_metrics: metrics, published_at: new Date().toISOString() })
         .eq('id', outcome.creative_id)
         .eq('user_id', user.id);
     }
 
-    // Calculate updated entropy
-    const intraGenomeEntropy = calculateIntraGenomeEntropy(styleClusters);
+    // === SHOCK DECAY (always check) ===
+    const shockResult = calculateShockDecay(genomeConfidence, recentOutcomes);
+    if (shockResult.shockApplied) {
+      genomeConfidence = shockResult.newConfidence;
+      updateLog.shock_applied = true;
+      updateLog.shock_reason = shockResult.shockReason;
+      mutationHistory.push({
+        type: 'confidence_shock',
+        reason: shockResult.shockReason,
+        confidence_before: updateLog.confidence_before,
+        confidence_after: genomeConfidence,
+        timestamp: new Date().toISOString(),
+      });
+      // Keep mutation history bounded
+      if (mutationHistory.length > 50) mutationHistory = mutationHistory.slice(-50);
+    }
 
-    // Build updated genome
-    const updatedGenome: Partial<GenomeData> = {
-      style_embedding: updatedStyleEmbedding,
-      outcome_embedding: updatedOutcomeEmbedding,
-      platform_success: platformSuccess,
-      style_clusters: styleClusters,
-      total_creatives: totalCreatives,
-      profitable_creatives: profitableCreatives,
-      intra_genome_entropy: intraGenomeEntropy,
-    };
+    updateLog.confidence_after = genomeConfidence;
+    updateLog.reason = updateLog.updated 
+      ? 'profitable_stable_outcomes_processed' 
+      : 'no_profitable_stable_outcomes';
 
-    // Calculate new confidence
-    updatedGenome.genome_confidence = calculateGenomeConfidence({
-      ...genome,
-      ...updatedGenome,
-    } as GenomeData);
+    const intraGenomeEntropy = calculateIntraGenomeEntropy(
+      Object.fromEntries(Object.entries(styleClusters).map(([k, v]) => [k, (v as { count: number }).count || 0]))
+    );
 
-    // Save updated genome
+    // Save genome
     const { data: savedGenome, error: updateError } = await supabase
       .from('creator_genomes')
-      .update(updatedGenome)
+      .update({
+        style_embedding: styleEmbedding,
+        outcome_embedding: outcomeEmbedding,
+        platform_success: platformSuccess,
+        style_clusters: styleClusters,
+        total_creatives: totalCreatives,
+        profitable_creatives: profitableCreatives,
+        genome_confidence: genomeConfidence,
+        intra_genome_entropy: intraGenomeEntropy,
+        mutation_history: mutationHistory,
+        updated_at: new Date().toISOString(),
+      })
       .eq('user_id', user.id)
       .select()
       .single();
 
     if (updateError) throw updateError;
 
-    console.log(`[update_genome] user=${user.id} outcomes=${outcomes.length} confidence=${savedGenome.genome_confidence.toFixed(2)} entropy=${intraGenomeEntropy.toFixed(2)}`);
+    console.log(`[Genome] user=${user.id} outcomes=${outcomes.length} confidence=${genomeConfidence.toFixed(2)} shock=${updateLog.shock_applied}`);
 
     return new Response(
       JSON.stringify({
         genome: savedGenome,
+        update_log: updateLog,
         processed_outcomes: outcomes.length,
-        new_confidence: savedGenome.genome_confidence,
-        entropy: intraGenomeEntropy,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
