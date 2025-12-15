@@ -2142,6 +2142,63 @@ export type Database = {
         }
         Relationships: []
       }
+      mutation_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_type: string
+          baseline_value: number | null
+          change_pct: number | null
+          created_at: string | null
+          current_value: number | null
+          id: string
+          message: string
+          metric_name: string
+          mutation_source: string | null
+          period_end: string | null
+          period_start: string | null
+          sample_size: number | null
+          severity: string
+          threshold_pct: number | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type: string
+          baseline_value?: number | null
+          change_pct?: number | null
+          created_at?: string | null
+          current_value?: number | null
+          id?: string
+          message: string
+          metric_name: string
+          mutation_source?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          sample_size?: number | null
+          severity?: string
+          threshold_pct?: number | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type?: string
+          baseline_value?: number | null
+          change_pct?: number | null
+          created_at?: string | null
+          current_value?: number | null
+          id?: string
+          message?: string
+          metric_name?: string
+          mutation_source?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          sample_size?: number | null
+          severity?: string
+          threshold_pct?: number | null
+        }
+        Relationships: []
+      }
       mutation_events: {
         Row: {
           applied: boolean | null
