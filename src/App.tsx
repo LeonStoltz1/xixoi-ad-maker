@@ -116,6 +116,7 @@ const App = () => (
           <Route path="/campaign-publish" element={<CampaignPublish />} />
           <Route path="/review-ad/:campaignId" element={<ReviewAd />} />
           <Route path="/admin/platform-credentials" element={<PlatformCredentialsAdmin />} />
+          <Route path="/xi-admin/platform-credentials" element={<PlatformCredentialsAdmin />} />
           <Route path="/admin/test-meta" element={<TestMetaPublish />} />
           <Route path="/admin/seed-data" element={<SeedTestData />} />
           <Route path="/admin/tier-testing" element={<TierTestingChecklist />} />
