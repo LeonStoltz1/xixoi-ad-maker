@@ -38,6 +38,7 @@ interface MutationEventInsert {
   mutation_score?: number;
   rank_before: number;
   applied: boolean;
+  mutated_fields?: Record<string, unknown>;
 }
 
 // Constants
@@ -46,6 +47,7 @@ const MAX_MUTATIONS_PER_CREATIVE = 3;
 
 // Deterministic seeded pick to replace Math.random()
 function seededPick(seedStr: string, options: string[]): string {
+  if (options.length === 0) return ''; // Safe fallback
   let hash = 0;
   for (let i = 0; i < seedStr.length; i++) {
     hash = (hash << 5) - hash + seedStr.charCodeAt(i);
@@ -106,7 +108,8 @@ function generateExploitMutations(
   // Generate platform expansion variant if top platform differs
   if (platformScores.length > 0 && platformScores[0].platform !== basePlatform) {
     const topPlatform = platformScores[0];
-    const mutationKey = `platform:${topPlatform.platform}`;
+    const creativePrefix = (creative.id as string).slice(0, 8);
+    const mutationKey = `${creativePrefix}:platform:${topPlatform.platform}`;
     results.push({
       mutated: {
         ...creative,
@@ -135,7 +138,7 @@ function generateExploitMutations(
     });
   }
 
-  // Find top style clusters - handle both schema formats
+  // Find top style clusters - handle both schema formats with proper threshold
   const topClusters = Object.entries(styleClusters)
     .filter(([cluster]) => cluster !== baseCluster)
     .map(([cluster, data]) => {
@@ -149,13 +152,15 @@ function generateExploitMutations(
         total: data.count ?? 0,
       };
     })
-    .filter(x => typeof x.total === 'number' ? x.total >= 3 || x.rate > 0.6 : true)
+    // Prevent "high rate / zero support" leaks
+    .filter(x => (x.total >= 3 && x.rate >= 0.55) || x.rate > 0.85)
     .sort((a, b) => b.rate - a.rate)
     .slice(0, 2);
 
   for (const { cluster, rate } of topClusters) {
-    if (rate > 0.6 && results.length < MAX_MUTATIONS_PER_CREATIVE) {
-      const mutationKey = `style:${cluster}`;
+    if (results.length < MAX_MUTATIONS_PER_CREATIVE) {
+      const creativePrefix = (creative.id as string).slice(0, 8);
+      const mutationKey = `${creativePrefix}:style:${cluster}`;
       results.push({
         mutated: {
           ...creative,
@@ -227,7 +232,8 @@ function generateExploreMutations(
 
   for (const candidate of underExploredPlatforms.slice(0, 2)) {
     if (results.length < MAX_MUTATIONS_PER_CREATIVE) {
-      const mutationKey = `explore:${candidate.platform}`;
+      const creativePrefix = (creative.id as string).slice(0, 8);
+      const mutationKey = `${creativePrefix}:explore:${candidate.platform}`;
       results.push({
         mutated: {
           ...creative,
@@ -257,15 +263,18 @@ function generateExploreMutations(
     }
   }
 
-  // CTA variant for exploration - use deterministic selection
+  // CTA variant for exploration - use deterministic selection with guard
   if (normalizedEntropy < 0.4 && results.length < MAX_MUTATIONS_PER_CREATIVE) {
     const ctaVariants = ['Shop Now', 'Learn More', 'Get Started', 'Try Free', 'Sign Up'];
     const currentCta = (creative.creative_data as Record<string, unknown>)?.cta_text || 'Learn More';
     const availableCtas = ctaVariants.filter(c => c !== currentCta);
-    const newCta = seededPick(`${creative.id}:cta`, availableCtas);
-    const mutationKey = `cta:${newCta.toLowerCase().replace(/\s+/g, '_')}`;
     
-    results.push({
+    if (availableCtas.length > 0) {
+      const newCta = seededPick(`${creative.id}:cta`, availableCtas);
+      const creativePrefix = (creative.id as string).slice(0, 8);
+      const mutationKey = `${creativePrefix}:cta:${newCta.toLowerCase().replace(/\s+/g, '_')}`;
+    
+      results.push({
       mutated: {
         ...creative,
         id: creative.id, // Keep original ID unchanged
@@ -291,6 +300,7 @@ function generateExploreMutations(
         rank_before: rankPosition,
       },
     });
+    }
   }
 
   return results;
@@ -325,7 +335,8 @@ function generateRegretAvoidanceMutations(
       const alternativeStyles = ['minimalist', 'bold', 'professional', 'playful', 'elegant']
         .filter(s => s !== baseCluster);
       const newStyle = seededPick(`${creative.id}:${regret.id}`, alternativeStyles);
-      const mutationKey = `avoid:${regret.id}:${newStyle}`;
+      const creativePrefix = (creative.id as string).slice(0, 8);
+      const mutationKey = `${creativePrefix}:avoid:${newStyle}`;
       
       results.push({
         mutated: {
@@ -462,13 +473,25 @@ serve(async (req) => {
       if (allMutations.length >= MAX_NEW_VARIANTS) break;
     }
 
-    // Deduplicate and cap
+    // Deduplicate by (creative_id + mutation_key), not global
     const uniqueMutations = allMutations
       .slice(0, MAX_NEW_VARIANTS)
-      .filter((m, i, arr) => arr.findIndex(x => x.provenance.mutation_key === m.provenance.mutation_key) === i);
+      .filter((m, i, arr) => 
+        arr.findIndex(x => 
+          x.provenance.creative_id === m.provenance.creative_id &&
+          x.provenance.mutation_key === m.provenance.mutation_key
+        ) === i
+      );
 
-    // Store mutation events with mutation_key for reliable outcome matching
+    // Store mutation events with mutation_key and mutated_fields for clean attribution
     for (const { mutated, provenance } of uniqueMutations) {
+      const mutatedData = mutated.creative_data as Record<string, unknown> || {};
+      const mutatedFields = {
+        platform: mutated.platform || null,
+        style_cluster: mutated.style_cluster || mutatedData.style_cluster || null,
+        cta_text: mutatedData.cta_text || null,
+      };
+      
       const event: MutationEventInsert = {
         user_id: user.id,
         creative_id: provenance.creative_id,
@@ -480,6 +503,7 @@ serve(async (req) => {
         mutation_score: provenance.mutation_score,
         rank_before: provenance.rank_before,
         applied: true,
+        mutated_fields: mutatedFields,
       };
       mutationEvents.push(event);
     }
