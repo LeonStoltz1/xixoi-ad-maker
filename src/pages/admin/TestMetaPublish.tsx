@@ -76,13 +76,17 @@ export default function TestMetaPublish() {
         throw new Error(`Failed to create test campaign: ${campaignError?.message}`);
       }
 
+      // Use a real publicly accessible test image (1200x628 ad format)
+      // Using a well-known public image that Meta can access
+      const testImageUrl = "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=1200&h=628&fit=crop&auto=format";
+      
       // Create test asset
       const { error: assetError } = await supabase
         .from("campaign_assets")
         .insert({
           campaign_id: campaign.id,
           asset_type: "image",
-          asset_url: "https://via.placeholder.com/1200x628.png?text=Test+Ad",
+          asset_url: testImageUrl,
         });
 
       if (assetError) {
@@ -98,7 +102,7 @@ export default function TestMetaPublish() {
           headline: "Test Ad Headline",
           body_copy: "This is a test ad to verify Meta publishing works with Quick-Start tier credentials.",
           cta_text: "Learn More",
-          creative_url: "https://via.placeholder.com/1200x628.png?text=Test+Ad",
+          creative_url: testImageUrl,
         })
         .select()
         .single();
