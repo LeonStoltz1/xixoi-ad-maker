@@ -14,6 +14,7 @@ interface TestResult {
 
 // Deterministic seeded pick (same as in mutate-creatives)
 function seededPick(seedStr: string, options: string[]): string {
+  if (options.length === 0) return ''; // Safe fallback
   let hash = 0;
   for (let i = 0; i < seedStr.length; i++) {
     hash = (hash << 5) - hash + seedStr.charCodeAt(i);
@@ -278,35 +279,60 @@ serve(async (req) => {
     });
   }
 
-  // Test 7: Mutation key uniqueness for deduplication
+  // Test 7: Mutation key deduplication by (creative_id + mutation_key)
   try {
     const testMutations = [
-      { mutation_key: 'platform:meta', creative_id: 'c1' },
-      { mutation_key: 'style:minimalist', creative_id: 'c1' },
-      { mutation_key: 'platform:meta', creative_id: 'c2' }, // Duplicate key
-      { mutation_key: 'cta:shop_now', creative_id: 'c1' },
+      { provenance: { creative_id: 'c1', mutation_key: 'c1abc:platform:meta' } },
+      { provenance: { creative_id: 'c1', mutation_key: 'c1abc:style:minimalist' } },
+      { provenance: { creative_id: 'c2', mutation_key: 'c2def:platform:meta' } }, // Same type, different creative → should keep
+      { provenance: { creative_id: 'c1', mutation_key: 'c1abc:cta:shop_now' } },
     ];
     
-    // Deduplicate by mutation_key (same logic as in mutate-creatives)
+    // Deduplicate by (creative_id + mutation_key) - same logic as mutate-creatives
     const unique = testMutations.filter((m, i, arr) => 
-      arr.findIndex(x => x.mutation_key === m.mutation_key) === i
+      arr.findIndex(x => 
+        x.provenance.creative_id === m.provenance.creative_id && 
+        x.provenance.mutation_key === m.provenance.mutation_key
+      ) === i
     );
     
-    const expectedCount = 3; // platform:meta, style:minimalist, cta:shop_now
+    const expectedCount = 4; // All kept (no cross-creative suppression)
     
     results.push({
-      name: 'Mutation key deduplication works correctly',
+      name: 'Mutation key deduplication by (creative_id + mutation_key)',
       passed: unique.length === expectedCount,
       details: {
         input_count: testMutations.length,
         unique_count: unique.length,
         expected_count: expectedCount,
-        unique_keys: unique.map(m => m.mutation_key),
+        unique_keys: unique.map(m => `${m.provenance.creative_id}:${m.provenance.mutation_key}`),
       },
     });
   } catch (error) {
     results.push({
       name: 'Mutation key deduplication',
+      passed: false,
+      details: { error: String(error) },
+    });
+  }
+
+  // Test 8: seededPick handles empty options safely
+  try {
+    const emptyResult = seededPick('any-seed', []);
+    const validResult = seededPick('test-seed', ['a', 'b', 'c']);
+    
+    results.push({
+      name: 'seededPick handles empty options safely',
+      passed: emptyResult === '' && validResult.length > 0,
+      details: {
+        empty_options_result: emptyResult,
+        valid_options_result: validResult,
+        empty_returns_empty_string: emptyResult === '',
+      },
+    });
+  } catch (error) {
+    results.push({
+      name: 'seededPick handles empty options',
       passed: false,
       details: { error: String(error) },
     });
