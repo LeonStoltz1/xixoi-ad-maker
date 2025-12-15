@@ -191,11 +191,19 @@ serve(async (req) => {
     const normalizedEntropy = calculateNormalizedEntropy(clusterDistribution);
     const currentEntropyState = getEntropyState(normalizedEntropy);
     
-    // Track entropy state transitions
+    // Track entropy state transitions (read previous from genome)
+    const previousEntropyState = genome?.last_entropy_state as 'healthy' | 'warning' | 'critical' | undefined;
     let entropyTransition: EntropyTransition | null = null;
-    const previousEntropyKey = `entropy_state_${user.id}`;
-    // Note: In production, store this in a cache or user session
-    const isLowEntropy = normalizedEntropy < 0.4 && totalCreatives > 10;
+    if (previousEntropyState && previousEntropyState !== currentEntropyState) {
+      entropyTransition = {
+        from_state: previousEntropyState,
+        to_state: currentEntropyState,
+        normalized_entropy: normalizedEntropy,
+        timestamp: new Date().toISOString(),
+      };
+      console.log(`[CRL Entropy Transition] user=${user.id} ${previousEntropyState} → ${currentEntropyState} (${normalizedEntropy.toFixed(3)})`);
+    }
+    const isLowEntropy = currentEntropyState === 'critical' && totalCreatives > 10;
 
     const rankedCreatives = [];
     const gatedCreatives = [];
@@ -304,8 +312,9 @@ serve(async (req) => {
         }
       }
 
-      // Apply capped regret penalty (max 40% of base utility)
-      const maxRegretPenalty = provenance.base_utility * REGRET_PENALTY_CAP_RATIO;
+      // Apply capped regret penalty (max 40% of base utility, with floor to prevent instability)
+      const baseForCap = Math.max(provenance.base_utility, 0.05);
+      const maxRegretPenalty = baseForCap * REGRET_PENALTY_CAP_RATIO;
       const appliedRegretPenalty = Math.min(totalRegretPenalty, maxRegretPenalty);
       provenance.total_regret_penalty = totalRegretPenalty;
       provenance.regret_penalty_capped = totalRegretPenalty > maxRegretPenalty;
@@ -361,8 +370,10 @@ serve(async (req) => {
         ...creative,
         utility_score: utility,
         genome_boosted: genome?.genome_confidence > 0.5,
+        regret_penalty_capped: provenance.regret_penalty_capped, // Cheap boolean for metadata
+        gated: false,
         provenance_hash: provenanceHash,
-        provenance: isAnomalousProvenance(provenance) ? provenance : undefined, // Only include full provenance for anomalies in response
+        provenance: isAnomalousProvenance(provenance) ? provenance : undefined,
         rank_position: 0,
       });
     }
@@ -407,9 +418,10 @@ serve(async (req) => {
           total_gated: gatedCreatives.length,
           normalized_entropy: normalizedEntropy,
           entropy_state: currentEntropyState,
+          entropy_transition: entropyTransition,
           low_entropy_warning: isLowEntropy,
           genome_active: genome?.genome_confidence > 0.5,
-          regret_penalties_capped: rankedCreatives.filter(c => c.provenance?.regret_penalty_capped).length,
+          regret_penalties_capped: rankedCreatives.filter(c => c.regret_penalty_capped).length,
         },
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

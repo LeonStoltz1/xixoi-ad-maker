@@ -1657,6 +1657,8 @@ export type Database = {
           gap_vectors: string[] | null
           genome_confidence: number | null
           intra_genome_entropy: number | null
+          last_entropy_state: string | null
+          last_entropy_value: number | null
           mutation_history: Json | null
           next_best_mutations: string[] | null
           outcome_embedding: number[] | null
@@ -1680,6 +1682,8 @@ export type Database = {
           gap_vectors?: string[] | null
           genome_confidence?: number | null
           intra_genome_entropy?: number | null
+          last_entropy_state?: string | null
+          last_entropy_value?: number | null
           mutation_history?: Json | null
           next_best_mutations?: string[] | null
           outcome_embedding?: number[] | null
@@ -1703,6 +1707,8 @@ export type Database = {
           gap_vectors?: string[] | null
           genome_confidence?: number | null
           intra_genome_entropy?: number | null
+          last_entropy_state?: string | null
+          last_entropy_value?: number | null
           mutation_history?: Json | null
           next_best_mutations?: string[] | null
           outcome_embedding?: number[] | null
