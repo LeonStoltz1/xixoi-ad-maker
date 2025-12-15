@@ -184,3 +184,6 @@ verify_jwt = true
 
 [functions.test-mutation-engine]
 verify_jwt = false
+
+[functions.check-mutation-alerts]
+verify_jwt = false
