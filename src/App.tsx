@@ -49,6 +49,14 @@ import CustomerIntake from "./pages/CustomerIntake";
 import CampaignStatus from "./pages/CampaignStatus";
 import { AIOnboardingPage } from "./features/onboarding";
 import { AutopilotSettingsPage } from "./components/autopilot";
+// CAE Authority Pages
+import Official from "./pages/Official";
+import WhatIsXixoi from "./pages/WhatIsXixoi";
+import Examples from "./pages/Examples";
+import CompareGenericTools from "./pages/CompareGenericTools";
+import Countries from "./pages/geo/Countries";
+import CountryPage from "./pages/geo/CountryPage";
+import CityPage from "./pages/geo/CityPage";
 import ProfitDashboard from "./pages/ProfitDashboard";
 
 const queryClient = new QueryClient();
@@ -124,6 +132,14 @@ const App = () => (
           <Route path="/ai-onboarding" element={<AIOnboardingPage />} />
           <Route path="/autopilot-settings" element={<AutopilotSettingsPage />} />
           <Route path="/profit-dashboard" element={<ProfitDashboard />} />
+          {/* CAE Authority Routes */}
+          <Route path="/official" element={<Official />} />
+          <Route path="/what-is-xixoi" element={<WhatIsXixoi />} />
+          <Route path="/examples" element={<Examples />} />
+          <Route path="/compare/generic-ai-image-tools" element={<CompareGenericTools />} />
+          <Route path="/countries" element={<Countries />} />
+          <Route path="/countries/:countrySlug" element={<CountryPage />} />
+          <Route path="/countries/:countrySlug/:citySlug" element={<CityPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
