@@ -3,9 +3,11 @@
  * This file contains the locked canonical definition and SEO constants
  */
 
-// LOCKED CANONICAL DEFINITION - DO NOT MODIFY
+// LOCKED CANONICAL DEFINITION - DO NOT MODIFY OR PARAPHRASE
+// This sentence is immutable. Do not shorten, expand, reorder, or reword it.
+// VIOLATIONS REQUIRE ROLLBACK.
 export const CANONICAL_DEFINITION = 
-  "xiXoi™ is an AI creative studio that generates on-brand ads, product visuals, and social content from a simple prompt or your web address.";
+  "xiXoi™ is an AI creative studio that generates on-brand ads, product visuals, and social ad creatives from a simple prompt or your web address, and automatically publishes them to social media.";
 
 // Brand constants
 export const BRAND = {
