@@ -677,24 +677,36 @@ export default function CreateCampaign() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
 
-        // Upload selected image to storage
-        const timestamp = Date.now();
-        const imageResponse = await fetch(data.selectedImage);
-        const imageBlob = await imageResponse.blob();
-        const fileName = `campaign-${timestamp}-${data.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.jpg`;
+        // Use the image URL directly - avoid CORS issues with external fetching
+        // For external URLs we'll store the URL directly; for data URLs or Supabase URLs we can use as-is
+        let finalImageUrl = data.selectedImage;
         
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('campaign-assets')
-          .upload(`${user.id}/${fileName}`, imageBlob, {
-            contentType: 'image/jpeg',
-            upsert: false
-          });
+        // Only try to upload if it's a blob/data URL or already a Supabase URL
+        if (data.selectedImage.startsWith('blob:') || data.selectedImage.startsWith('data:')) {
+          try {
+            const timestamp = Date.now();
+            const imageResponse = await fetch(data.selectedImage);
+            const imageBlob = await imageResponse.blob();
+            const fileName = `campaign-${timestamp}-${data.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.jpg`;
+            
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from('campaign-assets')
+              .upload(`${user.id}/${fileName}`, imageBlob, {
+                contentType: 'image/jpeg',
+                upsert: false
+              });
 
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('campaign-assets')
-          .getPublicUrl(uploadData.path);
+            if (!uploadError && uploadData) {
+              const { data: { publicUrl } } = supabase.storage
+                .from('campaign-assets')
+                .getPublicUrl(uploadData.path);
+              finalImageUrl = publicUrl;
+            }
+          } catch (uploadErr) {
+            console.warn('Image upload failed, using original URL:', uploadErr);
+            // Continue with original URL
+          }
+        }
 
         // Create campaign
         const { data: campaign, error: campaignError } = await supabase
@@ -706,7 +718,7 @@ export default function CreateCampaign() {
             landing_url: data.url,
             target_location: data.targeting.suggestedLocation,
             daily_budget: data.targeting.suggestedBudget,
-            meta_sub_platforms: metaSubPlatforms, // CRITICAL: Store platform selections to prevent fund mismanagement
+            meta_sub_platforms: metaSubPlatforms,
           })
           .select()
           .single();
@@ -717,14 +729,14 @@ export default function CreateCampaign() {
         await supabase.from('campaign_assets').insert({
           campaign_id: campaign.id,
           asset_type: 'image',
-          asset_url: publicUrl
+          asset_url: finalImageUrl
         });
 
         // Set state for review screen
         setCampaignId(campaign.id);
-        setAssetUrl(publicUrl);
+        setAssetUrl(finalImageUrl);
         setUrlReviewData({
-          selectedImage: publicUrl,
+          selectedImage: finalImageUrl,
           headline: data.generatedAd.headline,
           bodyCopy: data.generatedAd.bodyCopy,
           ctaText: data.generatedAd.ctaText,
