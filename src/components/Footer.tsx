@@ -1,14 +1,14 @@
 const footerLinks = {
   Product: [
+    { label: "What is xiXoi", href: "/what-is-xixoi" },
     { label: "Features", href: "/#features" },
     { label: "Pricing", href: "/#pricing" },
-    { label: "How It Works", href: "/#how-it-works" },
+    { label: "Examples", href: "/examples" },
     { label: "FAQ", href: "/#faq" }
   ],
   Company: [
-    { label: "About", href: "/#about" },
-    { label: "Blog", href: "/#blog" },
-    { label: "Careers", href: "/#careers" },
+    { label: "Official", href: "/official" },
+    { label: "Countries", href: "/countries" },
     { label: "Affiliate Program", href: "/influencers" },
     { label: "Leaderboard", href: "/leaderboard" },
     { label: "Contact", href: "mailto:info@stoltzone.com" }
