@@ -1,14 +1,22 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Link2, Sparkles, Image as ImageIcon, ChevronRight, Save, FolderOpen } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  Loader2, Link2, Sparkles, Image as ImageIcon, 
+  ChevronRight, Save, FolderOpen, RefreshCw, Globe, Wand2
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { invokeWithRetry } from "@/lib/retryWithBackoff";
 import { supabase } from "@/integrations/supabase/client";
 import { SavedImagesLibrary } from "@/components/SavedImagesLibrary";
+
+type ExtractionStep = 'idle' | 'fetching' | 'analyzing' | 'generating' | 'ready';
 
 interface URLImportProps {
   onContentExtracted: (data: {
@@ -31,19 +39,49 @@ interface URLImportProps {
   onBack: () => void;
 }
 
+interface ImageWithMeta {
+  url: string;
+  isAI: boolean;
+  isRecommended?: boolean;
+}
+
+const STEP_LABELS: Record<ExtractionStep, string> = {
+  idle: '',
+  fetching: 'Fetching page content...',
+  analyzing: 'Analyzing images...',
+  generating: 'Generating AI variants...',
+  ready: 'Ready!'
+};
+
+const STEP_PROGRESS: Record<ExtractionStep, number> = {
+  idle: 0,
+  fetching: 20,
+  analyzing: 40,
+  generating: 70,
+  ready: 100
+};
+
 export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
   const { toast } = useToast();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [extractionStep, setExtractionStep] = useState<ExtractionStep>('idle');
   const [extractedData, setExtractedData] = useState<{
-    images: string[];
+    images: ImageWithMeta[];
     content: string;
     title: string;
   } | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [generatingImage, setGeneratingImage] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState({ completed: 0, total: 2 });
   const [showSavedLibrary, setShowSavedLibrary] = useState(false);
   const [savingImage, setSavingImage] = useState(false);
+  const [imageLoadErrors, setImageLoadErrors] = useState<Set<string>>(new Set());
+  const [retryCount, setRetryCount] = useState(0);
+
+  const handleImageError = useCallback((imageUrl: string) => {
+    setImageLoadErrors(prev => new Set(prev).add(imageUrl));
+  }, []);
 
   const handleExtractContent = async () => {
     if (!url.trim()) {
@@ -68,6 +106,9 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
     }
 
     setLoading(true);
+    setExtractionStep('fetching');
+    setImageLoadErrors(new Set());
+    setGenerationProgress({ completed: 0, total: 2 });
 
     try {
       const { data, error } = await invokeWithRetry(
@@ -78,30 +119,23 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
 
       if (error) throw error;
 
-      if (data && data.images && data.content) {
-        const extractedImages = data.images || [];
+      setExtractionStep('analyzing');
+
+      if (data && data.content) {
+        const extractedImages: string[] = data.images || [];
+        const extractedImagesWithMeta: ImageWithMeta[] = extractedImages.map((img, idx) => ({
+          url: img,
+          isAI: false,
+          isRecommended: idx === 0
+        }));
         
-        setExtractedData({
-          images: extractedImages,
-          content: data.content,
-          title: data.title || 'Untitled'
-        });
+        setExtractionStep('generating');
 
-        // Auto-select first image if available
-        if (extractedImages.length > 0) {
-          setSelectedImage(extractedImages[0]);
-        }
+        // Generate AI images in PARALLEL
+        const aiImageCount = extractedImages.length === 0 ? 3 : 2;
+        setGenerationProgress({ completed: 0, total: aiImageCount });
 
-        toast({
-          title: "✨ Content extracted",
-          description: `Found ${extractedImages.length} images. Generating 2 AI variants...`
-        });
-
-        // Automatically generate 2 AI images
-        setGeneratingImage(true);
-        const generatedImages: string[] = [];
-
-        for (let i = 0; i < 2; i++) {
+        const generateImage = async (index: number): Promise<string | null> => {
           try {
             const { data: imageData, error: imageError } = await invokeWithRetry(
               supabase,
@@ -113,32 +147,57 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
             );
 
             if (imageError) throw imageError;
-            if (imageData?.imageUrl) {
-              generatedImages.push(imageData.imageUrl);
-            }
+            
+            setGenerationProgress(prev => ({ 
+              ...prev, 
+              completed: prev.completed + 1 
+            }));
+
+            return imageData?.imageUrl || null;
           } catch (err) {
-            console.error(`Failed to generate AI image ${i + 1}:`, err);
+            console.error(`Failed to generate AI image ${index + 1}:`, err);
+            setGenerationProgress(prev => ({ 
+              ...prev, 
+              completed: prev.completed + 1 
+            }));
+            return null;
           }
+        };
+
+        // Run all AI generations in parallel
+        const imagePromises = Array.from({ length: aiImageCount }, (_, i) => generateImage(i));
+        const generatedImages = await Promise.all(imagePromises);
+        
+        const successfulImages = generatedImages.filter((img): img is string => img !== null);
+        const aiImagesWithMeta: ImageWithMeta[] = successfulImages.map((img, idx) => ({
+          url: img,
+          isAI: true,
+          isRecommended: extractedImages.length === 0 && idx === 0
+        }));
+
+        // Combine AI images first, then extracted images
+        const allImages = [...aiImagesWithMeta, ...extractedImagesWithMeta];
+
+        setExtractedData({
+          images: allImages,
+          content: data.content,
+          title: data.title || 'Untitled'
+        });
+
+        // Auto-select the recommended image
+        const recommendedImage = allImages.find(img => img.isRecommended);
+        if (recommendedImage) {
+          setSelectedImage(recommendedImage.url);
+        } else if (allImages.length > 0) {
+          setSelectedImage(allImages[0].url);
         }
 
-        setGeneratingImage(false);
+        setExtractionStep('ready');
 
-        if (generatedImages.length > 0) {
-          setExtractedData(prev => prev ? {
-            ...prev,
-            images: [...generatedImages, ...extractedImages]
-          } : null);
-          
-          // Auto-select first generated image if no extracted images
-          if (extractedImages.length === 0) {
-            setSelectedImage(generatedImages[0]);
-          }
-
-          toast({
-            title: "✨ Ready to publish",
-            description: `${extractedImages.length + generatedImages.length} images ready. Select your favorite!`
-          });
-        }
+        toast({
+          title: "✨ Ready to create your ad",
+          description: `${allImages.length} images available. Select your favorite!`
+        });
       }
     } catch (error: any) {
       console.error('URL extraction error:', error);
@@ -147,16 +206,17 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
         description: error.message || "Could not extract content from URL",
         variant: "destructive"
       });
+      setExtractionStep('idle');
     } finally {
       setLoading(false);
-      setGeneratingImage(false);
     }
   };
 
-  const handleGenerateImage = async () => {
+  const handleRetryGeneration = async () => {
     if (!extractedData?.content) return;
 
     setGeneratingImage(true);
+    setRetryCount(prev => prev + 1);
 
     try {
       const { data, error } = await invokeWithRetry(
@@ -171,23 +231,27 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
       if (error) throw error;
 
       if (data?.imageUrl) {
-        // Add generated image to the list
+        const newImage: ImageWithMeta = {
+          url: data.imageUrl,
+          isAI: true
+        };
+
         setExtractedData(prev => prev ? {
           ...prev,
-          images: [data.imageUrl, ...prev.images]
+          images: [newImage, ...prev.images]
         } : null);
         setSelectedImage(data.imageUrl);
 
         toast({
-          title: "✨ Image generated",
-          description: "AI created a custom image for your ad"
+          title: "✨ New image generated",
+          description: "AI created another option for your ad"
         });
       }
     } catch (error: any) {
       console.error('Image generation error:', error);
       toast({
         title: "Generation failed",
-        description: error.message || "Could not generate image",
+        description: error.message || "Could not generate image. Try again.",
         variant: "destructive"
       });
     } finally {
@@ -241,7 +305,6 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
     setLoading(true);
     
     try {
-      // Call AI generation functions in parallel
       const [variantsResult, targetingResult] = await Promise.all([
         invokeWithRetry(supabase, 'generate-ad-variants', {
           productDescription: extractedData.content,
@@ -263,10 +326,9 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
         throw new Error('Failed to generate ad content');
       }
 
-      // Pass generated data back to parent
       onContentExtracted({
         url,
-        images: extractedData.images,
+        images: extractedData.images.map(img => img.url),
         selectedImage,
         content: extractedData.content,
         title: extractedData.title,
@@ -293,6 +355,8 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
     }
   };
 
+  const visibleImages = extractedData?.images.filter(img => !imageLoadErrors.has(img.url)) || [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -309,7 +373,7 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
             </div>
             <div>
               <h3 className="text-2xl font-bold">Import from URL</h3>
-              <p className="text-muted-foreground">We'll extract images and content automatically</p>
+              <p className="text-muted-foreground">We'll extract images and generate AI variants automatically</p>
             </div>
           </div>
 
@@ -330,10 +394,10 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
                 onClick={handleExtractContent}
                 disabled={loading || !url.trim()}
               >
-                {loading ? (
+                {loading && extractionStep !== 'ready' ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Extracting...
+                    Processing...
                   </>
                 ) : (
                   <>
@@ -344,7 +408,33 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
               </Button>
             </div>
           </div>
+
+          {/* Progress Indicator */}
+          {extractionStep !== 'idle' && extractionStep !== 'ready' && (
+            <div className="space-y-3 pt-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{STEP_LABELS[extractionStep]}</span>
+                {extractionStep === 'generating' && (
+                  <span className="text-muted-foreground">
+                    {generationProgress.completed}/{generationProgress.total} images
+                  </span>
+                )}
+              </div>
+              <Progress value={STEP_PROGRESS[extractionStep]} className="h-2" />
+            </div>
+          )}
         </div>
+
+        {/* Skeleton placeholders while generating */}
+        {extractionStep === 'generating' && !extractedData && (
+          <div className="space-y-6 pt-6 border-t">
+            <div className="grid grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="aspect-square rounded-lg" />
+              ))}
+            </div>
+          </div>
+        )}
 
         {extractedData && (
           <div className="space-y-6 pt-6 border-t">
@@ -359,7 +449,7 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-semibold">Select Image ({extractedData.images.length} found)</h4>
+                <h4 className="font-semibold">Select Image ({visibleImages.length} available)</h4>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
@@ -372,7 +462,7 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleGenerateImage}
+                    onClick={handleRetryGeneration}
                     disabled={generatingImage}
                   >
                     {generatingImage ? (
@@ -382,51 +472,72 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        Generate with AI
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Generate More
                       </>
                     )}
                   </Button>
                 </div>
               </div>
 
-              {extractedData.images.length > 0 ? (
+              {visibleImages.length > 0 ? (
                 <div className="grid grid-cols-3 gap-4">
-                  {extractedData.images.map((img, idx) => (
+                  {visibleImages.map((img, idx) => (
                     <Card
-                      key={idx}
-                      className={`cursor-pointer transition-all hover:shadow-lg group protected-image ${
-                        selectedImage === img ? 'ring-2 ring-primary' : ''
+                      key={img.url}
+                      className={`cursor-pointer transition-all hover:shadow-lg group protected-image relative ${
+                        selectedImage === img.url ? 'ring-2 ring-primary' : ''
                       }`}
-                      onClick={() => setSelectedImage(img)}
+                      onClick={() => setSelectedImage(img.url)}
                     >
                       <div className="aspect-square relative overflow-hidden rounded-lg">
                         <img
-                          src={img}
+                          src={img.url}
                           alt={`Option ${idx + 1}`}
                           className="w-full h-full object-cover select-none pointer-events-none"
                           draggable="false"
                           onContextMenu={(e) => e.preventDefault()}
-                          onError={(e) => {
-                            e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3C/svg%3E';
-                          }}
+                          onError={() => handleImageError(img.url)}
                         />
-                        {selectedImage === img && (
+                        
+                        {/* Selection overlay */}
+                        {selectedImage === img.url && (
                           <div className="absolute inset-0 bg-primary/20 flex items-center justify-center pointer-events-none">
                             <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
                               ✓
                             </div>
                           </div>
                         )}
+
+                        {/* Image source badges */}
+                        <div className="absolute top-2 left-2 flex gap-1">
+                          {img.isAI ? (
+                            <Badge variant="default" className="text-[9px] px-1.5 py-0.5 bg-primary/90">
+                              <Wand2 className="w-2.5 h-2.5 mr-1" />
+                              AI
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="text-[9px] px-1.5 py-0.5 bg-secondary/90">
+                              <Globe className="w-2.5 h-2.5 mr-1" />
+                              Website
+                            </Badge>
+                          )}
+                          {img.isRecommended && (
+                            <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 bg-background/90 border-primary text-primary">
+                              ★ Best
+                            </Badge>
+                          )}
+                        </div>
+
                         {/* Save button for AI-generated images */}
-                        {idx < 2 && (
+                        {img.isAI && (
                           <Button
                             variant="secondary"
                             size="sm"
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleSaveImage(img, extractedData.content);
+                              handleSaveImage(img.url, extractedData.content);
                             }}
                             disabled={savingImage}
                           >
@@ -436,12 +547,37 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
                       </div>
                     </Card>
                   ))}
+
+                  {/* Generating placeholder */}
+                  {generatingImage && (
+                    <Card className="aspect-square flex items-center justify-center bg-muted/50">
+                      <div className="text-center space-y-2">
+                        <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
+                        <p className="text-xs text-muted-foreground">Generating...</p>
+                      </div>
+                    </Card>
+                  )}
                 </div>
               ) : (
                 <Alert>
                   <ImageIcon className="w-4 h-4" />
-                  <AlertDescription>
-                    No images found on this page. You can generate one with AI.
+                  <AlertDescription className="flex items-center justify-between">
+                    <span>No valid images found. Generate one with AI.</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRetryGeneration}
+                      disabled={generatingImage}
+                    >
+                      {generatingImage ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Generate
+                        </>
+                      )}
+                    </Button>
                   </AlertDescription>
                 </Alert>
               )}
@@ -469,16 +605,18 @@ export const URLImport = ({ onContentExtracted, onBack }: URLImportProps) => {
         )}
       </Card>
 
-      {/* Saved Images Library Modal */}
       <SavedImagesLibrary
         isOpen={showSavedLibrary}
         onClose={() => setShowSavedLibrary(false)}
         onSelectImage={(imageUrl) => {
           setSelectedImage(imageUrl);
-          setExtractedData(prev => prev ? {
-            ...prev,
-            images: [imageUrl, ...prev.images]
-          } : null);
+          if (extractedData) {
+            const newImage: ImageWithMeta = { url: imageUrl, isAI: false };
+            setExtractedData(prev => prev ? {
+              ...prev,
+              images: [newImage, ...prev.images]
+            } : null);
+          }
         }}
       />
     </div>
