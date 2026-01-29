@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { description, title } = await req.json();
+    const { description, title, style } = await req.json();
 
     if (!description) {
       return new Response(
@@ -30,14 +30,18 @@ serve(async (req) => {
       );
     }
 
-    // Create image generation prompt
+    // Build prompt with style variation if provided
+    const styleDirective = style 
+      ? `Style: ${style}.`
+      : 'Style: Modern, clean, professional product photography. High quality, well-lit, attractive composition suitable for social media advertising.';
+
     const prompt = `Create a professional, eye-catching advertisement image for: ${title || 'product'}. ${description}. 
     
-    Style: Modern, clean, professional product photography. High quality, well-lit, attractive composition suitable for social media advertising. 
+    ${styleDirective}
     
     Important: Focus on the product/service, make it look premium and desirable. Avoid text overlays. Create something that would work as a Facebook or Instagram ad image.`;
 
-    console.log('Generating image with prompt length:', prompt.length);
+    console.log('Generating image with style:', style || 'default');
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -46,7 +50,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
+        model: 'google/gemini-2.5-flash-image',
         messages: [
           {
             role: 'user',
@@ -122,14 +126,14 @@ serve(async (req) => {
 
       console.log('Image generated and uploaded successfully:', publicUrl);
       return new Response(
-        JSON.stringify({ imageUrl: publicUrl }),
+        JSON.stringify({ imageUrl: publicUrl, style: style || 'default' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } catch (storageError) {
       console.error('Failed to upload image to storage:', storageError);
       // Fallback to base64 if storage fails
       return new Response(
-        JSON.stringify({ imageUrl: base64Image }),
+        JSON.stringify({ imageUrl: base64Image, style: style || 'default' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

@@ -1,9 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Simple MD5 hash for cache key
+async function hashUrl(url: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(url.toLowerCase().trim());
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -17,6 +27,39 @@ serve(async (req) => {
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Check cache first (24 hour expiry)
+    const urlHash = await hashUrl(url);
+    const { data: cached } = await supabase
+      .from('url_extractions_cache')
+      .select('*')
+      .eq('url_hash', urlHash)
+      .single();
+
+    if (cached) {
+      const cacheAge = Date.now() - new Date(cached.created_at).getTime();
+      const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+      
+      if (cacheAge < CACHE_TTL) {
+        console.log('Cache hit for:', url);
+        return new Response(
+          JSON.stringify({ 
+            images: cached.images, 
+            content: cached.content, 
+            title: cached.title,
+            cached: true 
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } else {
+        // Cache expired, delete it
+        await supabase.from('url_extractions_cache').delete().eq('url_hash', urlHash);
+      }
     }
 
     console.log('Fetching:', url);
@@ -70,10 +113,29 @@ serve(async (req) => {
     const description = descMatch?.[1]?.trim() || '';
     const content = [title, description].filter(Boolean).join('. ').slice(0, 500);
 
-    console.log('Found', images.length, 'images');
+    const finalImages = images.slice(0, 5);
+
+    // Store in cache
+    try {
+      await supabase
+        .from('url_extractions_cache')
+        .upsert({
+          url_hash: urlHash,
+          url,
+          images: finalImages,
+          content,
+          title,
+          created_at: new Date().toISOString()
+        }, { onConflict: 'url_hash' });
+      console.log('Cached extraction for:', url);
+    } catch (cacheError) {
+      console.warn('Cache write failed:', cacheError);
+    }
+
+    console.log('Found', finalImages.length, 'images');
 
     return new Response(
-      JSON.stringify({ images: images.slice(0, 5), content, title }),
+      JSON.stringify({ images: finalImages, content, title }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
