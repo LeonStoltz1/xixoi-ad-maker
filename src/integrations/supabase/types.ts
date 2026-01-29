@@ -3277,6 +3277,33 @@ export type Database = {
         }
         Relationships: []
       }
+      url_extractions_cache: {
+        Row: {
+          content: string | null
+          created_at: string
+          images: Json
+          title: string | null
+          url: string
+          url_hash: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          images?: Json
+          title?: string | null
+          url: string
+          url_hash: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          images?: Json
+          title?: string | null
+          url?: string
+          url_hash?: string
+        }
+        Relationships: []
+      }
       user_autopilot_settings: {
         Row: {
           auto_budget_adjustment: boolean | null
